@@ -1,0 +1,10 @@
+_build/
+deps/
+.elixir_ls/
+.git/
+.env
+*.md
+test/
+deploy/
+docker-compose*.yml
+node_modules/

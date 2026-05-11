@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+Disallow: /settings
+Disallow: /api/
+
+Sitemap: https://forum.tcgaming.quest/sitemap.xml

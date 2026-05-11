@@ -1,0 +1,42 @@
+# Elixir / Phoenix build artefacts
+_build/
+deps/
+.elixir_ls/
+*.beam
+*.dump
+erl_crash.dump
+
+# Secrets / runtime config
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Run-time generated
+tmp/
+log/
+priv/static/cache_manifest.json
+priv/static/assets/
+
+# Frontend
+node_modules/
+frontend/build/
+frontend/.svelte-kit/
+frontend/test-results/
+frontend/playwright-report/
+frontend/.vite/
+
+# Backups / generated archives
+backups/
+*.tar.gz
+*.zip
+deploy-package/
+
+# Misc
+*.pid
+*.swp
+*.bak

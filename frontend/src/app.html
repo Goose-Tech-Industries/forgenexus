@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!-- Open Graph / social previews (per-page can override via svelte:head) -->
+		<meta property="og:site_name" content="ForgeNexus" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="ForgeNexus — forum + chat + creator monetization" />
+		<meta property="og:description" content="Threaded discussion, Discord-style real-time chat, voice rooms, watch parties, and built-in monetization. One platform, creator-owned." />
+		<meta property="og:image" content="https://forum.tcgaming.quest/og-default.png" />
+		<meta property="og:url" content="https://forum.tcgaming.quest" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="ForgeNexus" />
+		<meta name="twitter:description" content="Forum + Discord-style chat + creator monetization. One platform." />
+		<meta name="twitter:image" content="https://forum.tcgaming.quest/og-default.png" />
+		<meta name="description" content="ForgeNexus — forum + Discord-style real-time chat + creator monetization. Threaded discussion, voice rooms, watch parties, native subs and tips." />
+
+		<!-- PWA -->
+		<link rel="manifest" href="/manifest.json" />
+		<meta name="theme-color" content="#00d4aa" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="ForgeNexus" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

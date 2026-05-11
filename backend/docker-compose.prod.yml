@@ -1,0 +1,144 @@
+# ===========================================
+# ForgeNexus — Production Docker Compose
+# ===========================================
+# Usage: docker compose -f docker-compose.prod.yml up -d
+# Note: Nginx runs on the host (not containerized) for SSL cert management
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: forge_nexus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: forge_nexus_prod
+    # Only PgBouncer talks to Postgres directly — no external port needed
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forge_nexus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://forge_nexus:${POSTGRES_PASSWORD}@postgres:5432/forge_nexus_prod
+      AUTH_TYPE: scram-sha-256
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 200
+      DEFAULT_POOL_SIZE: 40
+      MIN_POOL_SIZE: 10
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 3
+      SERVER_IDLE_TIMEOUT: 600
+      SERVER_LIFETIME: 3600
+      SERVER_RESET_QUERY: "DISCARD ALL"
+      LOG_CONNECTIONS: 0
+      LOG_DISCONNECTIONS: 0
+      STATS_PERIOD: 60
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    restart: always
+    environment:
+      MEILI_MASTER_KEY: ${MEILISEARCH_KEY}
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_ENV: production
+    ports:
+      - "127.0.0.1:7700:7700"
+    volumes:
+      - meilidata:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Route through PgBouncer instead of directly to Postgres
+      DATABASE_URL: ecto://forge_nexus:${POSTGRES_PASSWORD}@pgbouncer:5432/forge_nexus_prod
+      MEILISEARCH_URL: http://meilisearch:7700
+    ports:
+      - "127.0.0.1:4002:4000"
+    volumes:
+      - uploads:/app/priv/static/uploads
+
+  # Read replica (optional — uncomment to enable for heavy read workloads)
+  # postgres-replica:
+  #   image: postgres:16-alpine
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: forge_nexus
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: forge_nexus_prod
+  #   expose:
+  #     - "5432"
+  #   volumes:
+  #     - pgreplica:/var/lib/postgresql/data
+  #   command: >
+  #     bash -c "
+  #       until pg_basebackup -h postgres -U forge_nexus -D /var/lib/postgresql/data -Fp -Xs -R; do
+  #         echo 'Waiting for primary...'
+  #         sleep 2
+  #       done
+  #       postgres
+  #     "
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  ui:
+    build:
+      context: /opt/forgenexus/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: /api
+    restart: always
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3002:3000"
+
+  coturn:
+    image: coturn/coturn:4.6
+    restart: always
+    network_mode: host
+    volumes:
+      - ./deploy/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - coturn-log:/var/log/coturn
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+
+volumes:
+  pgdata:
+  meilidata:
+  uploads:
+  coturn-log:
+  # pgreplica:
