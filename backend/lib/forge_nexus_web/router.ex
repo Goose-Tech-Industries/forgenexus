@@ -71,6 +71,16 @@ defmodule ForgeNexusWeb.Router do
       post "/houses", HousesController, :signup
     end
 
+    # Public lookup of a creator's community (for the member-signup landing).
+    get "/communities/:slug", CommunitySignupController, :show_public
+
+    # Free-tier member signup on a creator's community. Rate-limited.
+    scope "/communities" do
+      pipe_through :auth_limited
+
+      post "/:slug/members/signup", CommunitySignupController, :signup
+    end
+
     # Auth (normal rate limit)
     get "/auth/me", AuthController, :me
     post "/auth/verify-email", AuthController, :verify_email
