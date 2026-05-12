@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from '$lib/api/client';
   import { auth } from '$lib/stores/auth.svelte';
+  import AffiliateGate from '$lib/components/creator/AffiliateGate.svelte';
 
   let dashboard = $state<any>(null);
   let loading = $state(true);
@@ -38,6 +39,8 @@
       Stripe Connect is wired and we've completed test-mode validation.
     </div>
   {/if}
+
+  <AffiliateGate />
 
   {#if loading}
     <div class="skeleton-grid">

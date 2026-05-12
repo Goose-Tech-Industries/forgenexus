@@ -108,6 +108,7 @@ defmodule ForgeNexus.Accounts.User do
     field :profile_vibe, :string
     field :avatar_3d_url, :string
     field :verified_creator_at, :utc_datetime
+    field :subscriptions_enabled_at, :utc_datetime
     field :pinned_thread_id, :binary_id
     field :seasonal_decorations_enabled, :boolean, default: true
     field :birthday_visibility, :string, default: "members"

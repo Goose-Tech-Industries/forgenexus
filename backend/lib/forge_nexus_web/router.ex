@@ -340,6 +340,10 @@ defmodule ForgeNexusWeb.Router do
     # Creator dashboard
     get "/creator/dashboard", CreatorDashboardController, :show
 
+    # Affiliate gate — progress + activation
+    get "/creator/affiliate-progress", AffiliateController, :progress
+    post "/creator/enable-subscriptions", AffiliateController, :enable
+
     # AI features
     get "/thread-summary/:id", ThreadController, :ai_summary
     get "/community/health", FeedController, :community_health
