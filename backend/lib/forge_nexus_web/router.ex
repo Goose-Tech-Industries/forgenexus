@@ -61,6 +61,15 @@ defmodule ForgeNexusWeb.Router do
       post "/2fa/verify", AuthController, :verify_2fa_login
     end
 
+    # Marketing-funnel signup (rate-limited).
+    # /signup/tier provisions user + community tenant + (when Stripe is wired
+    # for the plan) a Checkout session in one round-trip.
+    scope "/signup" do
+      pipe_through :auth_limited
+
+      post "/tier", SignupController, :tier
+    end
+
     # Auth (normal rate limit)
     get "/auth/me", AuthController, :me
     post "/auth/verify-email", AuthController, :verify_email
