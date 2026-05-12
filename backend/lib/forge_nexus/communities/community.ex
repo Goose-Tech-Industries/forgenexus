@@ -6,9 +6,10 @@ defmodule ForgeNexus.Communities.Community do
   @foreign_key_type :binary_id
 
   # v3 revenue ladder. `free` is unsubbed; `forum`/`community`/`creator`/`platform`/`enterprise` are paid.
+  # `houses` is the multi-creator collective tier ($149 base + $25/additional creator).
   # Old names (`starter`, `social`) kept here for migration compatibility — old communities still
   # validate. Map them via the migration when you cut over.
-  @plans ~w(free forum community creator platform enterprise starter social)
+  @plans ~w(free forum community creator platform enterprise houses starter social)
   @plan_statuses ~w(inactive active trialing past_due canceled unpaid)
   @default_features %{
     "forums" => true,

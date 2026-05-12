@@ -68,6 +68,7 @@ defmodule ForgeNexusWeb.Router do
       pipe_through :auth_limited
 
       post "/tier", SignupController, :tier
+      post "/houses", HousesController, :signup
     end
 
     # Auth (normal rate limit)
