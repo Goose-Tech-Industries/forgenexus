@@ -27,7 +27,6 @@
     </a>
     <nav class="gl-mast-nav">
       <a href="/pricing">Pricing</a>
-      <a href="/live">Calamity TV</a>
       {#if auth.isLoggedIn}
         <a href="/home" class="gl-cta-thin">▸ ENTER</a>
       {:else}

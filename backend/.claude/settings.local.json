@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Read(//etc/nginx/sites-enabled/**)",
+      "Read(//etc/nginx/sites-available/**)",
+      "Bash(nginx -t)",
+      "Bash(systemctl reload *)",
+      "Bash(curl -sS -o /tmp/health.out -w 'HTTP %{http_code}\\\\n' http://127.0.0.1:4002/api/health)",
+      "Read(//tmp/**)",
+      "Bash(certbot --version)",
+      "Bash(getent hosts *)",
+      "Bash(curl -sS -4 ifconfig.me)",
+      "Bash(dig +short NS tcgaming.quest)",
+      "Bash(dig +short A tcgaming.quest)",
+      "Bash(dig +short A forum.tcgaming.quest @ns1.digitalocean.com)",
+      "Bash(dig +short A forum.tcgaming.quest @1.1.1.1)",
+      "Bash(dig +short ANY forum.tcgaming.quest @ns1.digitalocean.com)",
+      "Bash(dig +short AXFR tcgaming.quest @ns1.digitalocean.com)",
+      "Bash(certbot *)",
+      "Bash(curl -sS -o /dev/null -w 'HTTPS %{http_code} \\(final url: %{url_effective}\\)\\\\n' -L https://forum.tcgaming.quest/api/health)",
+      "Bash(curl -sS https://forum.tcgaming.quest/api/health)",
+      "Bash(curl -sS https://forum.tcgaming.quest/api/setup/status)",
+      "Bash(curl -sS -w '\\\\nHTTP %{http_code}\\\\n' https://forum.tcgaming.quest/api/forums)",
+      "Bash(curl -sS -o /dev/null -w 'HTTPS / %{http_code}\\\\n' https://forum.tcgaming.quest/)",
+      "Bash(curl -sS -o /dev/null -w 'HTTPS /setup %{http_code}\\\\n' https://forum.tcgaming.quest/setup)",
+      "Bash(curl -sS -w '\\\\nHTTP %{http_code}\\\\n' https://forum.tcgaming.quest/api/health)",
+      "Bash(dig +short *)",
+      "Bash(curl -sS -o /dev/null -w 'HTTPS %{http_code}\\\\n' https://calamity.tcgaming.quest/)",
+      "Bash(curl -sS -o /dev/null -w 'HTTPS /api/health %{http_code}\\\\n' https://calamity.tcgaming.quest/api/health)",
+      "Bash(curl -sS -w '\\\\nHTTP %{http_code}\\\\n' https://calamity.tcgaming.quest/)",
+      "Bash(curl -sS -w '\\\\nHTTP %{http_code}\\\\n' https://calamity.tcgaming.quest/calamity)",
+      "Bash(curl -sS -o /dev/null -w 'HTTP %{http_code}\\\\n' https://forum.tcgaming.quest/)",
+      "Bash(curl -sS https://calamity.tcgaming.quest/)",
+      "Bash(curl -sS https://forum.tcgaming.quest/)"
+    ]
+  }
+}

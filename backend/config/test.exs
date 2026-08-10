@@ -6,9 +6,15 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :forge_nexus, ForgeNexus.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
+  username: System.get_env("PGUSER") || "postgres",
+  password:
+    System.get_env("PGPASSWORD") ||
+      (case File.read("/root/.goose_pg_password") do
+         {:ok, pw} -> String.trim(pw)
+         _ -> "postgres"
+       end),
+  hostname: System.get_env("PGHOST") || "localhost",
+  port: String.to_integer(System.get_env("PGPORT") || "5432"),
   database: "forge_nexus_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2

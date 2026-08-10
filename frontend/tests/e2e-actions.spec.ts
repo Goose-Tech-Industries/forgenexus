@@ -6,9 +6,13 @@ import { test, expect, type Page } from '@playwright/test';
  * Creates, edits, interacts with, and cleans up real data.
  */
 
-const API = 'http://localhost:4000/api';
-const ADMIN_EMAIL = 'admin@forgenexus.local';
-const ADMIN_PASS = 'admin123';
+const API = process.env.FN_API_URL || 'http://localhost:4000/api';
+const ADMIN_EMAIL = process.env.FN_TEST_EMAIL || 'admin@forgenexus.local';
+const ADMIN_PASS = process.env.FN_TEST_PASSWORD || 'admin123';
+const BYPASS_TOKEN = process.env.FN_RATE_LIMIT_BYPASS_TOKEN || '';
+const bypassHeaders: Record<string, string> = BYPASS_TOKEN
+  ? { 'x-fn-ratelimit-bypass': BYPASS_TOKEN }
+  : {};
 
 // ── Shared state across tests ──
 let adminToken: string;
@@ -19,17 +23,19 @@ let createdThreadSlug: string;
 
 async function login(page: Page) {
   await page.goto('/');
-  await page.evaluate(async ({ email, password, api }) => {
+  await page.evaluate(async ({ email, password, api, bypassToken }) => {
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (bypassToken) headers['x-fn-ratelimit-bypass'] = bypassToken;
     for (let i = 0; i < 3; i++) {
       const res = await fetch(`${api}/auth/login`, {
-        method: 'POST', headers: { 'content-type': 'application/json' },
+        method: 'POST', headers,
         credentials: 'include', body: JSON.stringify({ email, password }),
       });
       if (res.ok) { const d = await res.json(); return d.token; }
-      if (res.status === 429) await new Promise(r => setTimeout(r, 12000));
+      if (res.status === 429) await new Promise(r => setTimeout(r, 2000));
     }
     return null;
-  }, { email: ADMIN_EMAIL, password: ADMIN_PASS, api: API });
+  }, { email: ADMIN_EMAIL, password: ADMIN_PASS, api: API, bypassToken: BYPASS_TOKEN });
   await page.reload();
   await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(500);
@@ -41,14 +47,14 @@ async function wait(page: Page, ms = 500) {
 }
 
 async function apiGet(path: string) {
-  const h: Record<string, string> = { 'content-type': 'application/json' };
+  const h: Record<string, string> = { 'content-type': 'application/json', ...bypassHeaders };
   if (adminToken) h['authorization'] = `Bearer ${adminToken}`;
   const r = await fetch(`${API}${path}`, { headers: h });
   return { status: r.status, body: await r.json().catch(() => ({})) };
 }
 
 async function apiPost(path: string, data: any) {
-  const h: Record<string, string> = { 'content-type': 'application/json' };
+  const h: Record<string, string> = { 'content-type': 'application/json', ...bypassHeaders };
   if (adminToken) h['authorization'] = `Bearer ${adminToken}`;
   const r = await fetch(`${API}${path}`, { method: 'POST', headers: h, body: JSON.stringify(data) });
   return { status: r.status, body: await r.json().catch(() => ({})) };
@@ -58,11 +64,11 @@ async function apiPost(path: string, data: any) {
 test.beforeAll(async () => {
   for (let i = 0; i < 5; i++) {
     const r = await fetch(`${API}/auth/login`, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
+      method: 'POST', headers: { 'content-type': 'application/json', ...bypassHeaders },
       body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASS }),
     });
     if (r.ok) { const d = await r.json(); adminToken = d.token; adminUserId = d.user?.id; return; }
-    await new Promise(r => setTimeout(r, 12000));
+    await new Promise(r => setTimeout(r, 2000));
   }
 });
 

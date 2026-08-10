@@ -35,7 +35,7 @@ defmodule ForgeNexusWeb.AuthController do
         |> put_status(:created)
         |> put_resp_cookie("fn_token", token,
           http_only: true,
-          secure: false,
+          secure: true,
           same_site: "Lax",
           max_age: 7 * 24 * 60 * 60,
           path: "/"
@@ -72,7 +72,7 @@ defmodule ForgeNexusWeb.AuthController do
         conn
         |> put_resp_cookie("fn_token", token,
           http_only: true,
-          secure: false,
+          secure: true,
           same_site: "Lax",
           max_age: 7 * 24 * 60 * 60,
           path: "/"
@@ -113,7 +113,7 @@ defmodule ForgeNexusWeb.AuthController do
             conn
             |> put_resp_cookie("fn_token", new_token,
               http_only: true,
-              secure: false,
+              secure: true,
               same_site: "Lax",
               max_age: 7 * 24 * 60 * 60,
               path: "/"

@@ -6,22 +6,25 @@ import { test, expect, type Page } from '@playwright/test';
  * Nothing skipped. This is the final word on whether the frontend works.
  */
 
-const API = 'http://localhost:4000/api';
-const ADMIN_EMAIL = 'admin@forgenexus.local';
-const ADMIN_PASS = 'admin123';
+const API = process.env.FN_API_URL || 'http://localhost:4000/api';
+const ADMIN_EMAIL = process.env.FN_TEST_EMAIL || 'admin@forgenexus.local';
+const ADMIN_PASS = process.env.FN_TEST_PASSWORD || 'admin123';
+const BYPASS_TOKEN = process.env.FN_RATE_LIMIT_BYPASS_TOKEN || '';
 
 async function login(page: Page) {
   await page.goto('/');
-  await page.evaluate(async ({ email, password, api }) => {
+  await page.evaluate(async ({ email, password, api, bypassToken }) => {
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (bypassToken) headers['x-fn-ratelimit-bypass'] = bypassToken;
     for (let i = 0; i < 3; i++) {
       const res = await fetch(`${api}/auth/login`, {
-        method: 'POST', headers: { 'content-type': 'application/json' },
+        method: 'POST', headers,
         credentials: 'include', body: JSON.stringify({ email, password }),
       });
       if (res.ok) return;
-      if (res.status === 429) await new Promise(r => setTimeout(r, 12000));
+      if (res.status === 429) await new Promise(r => setTimeout(r, 2000));
     }
-  }, { email: ADMIN_EMAIL, password: ADMIN_PASS, api: API });
+  }, { email: ADMIN_EMAIL, password: ADMIN_PASS, api: API, bypassToken: BYPASS_TOKEN });
   await page.reload();
   await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(500);
@@ -567,8 +570,10 @@ test.describe('I. Moderation Actions', () => {
 
   test('I5. Mod user detail — view infractions', async ({ page }) => {
     // Get admin user ID
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (BYPASS_TOKEN) headers['x-fn-ratelimit-bypass'] = BYPASS_TOKEN;
     const res = await fetch(`${API}/auth/login`, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
+      method: 'POST', headers,
       body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASS }),
     });
     const data = await res.json();

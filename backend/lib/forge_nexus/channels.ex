@@ -34,6 +34,13 @@ defmodule ForgeNexus.Channels do
 
   def list_channels, do: Channel |> order_by(asc: :position) |> preload(:category) |> Repo.all()
 
+  def list_channels_for_user(nil) do
+    from(c in Channel, where: c.is_private == false)
+    |> order_by(asc: :position)
+    |> preload(:category)
+    |> Repo.all()
+  end
+
   def list_channels_for_user(%User{} = user) do
     if Moderation.is_admin?(user.id) do
       list_channels()
@@ -206,6 +213,8 @@ defmodule ForgeNexus.Channels do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
     member |> Ecto.Changeset.change(last_read_at: now, last_read_message_id: message_id) |> Repo.update()
   end
+
+  def get_unread_counts(nil), do: %{}
 
   def get_unread_counts(user_id) do
     members = ChannelMember |> where([m], m.user_id == ^user_id) |> Repo.all()

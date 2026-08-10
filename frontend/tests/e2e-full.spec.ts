@@ -10,9 +10,10 @@ import { test, expect, type Page } from '@playwright/test';
  *   - Database seeded with admin user (admin@forgenexus.local / admin123)
  */
 
-const API = 'http://localhost:4000/api';
-const ADMIN_EMAIL = 'admin@forgenexus.local';
-const ADMIN_PASS = 'admin123';
+const API = process.env.FN_API_URL || 'http://localhost:4000/api';
+const ADMIN_EMAIL = process.env.FN_TEST_EMAIL || 'admin@forgenexus.local';
+const ADMIN_PASS = process.env.FN_TEST_PASSWORD || 'admin123';
+const BYPASS_TOKEN = process.env.FN_RATE_LIMIT_BYPASS_TOKEN || '';
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -20,19 +21,21 @@ async function login(page: Page) {
   // Login via the backend API directly from the browser context.
   // This makes the backend set its httpOnly cookie properly.
   await page.goto('/');
-  await page.evaluate(async ({ email, password, api }) => {
+  await page.evaluate(async ({ email, password, api, bypassToken }) => {
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (bypassToken) headers['x-fn-ratelimit-bypass'] = bypassToken;
     const res = await fetch(`${api}/auth/login`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers,
       credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (data.token) {
       // Store token in localStorage so the app's API client can pick it up for WS
       localStorage.setItem('fn_ws_token', data.token);
     }
-  }, { email: ADMIN_EMAIL, password: ADMIN_PASS, api: API });
+  }, { email: ADMIN_EMAIL, password: ADMIN_PASS, api: API, bypassToken: BYPASS_TOKEN });
   // Reload so the app picks up the auth cookie
   await page.reload();
   await waitForContent(page);
@@ -70,9 +73,9 @@ test.describe('Public Pages', () => {
     await page.goto('/');
     await waitForContent(page);
     // Should show the site header
-    await expect(page.locator('header')).toBeVisible();
+    await expect(page.locator('header').first()).toBeVisible();
     // Should show footer
-    await expect(page.locator('footer')).toBeVisible();
+    await expect(page.locator('footer').first()).toBeVisible();
   });
 
   test('Forum listing shows categories', async ({ page }) => {
@@ -176,7 +179,7 @@ test.describe('Authentication', () => {
     await page.fill('input[type="email"], input[name="email"]', ADMIN_EMAIL);
     await page.fill('input[type="password"]', ADMIN_PASS);
     await page.click('button[type="submit"]');
-    await page.waitForURL(url => !url.pathname.includes('/auth/login'), { timeout: 15000 });
+    await page.waitForFunction(() => !window.location.pathname.includes('/auth/login'), { timeout: 15000 });
     expect(page.url()).not.toContain('/auth/login');
   });
 
@@ -198,7 +201,7 @@ test.describe('Authentication', () => {
     await page.goto('/');
     await waitForContent(page);
     // Header should show username or user menu
-    const header = page.locator('header');
+    const header = page.locator('header').first();
     await expect(header).toBeVisible();
   });
 });
@@ -709,14 +712,14 @@ test.describe('Navigation & Layout', () => {
     await page.goto('/');
     await waitForContent(page);
     // Check common nav links exist
-    const header = page.locator('header');
+    const header = page.locator('header').first();
     await expect(header).toBeVisible();
   });
 
   test('Footer links are visible', async ({ page }) => {
     await page.goto('/');
     await waitForContent(page);
-    const footer = page.locator('footer');
+    const footer = page.locator('footer').first();
     await expect(footer).toBeVisible();
     // Check footer has expected links
     await expect(footer.locator('a[href="/terms"]')).toBeVisible();
@@ -728,7 +731,7 @@ test.describe('Navigation & Layout', () => {
     await page.goto('/');
     await waitForContent(page);
     await page.waitForTimeout(2000);
-    const footer = page.locator('footer');
+    const footer = page.locator('footer').first();
     const onlineText = footer.locator('.online-count, [class*="online"]');
     // May or may not show depending on presence data
     const footerText = await footer.textContent();
@@ -854,9 +857,11 @@ test.describe('Admin User Detail', () => {
 
   test('Admin user detail page loads', async ({ page }) => {
     // Get admin user ID first
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    if (BYPASS_TOKEN) headers['x-fn-ratelimit-bypass'] = BYPASS_TOKEN;
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers,
       body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASS }),
     });
     const data = await res.json();

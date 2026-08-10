@@ -1,67 +1,78 @@
 <script lang="ts">
-  // Tier preview is intentionally short — full grid lives at /pricing.
-  // Voice register: Bran :restrained — observation over menace, no full
-  // godswood. Acquisition copy, not the deeper script.
+  // Forum-first launch copy. Voice register: Bran :restrained.
   const pillars = [
     {
       sigil: '✦',
       title: 'Forums',
-      line: 'A long table. Threaded talk that does not vanish at the end of the day.'
+      line: 'Threaded talk that does not vanish. Searchable, archived, yours.'
+    },
+    {
+      sigil: '◈',
+      title: 'Real-time Chat',
+      line: 'Discord-style channels. Same community, same login, no second tab.'
     },
     {
       sigil: '◐',
       title: 'Voice Rooms',
-      line: 'Spaces to gather and speak — recorded if you say so, gone if you say not.'
+      line: 'Drop in, talk, leave. No scheduling, no install, no Discord invite.'
     },
     {
-      sigil: '▸',
-      title: 'Calamity TV',
-      line: 'Live streams from your hearth. The signal carries; the viewers remain.'
-    },
-    {
-      sigil: '◊',
-      title: 'Pulse',
-      line: 'Short-form clips for what the hour demanded. Quick to share, slow to forget.'
+      sigil: '◇',
+      title: 'Plugins',
+      line: 'Extend the platform. Install, configure, ship. Your community, your shape.'
     }
   ];
 
   const tierPeek = [
-    { name: 'Forum', price: 19 },
-    { name: 'Community', price: 39 },
-    // TODO: tier-3 label TBD — placeholder 'Studio' until confirmed
-    { name: 'Studio', price: 79 },
-    // TODO: tier-4 label TBD — placeholder 'Network'
-    { name: 'Network', price: 225 },
-    // TODO: tier-5 label TBD — placeholder 'Fellowship'
-    { name: 'Fellowship', price: 350 }
+    { name: 'Forum', price: 19, blurb: 'Forum + chat + voice. One community.' },
+    { name: 'Community', price: 39, blurb: 'Subscriptions, custom roles, more storage.' }
+  ];
+
+  const whyStack = [
+    {
+      title: 'One login. One feed. One community.',
+      line: 'Discord + Discourse + Twitch is three accounts, three notification streams, three places to lose your members. We are one.'
+    },
+    {
+      title: 'Built on Phoenix / Elixir.',
+      line: 'The same stack WhatsApp and Discord chose for chat at scale. Real-time, fault-tolerant, cheap to run.'
+    },
+    {
+      title: 'We host. You build.',
+      line: 'No servers to patch, no Postgres to back up, no Docker compose to debug at 2am. You write the rules; we keep the lights on.'
+    },
+    {
+      title: 'Plugins, not lock-in.',
+      line: 'Need a custom feature? Install one, or write one. Public marketplace, open extension points. Your data exports anytime.'
+    }
   ];
 </script>
 
 <svelte:head>
-  <title>ForgeNexus — A place for communities that mean to stay</title>
+  <title>ForgeNexus — Forum, chat, and voice for your community</title>
   <meta
     name="description"
-    content="ForgeNexus is a community platform: forums, voice rooms, live streaming, and short-form video — under one roof, for creators who plan to keep the hearth lit."
+    content="A modern community platform: forums + Discord-style chat + voice rooms + plugin marketplace, all under one login. We host. From $19/mo."
   />
   <meta property="og:title" content="ForgeNexus" />
   <meta
     property="og:description"
-    content="Forums, voice, streams, and short clips — one community, four ways to gather."
+    content="Forum + chat + voice in one platform. Discord and Discourse, replaced. From $19/mo."
   />
 </svelte:head>
 
 <section class="gl-hero">
   <div class="gl-hero-inner">
-    <p class="gl-eyebrow"><span class="gl-fleur">⚜</span> A community platform, built for permanence</p>
-    <h1 class="gl-h1">Build a place where the hearth stays lit.</h1>
+    <p class="gl-eyebrow"><span class="gl-fleur">⚜</span> A community platform, in one place</p>
+    <h1 class="gl-h1">Your forum. Your chat. Your voice rooms. One login.</h1>
     <p class="gl-lede">
-      Four ways to gather. Forums for the slow talk. Voice rooms for the long
-      evenings. Calamity TV when the moment is worth watching. Pulse for what
-      the hour demanded. One community, four shapes of presence.
+      For creators who want Discord and a forum without juggling two tools.
+      For builders who want a community that doesn't disappear with the next
+      platform's tide. We host. You shape it.
     </p>
     <div class="gl-hero-cta">
-      <a href="/pricing" class="gl-btn gl-btn-primary">▸ SEE PRICING</a>
-      <a href="/signup?tier=forum" class="gl-btn gl-btn-ghost">▸ START FREE — 1 COMMUNITY</a>
+      <a href="/signup?tier=forum" class="gl-btn gl-btn-primary">▸ START FREE — 1 COMMUNITY</a>
+      <a href="/pricing" class="gl-btn gl-btn-ghost">▸ SEE PRICING</a>
     </div>
   </div>
 </section>
@@ -78,34 +89,45 @@
   </div>
 </section>
 
+<section class="gl-why">
+  <div class="gl-why-inner">
+    <h2 class="gl-h2">Why this, not the others.</h2>
+    <div class="gl-why-grid">
+      {#each whyStack as w}
+        <article class="gl-why-card">
+          <h3 class="gl-why-title">{w.title}</h3>
+          <p class="gl-why-line">{w.line}</p>
+        </article>
+      {/each}
+    </div>
+  </div>
+</section>
+
 <section class="gl-tier-peek">
   <div class="gl-tier-peek-inner">
-    <h2 class="gl-h2">Five tiers. One ladder.</h2>
+    <h2 class="gl-h2">Two ways to start. Move when ready.</h2>
     <p class="gl-tier-peek-sub">
-      From a single forum to a federation of houses. The price grows with
-      what you can hold; the foundation does not change.
+      Forum gets you running today. Community unlocks subscriptions, custom
+      roles, and the dials creators reach for second.
     </p>
     <div class="gl-tier-row">
       {#each tierPeek as t}
         <div class="gl-tier-chip">
           <span class="gl-tier-chip-name">{t.name}</span>
           <span class="gl-tier-chip-price">${t.price}<span class="gl-mo">/mo</span></span>
+          <span class="gl-tier-chip-blurb">{t.blurb}</span>
         </div>
       {/each}
     </div>
-    <p class="gl-houses-line">
-      Or a <a href="/signup/houses">House</a> — multi-creator from $149/mo.
-    </p>
-    <a href="/pricing" class="gl-btn gl-btn-primary gl-tier-peek-cta">▸ COMPARE THE LADDER</a>
+    <a href="/pricing" class="gl-btn gl-btn-primary gl-tier-peek-cta">▸ COMPARE PLANS</a>
   </div>
 </section>
 
 <section class="gl-close">
   <div class="gl-close-inner">
     <p class="gl-close-line">
-      The godswoods remembered what was spoken under their leaves. We aim for
-      the same — a place where what you build is not erased by the next
-      platform's tide.
+      Live streaming and short-form video are on the roadmap, not the
+      landing. We ship what works first, and only what works.
     </p>
     <div class="gl-close-cta">
       <a href="/signup?tier=forum" class="gl-btn gl-btn-primary">▸ BEGIN</a>
@@ -315,17 +337,59 @@
     margin-left: 2px;
   }
 
-  .gl-houses-line {
+  .gl-tier-chip-blurb {
     font-family: 'EB Garamond', Georgia, serif;
-    font-size: 16px;
-    color: var(--text-secondary);
-    margin-bottom: 28px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-muted);
+    margin-top: 10px;
+    text-align: center;
+    max-width: 180px;
   }
 
-  .gl-houses-line :global(a) {
+  /* Why-this */
+  .gl-why {
+    padding: 80px 36px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(212, 175, 106, 0.015);
+  }
+
+  .gl-why-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .gl-why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px;
+    margin-top: 40px;
+    text-align: left;
+  }
+
+  .gl-why-card {
+    padding: 22px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .gl-why-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.08em;
     color: #d4af6a;
-    text-decoration: underline;
-    text-decoration-color: rgba(212, 175, 106, 0.4);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .gl-why-line {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-secondary);
   }
 
   /* Close */
@@ -352,6 +416,7 @@
   @media (max-width: 720px) {
     .gl-hero { padding: 56px 18px 48px; }
     .gl-pillars { padding: 36px 18px; }
+    .gl-why { padding: 48px 18px; }
     .gl-tier-peek { padding: 48px 18px; }
     .gl-close { padding: 56px 18px 80px; }
     .gl-hero-cta { flex-direction: column; }

@@ -23,11 +23,15 @@
       features: [
         'One community, one forum',
         'Threaded talk, no time limit',
+        'Real-time chat channels',
+        'Voice rooms',
         'Member profiles + custom themes',
+        'Plugin marketplace access',
         '50-member soft cap',
         'Custom subdomain'
       ],
-      cta: '▸ START FREE — 1 COMMUNITY'
+      cta: '▸ START FREE — 1 COMMUNITY',
+      accent: true
     },
     {
       slug: 'community',
@@ -37,65 +41,11 @@
       features: [
         'Everything in Forum',
         'Multi-forum + sub-forums',
-        'Voice rooms (live or scheduled)',
         'Custom emojis, badges, roles',
-        '500-member soft cap',
-        'Polls, reactions, reputation'
-      ],
-      cta: '▸ START 14-DAY FREE TRIAL'
-    },
-    {
-      // TODO: label TBD — placeholder 'Studio'. Plan slug remains 'creator'.
-      slug: 'creator',
-      name: 'Studio',
-      nameTodo: 'tier-3 label',
-      price: 79,
-      tagline: 'For the creator who broadcasts.',
-      features: [
-        'Everything in Community',
-        'Calamity TV streaming (RTMP in, HLS out)',
-        'Pulse short-form video',
-        'Channel-point economy',
-        'Affiliate gate → enable subscriptions',
-        'Voice room recordings + clipping',
-        '2 500-member soft cap'
-      ],
-      cta: '▸ START 14-DAY FREE TRIAL',
-      accent: true
-    },
-    {
-      // TODO: label TBD — placeholder 'Network'. Plan slug remains 'platform'.
-      slug: 'platform',
-      name: 'Network',
-      nameTodo: 'tier-4 label',
-      price: 225,
-      tagline: 'A federation under one banner.',
-      features: [
-        'Everything in Studio',
-        'Cross-community syndication',
-        'No-code automation flows',
-        'JS/Deno plugin runtime',
-        'Marketplace listings + revenue share',
-        '10 000-member soft cap',
-        'Priority support'
-      ],
-      cta: '▸ START 14-DAY FREE TRIAL'
-    },
-    {
-      // TODO: label TBD — placeholder 'Fellowship'. Plan slug remains 'enterprise'.
-      slug: 'enterprise',
-      name: 'Fellowship',
-      nameTodo: 'tier-5 label',
-      price: 350,
-      tagline: 'White-label, no ceiling.',
-      features: [
-        'Everything in Network',
-        'White-label (your brand, our spine)',
-        'Custom domain + SSO',
-        'ActivityPub federation',
-        'Unlimited members',
-        'Dedicated success contact',
-        'Custom integrations'
+        'Member subscriptions (Stripe Connect)',
+        'Polls, reactions, reputation',
+        'Affiliate program for your members',
+        '500-member soft cap'
       ],
       cta: '▸ START 14-DAY FREE TRIAL'
     }
@@ -104,7 +54,7 @@
 
 <svelte:head>
   <title>Pricing — ForgeNexus</title>
-  <meta name="description" content="Five tiers, one ladder. From $19/mo forum to $350/mo white-label. Or a House — multi-creator collective from $149/mo." />
+  <meta name="description" content="Two tiers, transparent pricing. From $19/mo for a forum + chat + voice to $39/mo for a community with member subscriptions. Higher tiers coming with broadcasting." />
 </svelte:head>
 
 <section class="gl-px-hero">

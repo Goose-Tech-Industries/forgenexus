@@ -5,18 +5,22 @@ import { test, expect } from '@playwright/test';
  * Tests auth, public routes, authenticated routes, admin CRUD, mod tools.
  */
 
-const API = 'http://localhost:4000/api';
+const API = process.env.FN_API_URL || 'http://localhost:4000/api';
+const BYPASS_TOKEN = process.env.FN_RATE_LIMIT_BYPASS_TOKEN || '';
+const bypassHeaders: Record<string, string> = BYPASS_TOKEN
+  ? { 'x-fn-ratelimit-bypass': BYPASS_TOKEN }
+  : {};
 
 // ── API Helpers ──
 
 async function apiReq(method: string, path: string, body?: any, token?: string) {
-  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  const headers: Record<string, string> = { 'content-type': 'application/json', ...bypassHeaders };
   if (token) headers['authorization'] = `Bearer ${token}`;
   const opts: RequestInit = { method, headers };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(`${API}${path}`, opts);
   const ct = res.headers.get('content-type') || '';
-  const data = ct.includes('json') ? await res.json() : { _raw: await res.text() };
+  const data = ct.includes('json') ? await res.json().catch(() => ({})) : await res.text();
   return { status: res.status, body: data, headers: Object.fromEntries(res.headers.entries()) };
 }
 

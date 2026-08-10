@@ -6,18 +6,23 @@ const TEST_PASSWORD = process.env.FN_TEST_PASSWORD || 'admin123';
 const TEST_USERNAME = process.env.FN_TEST_USERNAME || 'admin';
 let authToken: string;
 
+const BYPASS_TOKEN = process.env.FN_RATE_LIMIT_BYPASS_TOKEN || '';
+const bypassHeaders: Record<string, string> = BYPASS_TOKEN
+  ? { 'x-fn-ratelimit-bypass': BYPASS_TOKEN }
+  : {};
+
 // Helper: make authenticated API requests
 async function apiGet(path: string, token?: string) {
-  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  const headers: Record<string, string> = { 'content-type': 'application/json', ...bypassHeaders };
   if (token) headers['authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API}${path}`, { headers });
   const ct = res.headers.get('content-type') || '';
-  const body = ct.includes('json') ? await res.json() : { _raw: await res.text() };
+  const body = ct.includes('json') ? await res.json().catch(() => null) : { _raw: await res.text() };
   return { status: res.status, body };
 }
 
 async function apiPost(path: string, data: any, token?: string) {
-  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  const headers: Record<string, string> = { 'content-type': 'application/json', ...bypassHeaders };
   if (token) headers['authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
@@ -25,7 +30,7 @@ async function apiPost(path: string, data: any, token?: string) {
     body: JSON.stringify(data)
   });
   const ct = res.headers.get('content-type') || '';
-  const body = ct.includes('json') ? await res.json() : { _raw: await res.text() };
+  const body = ct.includes('json') ? await res.json().catch(() => null) : { _raw: await res.text() };
   return { status: res.status, body };
 }
 

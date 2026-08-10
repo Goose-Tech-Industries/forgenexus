@@ -6,7 +6,7 @@ defmodule ForgeNexusWeb.ChannelController do
   def index(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
     channels = Channels.list_channels_for_user(user)
-    unread_counts = Channels.get_unread_counts(user.id)
+    unread_counts = Channels.get_unread_counts(user && user.id)
     categories = channels
       |> Enum.group_by(fn ch -> ch.category end)
       |> Enum.sort_by(fn {cat, _} -> cat && cat.position || 999 end)

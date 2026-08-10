@@ -33,8 +33,10 @@ class ApiClient {
   private refreshing: Promise<boolean> | null = null;
 
   async request(path: string, options: RequestInit = {}, _isRetry = false): Promise<any> {
+    const bypassToken = import.meta.env.VITE_RATE_LIMIT_BYPASS_TOKEN || '';
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...(bypassToken ? { 'x-fn-ratelimit-bypass': bypassToken } : {}),
       ...((options.headers as Record<string, string>) || {})
     };
 
