@@ -283,8 +283,7 @@ defmodule ForgeNexus.Billing do
         community_id: community_id,
         stripe_subscription_id: sub.id,
         stripe_customer_id: Map.get(sub, :customer),
-        stripe_price_id:
-          get_in(sub, [:items, :data]) |> List.wrap() |> List.first() |> get_in([:price, :id]),
+        stripe_price_id: first_item_price_id(sub),
         plan: plan,
         status: to_string(Map.get(sub, :status, "active")),
         current_period_start: epoch_to_dt(Map.get(sub, :current_period_start)),
@@ -335,12 +334,20 @@ defmodule ForgeNexus.Billing do
   end
 
   defp infer_plan_from_price(sub) do
-    price_id =
-      get_in(sub, [:items, :data]) |> List.wrap() |> List.first() |> get_in([:price, :id])
+    price_id = first_item_price_id(sub)
 
     plan_catalog()
     |> Enum.find_value(fn {plan, info} -> if info.price_id == price_id, do: plan end)
   end
+
+  # sub.items/sub.items.data/item.price are all real %Stripe.*{} structs by
+  # the time this runs (Stripe.Converter turns webhook JSON into structs, not
+  # plain maps) -- none of the generated Stripe structs implement the Access
+  # behaviour, so `get_in(sub, [:items, :data])` raises UndefinedFunctionError
+  # the instant a real subscription webhook arrives. Pattern matching works
+  # on structs directly and doesn't need Access, so use that instead.
+  defp first_item_price_id(%{items: %{data: [%{price: %{id: id}} | _]}}), do: id
+  defp first_item_price_id(_), do: nil
 
   defp epoch_to_dt(nil), do: nil
 
