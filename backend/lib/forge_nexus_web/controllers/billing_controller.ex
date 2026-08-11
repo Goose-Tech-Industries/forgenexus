@@ -28,7 +28,10 @@ defmodule ForgeNexusWeb.BillingController do
 
   defp houses_catalog_entry do
     base_cents = Houses.monthly_cents(0)
-    per_creator_cents = Houses.monthly_cents(1) - base_cents
+    # monthly_cents(1) is still just the base price (first creator slot is
+    # included) -- the marginal per-creator cost only shows up from the
+    # 2nd invited creator onward.
+    per_creator_cents = Houses.monthly_cents(2) - Houses.monthly_cents(1)
     %{base: base_price_id, per_creator: per_creator_price_id} = Billing.houses_price_ids()
 
     %{

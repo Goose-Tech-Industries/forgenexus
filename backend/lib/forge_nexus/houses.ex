@@ -23,11 +23,18 @@ defmodule ForgeNexus.Houses do
   @per_creator_cents 2_500
 
   @doc """
-  Compute the monthly price for a House with `n` invited creators on top
-  of the founder. Returns cents.
+  Compute the monthly price for a House with `invited_creators` creators
+  invited on top of the founder. Returns cents.
+
+  The base price already includes the founder + first creator slot (see
+  moduledoc), so only creators beyond that first one are billed at
+  @per_creator_cents. `monthly_cents(0)` and `monthly_cents(1)` are both
+  just the base price.
   """
-  def monthly_cents(extra_creators) when is_integer(extra_creators) and extra_creators >= 0 do
-    @base_cents + extra_creators * @per_creator_cents
+  def monthly_cents(invited_creators)
+      when is_integer(invited_creators) and invited_creators >= 0 do
+    billable_creators = max(invited_creators - 1, 0)
+    @base_cents + billable_creators * @per_creator_cents
   end
 
   @doc """

@@ -103,20 +103,23 @@ defmodule ForgeNexus.Billing do
     end
   end
 
-  # Base line item (qty 1) plus a per-creator add-on line item, quantity =
-  # current member count minus the founder. member_count is the same
-  # incrementally-maintained counter join_community/leave_community update,
-  # so this reflects creators actually enrolled today, not what the founder
-  # claimed at signup time.
+  # Base line item (qty 1) plus a per-creator add-on line item. The base
+  # price already covers the founder + first creator slot (Houses.monthly_cents/1),
+  # so billable quantity = current member count minus founder minus that one
+  # included slot. member_count is the same incrementally-maintained counter
+  # join_community/leave_community update, so this reflects creators actually
+  # enrolled today, not what the founder claimed at signup time.
   defp fetch_houses_line_items(%Community{} = community) do
     case houses_price_ids() do
       %{base: base, per_creator: per_creator}
       when is_binary(base) and base != "" and is_binary(per_creator) and per_creator != "" ->
-        extra_creators = max((community.member_count || 1) - 1, 0)
+        billable_creators = max((community.member_count || 1) - 2, 0)
 
         line_items =
           [%{price: base, quantity: 1}] ++
-            if extra_creators > 0, do: [%{price: per_creator, quantity: extra_creators}], else: []
+            if billable_creators > 0,
+              do: [%{price: per_creator, quantity: billable_creators}],
+              else: []
 
         {:ok, line_items}
 
