@@ -246,6 +246,11 @@ defmodule ForgeNexus.BillingWebhookTest do
 
       assert Billing.handle_webhook(sub_payload, sign(sub_payload, @secret)) == :ok
 
+      # Deliberately no "metadata" on the invoice -- matches what a real
+      # Stripe-generated subscription invoice actually looks like (Stripe
+      # doesn't copy the subscription's metadata onto invoices it
+      # auto-generates). community_id must come from the CommunitySubscription
+      # row we just upserted above, not from invoice.metadata.
       invoice_payload =
         event_json("evt_invoice_pf1", "invoice.payment_failed", %{
           "object" => "invoice",
@@ -264,6 +269,16 @@ defmodule ForgeNexus.BillingWebhookTest do
       payload =
         event_json("evt_invoice_no_sub", "invoice.payment_failed", %{
           "object" => "invoice"
+        })
+
+      assert Billing.handle_webhook(payload, sign(payload, @secret)) == :ok
+    end
+
+    test "no-ops without crashing when the subscription isn't one we've ever seen" do
+      payload =
+        event_json("evt_invoice_unknown_sub", "invoice.payment_failed", %{
+          "object" => "invoice",
+          "subscription" => "sub_never_seen"
         })
 
       assert Billing.handle_webhook(payload, sign(payload, @secret)) == :ok

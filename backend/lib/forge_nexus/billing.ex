@@ -256,15 +256,25 @@ defmodule ForgeNexus.Billing do
         :ok
 
       sub_id ->
-        from(s in CommunitySubscription, where: s.stripe_subscription_id == ^sub_id)
-        |> Repo.update_all(set: [status: "past_due"])
+        # Stripe doesn't automatically copy a subscription's metadata onto
+        # invoices it generates for that subscription -- invoice.metadata is
+        # realistically empty for auto-generated invoices unless something
+        # explicitly sets it. Derive community_id from our own
+        # CommunitySubscription row (populated correctly in
+        # upsert_subscription/1) instead of trusting invoice metadata.
+        case Repo.get_by(CommunitySubscription, stripe_subscription_id: sub_id) do
+          nil ->
+            :ok
 
-        if community_id = Map.get(invoice, :metadata, %{})["community_id"] do
-          from(c in Community, where: c.id == ^community_id)
-          |> Repo.update_all(set: [plan_status: "past_due"])
+          %CommunitySubscription{community_id: community_id} ->
+            from(s in CommunitySubscription, where: s.stripe_subscription_id == ^sub_id)
+            |> Repo.update_all(set: [status: "past_due"])
+
+            from(c in Community, where: c.id == ^community_id)
+            |> Repo.update_all(set: [plan_status: "past_due"])
+
+            :ok
         end
-
-        :ok
     end
   end
 
