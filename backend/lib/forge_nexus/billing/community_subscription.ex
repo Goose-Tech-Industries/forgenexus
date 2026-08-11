@@ -11,7 +11,7 @@ defmodule ForgeNexus.Billing.CommunitySubscription do
 
   # Plans match the v3 revenue ladder. `free` is the default for unsubbed
   # communities; nothing is ever stored as `free` here — only paid tiers.
-  @plans ~w(forum community creator platform enterprise)
+  @plans ~w(forum community creator platform enterprise houses)
   @statuses ~w(active trialing past_due canceled unpaid incomplete incomplete_expired)
 
   schema "community_subscriptions" do

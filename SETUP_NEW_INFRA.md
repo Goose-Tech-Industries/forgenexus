@@ -71,8 +71,15 @@ Stripe → Catalog → Products → New Product. Repeat for each tier:
 | Creator | $79.00 USD | Monthly |
 | Platform | $225.00 USD | Monthly |
 | Enterprise | $350.00 USD | Monthly |
+| Houses — base | $149.00 USD | Monthly |
+| Houses — per additional creator | $25.00 USD | Monthly |
 
 For each, copy the **Price ID** (starts with `price_…`).
+
+Houses is two separate Prices, not one — checkout adds them as two line
+items on the same subscription (base at quantity 1, per-creator at
+quantity = current member count minus the founder). See
+`ForgeNexus.Billing.fetch_houses_line_items/1`.
 
 ### b) Get API keys
 
@@ -101,6 +108,9 @@ STRIPE_PRICE_COMMUNITY=price_xxxxxxxxxxxx
 STRIPE_PRICE_CREATOR=price_xxxxxxxxxxxx
 STRIPE_PRICE_PLATFORM=price_xxxxxxxxxxxx
 STRIPE_PRICE_ENTERPRISE=price_xxxxxxxxxxxx
+
+STRIPE_PRICE_HOUSES_BASE=price_xxxxxxxxxxxx
+STRIPE_PRICE_HOUSES_PER_CREATOR=price_xxxxxxxxxxxx
 ```
 
 ### e) Run the migration

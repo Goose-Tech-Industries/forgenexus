@@ -7,7 +7,7 @@ defmodule ForgeNexusWeb.HousesController do
   """
   use ForgeNexusWeb, :controller
 
-  alias ForgeNexus.{Guardian, Houses}
+  alias ForgeNexus.{Billing, Guardian, Houses}
 
   require Logger
 
@@ -48,9 +48,11 @@ defmodule ForgeNexusWeb.HousesController do
               monthly_cents: Houses.monthly_cents(extra),
               creator_count: extra,
               invitations: invitations,
-              # Houses Stripe price is not yet wired — surface this so the
-              # frontend can show "set up billing" guidance.
-              stripe_status: :not_configured
+              # Trial starts immediately regardless; this just tells the
+              # frontend whether "add billing" is actually clickable yet —
+              # POST /api/billing/communities/:id/checkout with plan=houses
+              # will fail with 503 price_not_configured until it is.
+              stripe_status: houses_stripe_status()
             })
 
           {:error, %Ecto.Changeset{} = cs} ->
@@ -99,6 +101,17 @@ defmodule ForgeNexusWeb.HousesController do
        }}
     else
       {:error, missing}
+    end
+  end
+
+  defp houses_stripe_status do
+    case Billing.houses_price_ids() do
+      %{base: base, per_creator: per_creator}
+      when is_binary(base) and base != "" and is_binary(per_creator) and per_creator != "" ->
+        :ready
+
+      _ ->
+        :not_configured
     end
   end
 

@@ -6,7 +6,7 @@ defmodule ForgeNexusWeb.BillingController do
   """
   use ForgeNexusWeb, :controller
 
-  alias ForgeNexus.{Billing, Repo}
+  alias ForgeNexus.{Billing, Houses, Repo}
   alias ForgeNexus.Communities.Community
 
   # GET /api/billing/plans — public catalog
@@ -23,7 +23,25 @@ defmodule ForgeNexusWeb.BillingController do
         }
       end)
 
-    json(conn, %{plans: plans})
+    json(conn, %{plans: plans ++ [houses_catalog_entry()]})
+  end
+
+  defp houses_catalog_entry do
+    base_cents = Houses.monthly_cents(0)
+    per_creator_cents = Houses.monthly_cents(1) - base_cents
+    %{base: base_price_id, per_creator: per_creator_price_id} = Billing.houses_price_ids()
+
+    %{
+      plan: "houses",
+      name: "Houses",
+      monthly_cents: base_cents,
+      monthly_price: "#{format_price(base_cents)}+",
+      per_creator_cents: per_creator_cents,
+      per_creator_price: format_price(per_creator_cents),
+      available:
+        not is_nil(base_price_id) and base_price_id != "" and
+          not is_nil(per_creator_price_id) and per_creator_price_id != ""
+    }
   end
 
   # POST /api/billing/communities/:community_id/checkout

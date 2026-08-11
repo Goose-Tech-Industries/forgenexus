@@ -18,7 +18,8 @@ defmodule ForgeNexus.Billing do
   alias ForgeNexus.Communities.Community
   alias ForgeNexus.Billing.{CommunitySubscription, StripeWebhookEvent}
 
-  @plans ~w(forum community creator platform enterprise)
+  @flat_price_plans ~w(forum community creator platform enterprise)
+  @plans @flat_price_plans ++ ["houses"]
 
   @doc """
   Returns `{plan, %{name, monthly_cents, stripe_price_id}}` tuples for the
@@ -59,13 +60,36 @@ defmodule ForgeNexus.Billing do
   def price_id_for(_), do: nil
 
   @doc """
+  Houses Stripe Price IDs. Unlike the flat-price plans, Houses is variable:
+  a flat base price (founder slot) plus a per-additional-creator price billed
+  by quantity. Both must be set via env for Houses checkout to work — same
+  "unset env var = not configured yet" pattern as the other 5 tiers, not
+  wired up to a real Stripe account yet.
+  """
+  def houses_price_ids do
+    %{
+      base: System.get_env("STRIPE_PRICE_HOUSES_BASE"),
+      per_creator: System.get_env("STRIPE_PRICE_HOUSES_PER_CREATOR")
+    }
+  end
+
+  @doc """
   Creates a Stripe Checkout Session for the given community + plan.
   Returns `{:ok, %{url: ..., session_id: ...}}` on success.
   """
-  def create_checkout_session(%Community{} = community, plan) when plan in @plans do
+  def create_checkout_session(%Community{} = community, plan) when plan in @flat_price_plans do
     with {:ok, price_id} <- fetch_price_id(plan),
          {:ok, customer_id} <- ensure_customer(community),
-         {:ok, session} <- start_checkout(community, plan, price_id, customer_id) do
+         {:ok, session} <-
+           start_checkout(community, plan, [%{price: price_id, quantity: 1}], customer_id) do
+      {:ok, %{url: session.url, session_id: session.id}}
+    end
+  end
+
+  def create_checkout_session(%Community{} = community, "houses") do
+    with {:ok, line_items} <- fetch_houses_line_items(community),
+         {:ok, customer_id} <- ensure_customer(community),
+         {:ok, session} <- start_checkout(community, "houses", line_items, customer_id) do
       {:ok, %{url: session.url, session_id: session.id}}
     end
   end
@@ -76,6 +100,28 @@ defmodule ForgeNexus.Billing do
     case price_id_for(plan) do
       nil -> {:error, {:price_not_configured, plan}}
       price_id -> {:ok, price_id}
+    end
+  end
+
+  # Base line item (qty 1) plus a per-creator add-on line item, quantity =
+  # current member count minus the founder. member_count is the same
+  # incrementally-maintained counter join_community/leave_community update,
+  # so this reflects creators actually enrolled today, not what the founder
+  # claimed at signup time.
+  defp fetch_houses_line_items(%Community{} = community) do
+    case houses_price_ids() do
+      %{base: base, per_creator: per_creator}
+      when is_binary(base) and base != "" and is_binary(per_creator) and per_creator != "" ->
+        extra_creators = max((community.member_count || 1) - 1, 0)
+
+        line_items =
+          [%{price: base, quantity: 1}] ++
+            if extra_creators > 0, do: [%{price: per_creator, quantity: extra_creators}], else: []
+
+        {:ok, line_items}
+
+      _ ->
+        {:error, {:price_not_configured, "houses"}}
     end
   end
 
@@ -102,13 +148,13 @@ defmodule ForgeNexus.Billing do
     end
   end
 
-  defp start_checkout(community, plan, price_id, customer_id) do
+  defp start_checkout(community, plan, line_items, customer_id) do
     cfg = Application.get_env(:forge_nexus, :stripe, [])
 
     Stripe.Checkout.Session.create(%{
       mode: "subscription",
       customer: customer_id,
-      line_items: [%{price: price_id, quantity: 1}],
+      line_items: line_items,
       success_url: Keyword.fetch!(cfg, :success_url),
       cancel_url: Keyword.fetch!(cfg, :cancel_url),
       client_reference_id: community.id,
