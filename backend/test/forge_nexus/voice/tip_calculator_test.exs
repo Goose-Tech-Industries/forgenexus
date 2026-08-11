@@ -118,6 +118,14 @@ defmodule ForgeNexus.Voice.TipCalculatorTest do
     test "defaults to free for a room with no community" do
       room = insert_room!(%{})
       assert room.community_id == nil
+
+      refetched = Repo.get(Room, room.id)
+      IO.inspect(room.id, label: "DEBUG inserted room id")
+      IO.inspect(refetched && refetched.id, label: "DEBUG refetched room id")
+      IO.inspect(refetched && refetched.community_id, label: "DEBUG refetched community_id")
+      IO.inspect(Repo.aggregate(Room, :count), label: "DEBUG total room count")
+      IO.inspect(Repo.aggregate(Community, :count), label: "DEBUG total community count")
+
       assert TipCalculator.community_plan_for_room(room.id) == "free"
     end
 
