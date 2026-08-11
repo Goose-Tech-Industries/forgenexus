@@ -10,7 +10,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatThreads do
         null: false
 
       add :parent_message_id,
-          references(:chat_messages, type: :binary_id, on_delete: :delete_all), null: false
+          references(:chat_messages, type: :binary_id, on_delete: :delete_all),
+          null: false
 
       add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
         null: false

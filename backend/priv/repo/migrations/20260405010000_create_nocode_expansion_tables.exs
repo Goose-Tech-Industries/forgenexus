@@ -109,7 +109,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
 
       add :item_template_id,
-          references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+          references(:item_templates, type: :binary_id, on_delete: :delete_all),
+          null: false
 
       add :quantity, :integer, default: 1
       add :durability, :integer
@@ -144,7 +145,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
         null: false
 
       add :item_template_id,
-          references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+          references(:item_templates, type: :binary_id, on_delete: :delete_all),
+          null: false
 
       add :quantity, :integer, default: 1
 
@@ -219,7 +221,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :id, :binary_id, primary_key: true
 
       add :collection_set_id,
-          references(:collection_sets, type: :binary_id, on_delete: :delete_all), null: false
+          references(:collection_sets, type: :binary_id, on_delete: :delete_all),
+          null: false
 
       add :name, :string, null: false
       add :description, :text
@@ -235,7 +238,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
 
       add :collection_item_id,
-          references(:collection_items, type: :binary_id, on_delete: :delete_all), null: false
+          references(:collection_items, type: :binary_id, on_delete: :delete_all),
+          null: false
 
       add :acquired_at, :utc_datetime
 
