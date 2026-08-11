@@ -1,10 +1,5 @@
 defmodule ForgeNexus.Voice.TipCalculatorTest do
-  # async: false — a "fresh room has no community" test intermittently saw a
-  # different test's community leak in under async: true (Sandbox owned-mode
-  # concurrency), even though each test inserts and queries by its own fresh
-  # UUID. Running sequentially eliminates that whole class of flakiness while
-  # this gets root-caused properly.
-  use ForgeNexus.DataCase, async: false
+  use ForgeNexus.DataCase, async: true
 
   alias ForgeNexus.Voice.TipCalculator
   alias ForgeNexus.Communities.Community
@@ -115,17 +110,30 @@ defmodule ForgeNexus.Voice.TipCalculatorTest do
       assert TipCalculator.community_plan_for_room(room.id) == "platform"
     end
 
-    test "defaults to free for a room with no community" do
+    test "a room with no explicit community assignment gets the platform's Default Community" do
+      # priv/repo/migrations/20260416040000_create_communities_and_add_tenant_id.exs
+      # gave voice_rooms.community_id (and ~90 other content tables) a DB-level
+      # column default pointing at a sentinel "Default Community" row
+      # (id 00000000-0000-0000-0000-000000000001, plan "platform"). Any room
+      # inserted without an explicit community_id backfills to it — a truly
+      # community-less room can't occur through a normal insert.
       room = insert_room!(%{})
+      assert TipCalculator.community_plan_for_room(room.id) == "platform"
+    end
+
+    test "defaults to free if community_id is explicitly nil (defensive fallback)" do
+      # Bypasses the DB default via force_change, since Postgres only applies
+      # a column default when the column is omitted from the INSERT entirely
+      # -- an explicit nil is a real value and gets inserted as-is. Exercises
+      # the fallback branch for legacy/orphaned data, even though it can't
+      # happen through the normal create_room flow today.
+      room =
+        %Room{}
+        |> Room.changeset(%{name: "Room #{System.unique_integer([:positive])}"})
+        |> Ecto.Changeset.force_change(:community_id, nil)
+        |> Repo.insert!()
+
       assert room.community_id == nil
-
-      refetched = Repo.get(Room, room.id)
-      IO.inspect(room.id, label: "DEBUG inserted room id")
-      IO.inspect(refetched && refetched.id, label: "DEBUG refetched room id")
-      IO.inspect(refetched && refetched.community_id, label: "DEBUG refetched community_id")
-      IO.inspect(Repo.aggregate(Room, :count), label: "DEBUG total room count")
-      IO.inspect(Repo.aggregate(Community, :count), label: "DEBUG total community count")
-
       assert TipCalculator.community_plan_for_room(room.id) == "free"
     end
 
