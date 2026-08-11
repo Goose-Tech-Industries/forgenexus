@@ -11,23 +11,27 @@ defmodule ForgeNexusWeb.VoiceRoomController do
   def index(conn, _params) do
     rooms = Voice.list_rooms()
 
-    conn |> json(%{
-      rooms: Enum.map(rooms, fn room ->
-        live = Map.get(room, :live_participants, [])
-        room_json(room, live)
-      end)
+    conn
+    |> json(%{
+      rooms:
+        Enum.map(rooms, fn room ->
+          live = Map.get(room, :live_participants, [])
+          room_json(room, live)
+        end)
     })
   end
 
   def upcoming(conn, _params) do
     rooms = Voice.list_upcoming_rooms()
 
-    conn |> json(%{
-      rooms: Enum.map(rooms, fn room ->
-        room_json(room, [])
-        |> Map.put(:scheduled_at, room.scheduled_at)
-        |> Map.put(:description, room.description)
-      end)
+    conn
+    |> json(%{
+      rooms:
+        Enum.map(rooms, fn room ->
+          room_json(room, [])
+          |> Map.put(:scheduled_at, room.scheduled_at)
+          |> Map.put(:description, room.description)
+        end)
     })
   end
 
@@ -50,6 +54,7 @@ defmodule ForgeNexusWeb.VoiceRoomController do
     case Voice.create_room(attrs) do
       {:ok, room} ->
         conn |> put_status(:created) |> json(%{room: room_json(room, [])})
+
       {:error, changeset} ->
         errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _} -> msg end)
         conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
@@ -58,15 +63,21 @@ defmodule ForgeNexusWeb.VoiceRoomController do
 
   def update(conn, %{"id" => id} = params) do
     case Voice.update_room(id, params) do
-      {:ok, room} -> conn |> json(%{room: room_json(room, [])})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update"})
+      {:ok, room} ->
+        conn |> json(%{room: room_json(room, [])})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update"})
     end
   end
 
   def delete(conn, %{"id" => id}) do
     case Voice.delete_room(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
@@ -108,57 +119,62 @@ defmodule ForgeNexusWeb.VoiceRoomController do
     audio = Map.get(params, "audio")
 
     with {:ok, %Plug.Upload{} = upload} <- extract_upload(audio),
-           :ok <- validate_mime(upload.content_type),
-           :ok <- validate_size(upload.path),
-           {:ok, {url, size}} <- persist_file(upload),
-           {:ok, started_at} <- parse_datetime(Map.get(params, "started_at")),
-           ended_at <- parse_datetime_or_now(Map.get(params, "ended_at")),
-           transcript_status <- initial_transcript_status(size),
-           attrs <- %{
-             room_id: room_id,
-             host_user_id: user && user.id,
-             title: Map.get(params, "title"),
-             description: Map.get(params, "description"),
-             audio_url: url,
-             mime_type: upload.content_type,
-             size_bytes: size,
-             duration_seconds: parse_int(Map.get(params, "duration_seconds")),
-             participant_count: parse_int(Map.get(params, "participant_count")),
-             started_at: started_at,
-             ended_at: ended_at,
-             is_public: parse_bool(Map.get(params, "is_public"), true),
-             transcript_status: transcript_status
-           },
-           {:ok, recording} <- Voice.create_recording(attrs) do
-        maybe_enqueue_transcription(recording)
-        conn |> put_status(:created) |> json(%{recording: recording_json(recording)})
-      else
-        {:error, :no_upload} ->
-          conn |> put_status(:bad_request) |> json(%{error: "Missing audio file"})
+         :ok <- validate_mime(upload.content_type),
+         :ok <- validate_size(upload.path),
+         {:ok, {url, size}} <- persist_file(upload),
+         {:ok, started_at} <- parse_datetime(Map.get(params, "started_at")),
+         ended_at <- parse_datetime_or_now(Map.get(params, "ended_at")),
+         transcript_status <- initial_transcript_status(size),
+         attrs <- %{
+           room_id: room_id,
+           host_user_id: user && user.id,
+           title: Map.get(params, "title"),
+           description: Map.get(params, "description"),
+           audio_url: url,
+           mime_type: upload.content_type,
+           size_bytes: size,
+           duration_seconds: parse_int(Map.get(params, "duration_seconds")),
+           participant_count: parse_int(Map.get(params, "participant_count")),
+           started_at: started_at,
+           ended_at: ended_at,
+           is_public: parse_bool(Map.get(params, "is_public"), true),
+           transcript_status: transcript_status
+         },
+         {:ok, recording} <- Voice.create_recording(attrs) do
+      maybe_enqueue_transcription(recording)
+      conn |> put_status(:created) |> json(%{recording: recording_json(recording)})
+    else
+      {:error, :no_upload} ->
+        conn |> put_status(:bad_request) |> json(%{error: "Missing audio file"})
 
-        {:error, :invalid_mime} ->
-          conn |> put_status(:unprocessable_entity) |> json(%{error: "Unsupported audio type"})
+      {:error, :invalid_mime} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Unsupported audio type"})
 
-        {:error, :too_large} ->
-          conn |> put_status(:unprocessable_entity) |> json(%{error: "Recording exceeds max size"})
+      {:error, :too_large} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Recording exceeds max size"})
 
-        {:error, :invalid_datetime} ->
-          conn |> put_status(:bad_request) |> json(%{error: "Invalid started_at timestamp"})
+      {:error, :invalid_datetime} ->
+        conn |> put_status(:bad_request) |> json(%{error: "Invalid started_at timestamp"})
 
-        {:error, %Ecto.Changeset{} = cs} ->
-          conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
+      {:error, %Ecto.Changeset{} = cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
 
-        {:error, reason} ->
-          Logger.warning("[upload_recording] failed: #{inspect(reason)}")
-          conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to save recording"})
-      end
+      {:error, reason} ->
+        Logger.warning("[upload_recording] failed: #{inspect(reason)}")
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to save recording"})
+    end
   end
 
   def delete_recording(conn, %{"recording_id" => id}) do
     case Voice.delete_recording(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Recording not found"})
-      _ -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Recording not found"})
+
+      _ ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
@@ -167,13 +183,28 @@ defmodule ForgeNexusWeb.VoiceRoomController do
   def list_redeemables(conn, %{"id" => room_id}) do
     items = Voice.list_all_redeemables(room_id)
 
-    conn |> json(%{redeemables: Enum.map(items, fn r ->
-      %{id: r.id, name: r.name, description: r.description, emoji: r.emoji,
-        cost: r.cost, type: r.type, config: r.config, cooldown_seconds: r.cooldown_seconds,
-        max_per_stream: r.max_per_stream, max_per_user_per_stream: r.max_per_user_per_stream,
-        is_enabled: r.is_enabled, requires_text: r.requires_text, position: r.position,
-        inserted_at: r.inserted_at}
-    end)})
+    conn
+    |> json(%{
+      redeemables:
+        Enum.map(items, fn r ->
+          %{
+            id: r.id,
+            name: r.name,
+            description: r.description,
+            emoji: r.emoji,
+            cost: r.cost,
+            type: r.type,
+            config: r.config,
+            cooldown_seconds: r.cooldown_seconds,
+            max_per_stream: r.max_per_stream,
+            max_per_user_per_stream: r.max_per_user_per_stream,
+            is_enabled: r.is_enabled,
+            requires_text: r.requires_text,
+            position: r.position,
+            inserted_at: r.inserted_at
+          }
+        end)
+    })
   end
 
   def create_redeemable(conn, %{"id" => room_id} = params) do
@@ -186,7 +217,9 @@ defmodule ForgeNexusWeb.VoiceRoomController do
 
     case Voice.create_redeemable(attrs) do
       {:ok, r} ->
-        conn |> put_status(:created) |> json(%{redeemable: %{id: r.id, name: r.name, type: r.type, cost: r.cost}})
+        conn
+        |> put_status(:created)
+        |> json(%{redeemable: %{id: r.id, name: r.name, type: r.type, cost: r.cost}})
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
@@ -195,29 +228,45 @@ defmodule ForgeNexusWeb.VoiceRoomController do
 
   def update_redeemable(conn, %{"redeemable_id" => id} = params) do
     case Voice.update_redeemable(id, params) do
-      {:ok, r} -> conn |> json(%{redeemable: %{id: r.id, name: r.name, cost: r.cost, is_enabled: r.is_enabled}})
-      {:error, changeset} -> conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
+      {:ok, r} ->
+        conn
+        |> json(%{redeemable: %{id: r.id, name: r.name, cost: r.cost, is_enabled: r.is_enabled}})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
     end
   end
 
   def delete_redeemable(conn, %{"redeemable_id" => id}) do
     case Voice.delete_redeemable(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
   def list_redemptions(conn, %{"id" => room_id}) do
     redemptions = Voice.list_redemptions(room_id)
 
-    conn |> json(%{redemptions: Enum.map(redemptions, fn r ->
-      %{id: r.id, user_id: r.user_id,
-        username: get_in_assoc(r, :user, :username),
-        redeemable_name: get_in_assoc(r, :redeemable, :name),
-        redeemable_type: get_in_assoc(r, :redeemable, :type),
-        cost: r.cost, user_text: r.user_text, status: r.status,
-        inserted_at: r.inserted_at}
-    end)})
+    conn
+    |> json(%{
+      redemptions:
+        Enum.map(redemptions, fn r ->
+          %{
+            id: r.id,
+            user_id: r.user_id,
+            username: get_in_assoc(r, :user, :username),
+            redeemable_name: get_in_assoc(r, :redeemable, :name),
+            redeemable_type: get_in_assoc(r, :redeemable, :type),
+            cost: r.cost,
+            user_text: r.user_text,
+            status: r.status,
+            inserted_at: r.inserted_at
+          }
+        end)
+    })
   end
 
   # --- Translation ---
@@ -242,11 +291,24 @@ defmodule ForgeNexusWeb.VoiceRoomController do
   def list_soundboard(conn, %{"id" => room_id}) do
     clips = Voice.list_soundboard_clips(room_id)
 
-    conn |> json(%{clips: Enum.map(clips, fn c ->
-      %{id: c.id, name: c.name, emoji: c.emoji, audio_url: c.audio_url,
-        duration_ms: c.duration_ms, size_bytes: c.size_bytes, play_count: c.play_count,
-        is_global: c.is_global, room_id: c.room_id, inserted_at: c.inserted_at}
-    end)})
+    conn
+    |> json(%{
+      clips:
+        Enum.map(clips, fn c ->
+          %{
+            id: c.id,
+            name: c.name,
+            emoji: c.emoji,
+            audio_url: c.audio_url,
+            duration_ms: c.duration_ms,
+            size_bytes: c.size_bytes,
+            play_count: c.play_count,
+            is_global: c.is_global,
+            room_id: c.room_id,
+            inserted_at: c.inserted_at
+          }
+        end)
+    })
   end
 
   def upload_soundboard_clip(conn, %{"id" => room_id} = params) do
@@ -267,7 +329,12 @@ defmodule ForgeNexusWeb.VoiceRoomController do
       attrs = %{
         room_id: room_id,
         uploaded_by_id: user && user.id,
-        name: Map.get(params, "name", Path.basename(upload.filename || "clip", Path.extname(upload.filename || ""))),
+        name:
+          Map.get(
+            params,
+            "name",
+            Path.basename(upload.filename || "clip", Path.extname(upload.filename || ""))
+          ),
         emoji: Map.get(params, "emoji"),
         audio_url: url,
         size_bytes: size,
@@ -277,7 +344,9 @@ defmodule ForgeNexusWeb.VoiceRoomController do
 
       case Voice.create_soundboard_clip(attrs) do
         {:ok, clip} ->
-          conn |> put_status(:created) |> json(%{clip: %{id: clip.id, name: clip.name, audio_url: clip.audio_url}})
+          conn
+          |> put_status(:created)
+          |> json(%{clip: %{id: clip.id, name: clip.name, audio_url: clip.audio_url}})
 
         {:error, changeset} ->
           conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
@@ -292,8 +361,11 @@ defmodule ForgeNexusWeb.VoiceRoomController do
     clip = Voice.get_soundboard_clip!(clip_id)
 
     case Voice.delete_soundboard_clip(clip) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
@@ -340,7 +412,9 @@ defmodule ForgeNexusWeb.VoiceRoomController do
 
   def show_clip(conn, %{"clip_id" => id}) do
     case Voice.get_clip(id) do
-      nil -> conn |> put_status(:not_found) |> json(%{error: "Clip not found"})
+      nil ->
+        conn |> put_status(:not_found) |> json(%{error: "Clip not found"})
+
       clip ->
         Voice.increment_clip_views(clip.id)
         conn |> json(%{clip: clip_json(clip)})
@@ -359,11 +433,16 @@ defmodule ForgeNexusWeb.VoiceRoomController do
   """
   def ice_config(conn, _params) do
     user = conn.assigns[:current_user]
-    user_id = if user, do: to_string(user.id), else: "anon-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
+
+    user_id =
+      if user,
+        do: to_string(user.id),
+        else: "anon-" <> Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
 
     %{ice_servers: ice_servers, ttl: ttl} = TurnCredentials.ice_config(user_id)
 
-    conn |> json(%{
+    conn
+    |> json(%{
       ice_servers: ice_servers,
       ttl: ttl,
       livekit_configured: LiveKit.configured?()
@@ -480,7 +559,9 @@ defmodule ForgeNexusWeb.VoiceRoomController do
 
   defp extension_for(mime, filename) do
     case Path.extname(filename || "") do
-      "" <> ext when byte_size(ext) > 0 -> ext
+      "" <> ext when byte_size(ext) > 0 ->
+        ext
+
       _ ->
         case mime do
           "audio/webm" -> ".webm"
@@ -612,6 +693,7 @@ defmodule ForgeNexusWeb.VoiceRoomController do
       position: room.position,
       category_id: room.category_id,
       category_name: category_name,
+      community_id: room.community_id,
       participant_count: length(participants),
       participants: participants
     }

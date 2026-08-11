@@ -28,19 +28,36 @@ defmodule ForgeNexus.Voice.Room do
 
   def changeset(room, attrs) do
     room
-    |> cast(attrs, [:name, :slug, :type, :channel_id, :category_id, :max_participants,
-                     :is_locked, :is_active, :position, :is_private, :allowed_group_ids,
-                     :created_by_id, :scheduled_at, :description])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :type,
+      :channel_id,
+      :category_id,
+      :community_id,
+      :max_participants,
+      :is_locked,
+      :is_active,
+      :position,
+      :is_private,
+      :allowed_group_ids,
+      :created_by_id,
+      :scheduled_at,
+      :description
+    ])
     |> validate_required([:name])
     |> validate_inclusion(:type, ["lounge", "huddle", "town_hall"])
     |> validate_number(:max_participants, greater_than: 0, less_than_or_equal_to: 500)
     |> generate_slug()
     |> unique_constraint(:slug)
+    |> foreign_key_constraint(:community_id)
   end
 
   defp generate_slug(changeset) do
     case get_change(changeset, :name) do
-      nil -> changeset
+      nil ->
+        changeset
+
       name ->
         slug = get_change(changeset, :slug) || Slug.slugify(name)
         put_change(changeset, :slug, slug)

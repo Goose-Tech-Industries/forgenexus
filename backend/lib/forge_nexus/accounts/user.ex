@@ -98,7 +98,10 @@ defmodule ForgeNexus.Accounts.User do
     field :heroes, :string
     field :who_id_like_to_meet, :string
     field :profile_layout, :string, default: "classic"
-    field :profile_widget_order, {:array, :string}, default: ["about", "top_friends", "guestbook", "activity", "achievements", "clips"]
+
+    field :profile_widget_order, {:array, :string},
+      default: ["about", "top_friends", "guestbook", "activity", "achievements", "clips"]
+
     field :profile_song_autoplay, :boolean, default: false
     field :show_profile_views, :boolean, default: true
 
@@ -109,6 +112,9 @@ defmodule ForgeNexus.Accounts.User do
     field :avatar_3d_url, :string
     field :verified_creator_at, :utc_datetime
     field :subscriptions_enabled_at, :utc_datetime
+    # Payout tier for Voice Money Tips (ForgeNexus.Voice.TipCalculator) — how much
+    # of a tip this creator keeps. Admin-granted only; see AdminUserController.update/2.
+    field :creator_tier, :string, default: "basic"
     field :pinned_thread_id, :binary_id
     field :seasonal_decorations_enabled, :boolean, default: true
     field :birthday_visibility, :string, default: "members"
@@ -135,7 +141,9 @@ defmodule ForgeNexus.Accounts.User do
     |> cast(attrs, [:username, :email, :password, :display_name, :registered_ip])
     |> validate_required([:username, :email, :password])
     |> validate_length(:username, min: 3, max: 25)
-    |> validate_format(:username, ~r/^[a-zA-Z0-9_-]+$/, message: "only letters, numbers, underscores, and hyphens")
+    |> validate_format(:username, ~r/^[a-zA-Z0-9_-]+$/,
+      message: "only letters, numbers, underscores, and hyphens"
+    )
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/, message: "must be a valid email")
     |> validate_length(:password, min: 8, max: 128)
     |> unique_constraint(:username)
@@ -150,10 +158,19 @@ defmodule ForgeNexus.Accounts.User do
   """
   def oauth_changeset(user, attrs) do
     user
-    |> cast(attrs, [:username, :email, :display_name, :avatar_url, :registered_ip, :email_unverified])
+    |> cast(attrs, [
+      :username,
+      :email,
+      :display_name,
+      :avatar_url,
+      :registered_ip,
+      :email_unverified
+    ])
     |> validate_required([:username])
     |> validate_length(:username, min: 3, max: 25)
-    |> validate_format(:username, ~r/^[a-zA-Z0-9_-]+$/, message: "only letters, numbers, underscores, and hyphens")
+    |> validate_format(:username, ~r/^[a-zA-Z0-9_-]+$/,
+      message: "only letters, numbers, underscores, and hyphens"
+    )
     |> maybe_validate_email()
     |> unique_constraint(:username)
     |> unique_constraint(:email)
@@ -162,8 +179,13 @@ defmodule ForgeNexus.Accounts.User do
 
   defp maybe_validate_email(changeset) do
     case get_field(changeset, :email) do
-      nil -> changeset
-      _email -> validate_format(changeset, :email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/, message: "must be a valid email")
+      nil ->
+        changeset
+
+      _email ->
+        validate_format(changeset, :email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/,
+          message: "must be a valid email"
+        )
     end
   end
 
@@ -186,18 +208,33 @@ defmodule ForgeNexus.Accounts.User do
   @vibe_tags ~w(default neon vaporwave goth cyber pastel gamer creator dark light minimal retro forge)
   @visibility_levels ~w(public members friends private)
 
+  @creator_tiers ~w(basic mid top)
+
   def admin_changeset(user, attrs) do
     user
     |> cast(attrs, [
-      :username, :email, :display_name, :status, :trust_level,
-      :primary_group_id, :custom_title, :is_premium, :verified_creator_at,
-      :email_verified_at, :infraction_points, :avatar_url
+      :username,
+      :email,
+      :display_name,
+      :status,
+      :trust_level,
+      :primary_group_id,
+      :custom_title,
+      :is_premium,
+      :verified_creator_at,
+      :email_verified_at,
+      :infraction_points,
+      :avatar_url,
+      :creator_tier
     ])
     |> validate_length(:username, min: 3, max: 25)
-    |> validate_format(:username, ~r/^[a-zA-Z0-9_-]+$/, message: "only letters, numbers, underscores, and hyphens")
+    |> validate_format(:username, ~r/^[a-zA-Z0-9_-]+$/,
+      message: "only letters, numbers, underscores, and hyphens"
+    )
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/, message: "must be a valid email")
     |> validate_inclusion(:status, ["active", "suspended", "banned", "deleted"])
     |> validate_number(:trust_level, greater_than_or_equal_to: 0, less_than_or_equal_to: 4)
+    |> validate_inclusion(:creator_tier, @creator_tiers)
     |> unique_constraint(:username)
     |> unique_constraint(:email)
   end
@@ -205,34 +242,76 @@ defmodule ForgeNexus.Accounts.User do
   def profile_changeset(user, attrs) do
     user
     |> cast(attrs, [
-      :display_name, :avatar_url, :signature, :bio, :location, :website,
-      :date_of_birth, :timezone, :locale, :theme, :content_density,
+      :display_name,
+      :avatar_url,
+      :signature,
+      :bio,
+      :location,
+      :website,
+      :date_of_birth,
+      :timezone,
+      :locale,
+      :theme,
+      :content_density,
       # MySpace-style blurbs
-      :interests, :favorite_music, :favorite_movies, :favorite_tv,
-      :favorite_games, :favorite_books, :heroes, :who_id_like_to_meet,
-      :about_me_bbcode, :about_me_html, :signature_html,
+      :interests,
+      :favorite_music,
+      :favorite_movies,
+      :favorite_tv,
+      :favorite_games,
+      :favorite_books,
+      :heroes,
+      :who_id_like_to_meet,
+      :about_me_bbcode,
+      :about_me_html,
+      :signature_html,
       # Customization
-      :profile_background_url, :profile_background_color,
-      :profile_gradient_start, :profile_gradient_end, :profile_gradient_direction,
-      :profile_banner_url, :profile_accent_color, :profile_font,
-      :profile_song_url, :profile_song_title, :profile_song_autoplay,
-      :profile_mood, :profile_mood_emoji,
-      :profile_layout, :profile_widget_order,
-      :walk_on_sound_url, :walk_on_sound_name,
-      :custom_title, :username_color, :username_effect,
-      :nameplate_color, :nameplate_image_url,
-      :avatar_frame, :avatar_frame_color,
-      :postbit_background_url, :postbit_background_opacity,
-      :post_background_url, :post_background_opacity,
+      :profile_background_url,
+      :profile_background_color,
+      :profile_gradient_start,
+      :profile_gradient_end,
+      :profile_gradient_direction,
+      :profile_banner_url,
+      :profile_accent_color,
+      :profile_font,
+      :profile_song_url,
+      :profile_song_title,
+      :profile_song_autoplay,
+      :profile_mood,
+      :profile_mood_emoji,
+      :profile_layout,
+      :profile_widget_order,
+      :walk_on_sound_url,
+      :walk_on_sound_name,
+      :custom_title,
+      :username_color,
+      :username_effect,
+      :nameplate_color,
+      :nameplate_image_url,
+      :avatar_frame,
+      :avatar_frame_color,
+      :postbit_background_url,
+      :postbit_background_opacity,
+      :post_background_url,
+      :post_background_opacity,
       :signature_background_url,
-      :color_override_accent, :color_override_bg_primary,
-      :color_override_bg_secondary, :color_override_text_primary,
+      :color_override_accent,
+      :color_override_bg_primary,
+      :color_override_bg_secondary,
+      :color_override_text_primary,
       # SOTA
-      :pronouns, :social_links, :profile_vibe, :avatar_3d_url,
-      :pinned_thread_id, :seasonal_decorations_enabled,
-      :birthday_visibility, :location_visibility,
-      :email_visibility, :activity_visibility,
-      :show_profile_views, :active_forge_code
+      :pronouns,
+      :social_links,
+      :profile_vibe,
+      :avatar_3d_url,
+      :pinned_thread_id,
+      :seasonal_decorations_enabled,
+      :birthday_visibility,
+      :location_visibility,
+      :email_visibility,
+      :activity_visibility,
+      :show_profile_views,
+      :active_forge_code
     ])
     |> validate_length(:signature, max: 500)
     |> validate_length(:bio, max: 5000)
@@ -268,8 +347,12 @@ defmodule ForgeNexus.Accounts.User do
 
   defp validate_hex_color(changeset, field) do
     case get_change(changeset, field) do
-      nil -> changeset
-      "" -> changeset
+      nil ->
+        changeset
+
+      "" ->
+        changeset
+
       value ->
         if Regex.match?(~r/^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/, value) do
           changeset
@@ -290,7 +373,8 @@ defmodule ForgeNexus.Accounts.User do
         bad =
           Enum.reject(links, fn
             {k, v} when is_binary(k) and is_binary(v) ->
-              k in @allowed_social_platforms and byte_size(v) <= 400 and String.starts_with?(v, ["https://", "http://"])
+              k in @allowed_social_platforms and byte_size(v) <= 400 and
+                String.starts_with?(v, ["https://", "http://"])
 
             _ ->
               false
@@ -299,7 +383,9 @@ defmodule ForgeNexus.Accounts.User do
         if bad == [] do
           changeset
         else
-          add_error(changeset, :social_links,
+          add_error(
+            changeset,
+            :social_links,
             "only supports https:// links for: #{Enum.join(@allowed_social_platforms, ", ")}"
           )
         end

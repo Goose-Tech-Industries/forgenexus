@@ -14,11 +14,22 @@ defmodule ForgeNexus.Voice.TipCalculator do
 
   ## Community kickback (% of platform's cut returned to community owner)
 
-  | Community plan | Kickback |
-  |----------------|----------|
-  | starter        | 15%      |
-  | pro            | 20%      |
-  | enterprise     | 25%      |
+  Keyed to `ForgeNexus.Communities.Community`'s real plan ladder (`free forum
+  community creator platform enterprise houses`), plus the legacy `starter`/
+  `social` plan names Community still accepts for migration compatibility —
+  mapped to their nearest current-plan equivalent by feature parity.
+
+  | Community plan          | Kickback |
+  |--------------------------|----------|
+  | free                     | 0%       |
+  | forum                    | 10%      |
+  | community                | 15%      |
+  | creator                  | 20%      |
+  | platform                 | 25%      |
+  | enterprise               | 30%      |
+  | houses                   | 25%      |
+  | starter (legacy → community) | 15%  |
+  | social (legacy → creator)    | 20%  |
 
   ## Stripe processing
 
@@ -26,6 +37,14 @@ defmodule ForgeNexus.Voice.TipCalculator do
   Deducted from the platform's share, never from the creator's payout.
   """
 
+  alias ForgeNexus.Repo
+  alias ForgeNexus.Accounts.User
+  alias ForgeNexus.Voice.Room
+
+  # Creator payout tier — admin-granted via AdminUserController, stored on
+  # ForgeNexus.Accounts.User.creator_tier. Deliberately ahead of Twitch's
+  # typical 50-70% creator split, kept a bit under Kick's 95% so the platform
+  # take can still cover Stripe fees + infra at scale.
   @creator_tiers %{
     "basic" => 0.25,
     "mid" => 0.20,
@@ -33,9 +52,17 @@ defmodule ForgeNexus.Voice.TipCalculator do
   }
 
   @community_kickback_rates %{
+    "free" => 0.0,
+    "forum" => 0.10,
+    "community" => 0.15,
+    "creator" => 0.20,
+    "platform" => 0.25,
+    "enterprise" => 0.30,
+    "houses" => 0.25,
+    # Legacy plan names — Community still validates these; mapped to the
+    # current-plan tier with the closest feature parity.
     "starter" => 0.15,
-    "pro" => 0.20,
-    "enterprise" => 0.25
+    "social" => 0.20
   }
 
   @stripe_percent 0.029
@@ -74,18 +101,35 @@ defmodule ForgeNexus.Voice.TipCalculator do
       platform_net_cents: max(platform_net, 0),
       creator_tier: creator_tier,
       community_plan: community_plan,
-      effective_platform_rate: if(amount_cents > 0, do: Float.round(platform_net / amount_cents * 100, 1), else: 0.0)
+      effective_platform_rate:
+        if(amount_cents > 0, do: Float.round(platform_net / amount_cents * 100, 1), else: 0.0)
     }
   end
 
-  def tier_for_user(_user_id) do
-    # TODO: look up from user's creator profile / subscription tier
-    "basic"
+  @doc "Creator's payout tier. Defaults to \"basic\" if the user can't be found."
+  def tier_for_user(nil), do: "basic"
+
+  def tier_for_user(user_id) do
+    case Repo.get(User, user_id) do
+      %User{creator_tier: tier} when is_binary(tier) -> tier
+      _ -> "basic"
+    end
   end
 
-  def community_plan_for_room(_room_id) do
-    # TODO: look up from the community's subscription plan
-    "starter"
+  @doc "The room's community's billing plan. Defaults to \"free\" if either can't be found."
+  def community_plan_for_room(nil), do: "free"
+
+  def community_plan_for_room(room_id) do
+    Room
+    |> Repo.get(room_id)
+    |> case do
+      nil -> "free"
+      room -> room |> Repo.preload(:community) |> Map.get(:community)
+    end
+    |> case do
+      %{plan: plan} when is_binary(plan) -> plan
+      _ -> "free"
+    end
   end
 
   def creator_tiers, do: @creator_tiers
