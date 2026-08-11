@@ -163,7 +163,7 @@ defmodule ForgeNexus.Profiles do
     |> Enum.into(%{})
   end
 
-  def endorse(profile_user_id, sender_id, emoji) when profile_user_id == sender_id do
+  def endorse(profile_user_id, sender_id, _emoji) when profile_user_id == sender_id do
     {:error, :cannot_endorse_self}
   end
 

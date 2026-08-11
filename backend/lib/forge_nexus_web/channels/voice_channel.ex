@@ -431,16 +431,6 @@ defmodule ForgeNexusWeb.VoiceChannel do
     end
   end
 
-  defp apply_watch_command(socket, command, args) do
-    user = socket.assigns.current_user
-    room_id = socket.assigns.room_id
-
-    case Voice.control_watch_party(room_id, user.id, command, args) do
-      {:ok, party} -> {:reply, {:ok, %{party: party}}, socket}
-      {:error, reason} -> {:reply, {:error, %{reason: to_string(reason)}}, socket}
-    end
-  end
-
   # Catch-all: any event whose payload doesn't match a strict head above used
   # to crash the channel with FunctionClauseError, dropping the user from the
   # call. Reply with a graceful error and keep the channel alive.
@@ -453,5 +443,15 @@ defmodule ForgeNexusWeb.VoiceChannel do
     )
 
     {:reply, {:error, %{reason: "unknown or malformed event", event: event}}, socket}
+  end
+
+  defp apply_watch_command(socket, command, args) do
+    user = socket.assigns.current_user
+    room_id = socket.assigns.room_id
+
+    case Voice.control_watch_party(room_id, user.id, command, args) do
+      {:ok, party} -> {:reply, {:ok, %{party: party}}, socket}
+      {:error, reason} -> {:reply, {:error, %{reason: to_string(reason)}}, socket}
+    end
   end
 end

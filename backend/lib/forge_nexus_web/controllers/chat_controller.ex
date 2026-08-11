@@ -1,7 +1,7 @@
 defmodule ForgeNexusWeb.ChatController do
   use ForgeNexusWeb, :controller
 
-  alias ForgeNexus.Chat
+  alias ForgeNexus.{Chat, Repo}
 
   def shoutbox(conn, params) do
     limit =

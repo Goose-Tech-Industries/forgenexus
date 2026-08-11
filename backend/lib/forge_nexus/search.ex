@@ -36,30 +36,6 @@ defmodule ForgeNexus.Search do
     :ok
   end
 
-  @doc """
-  One-shot bulk reindex of all existing threads and posts.
-  Useful after a fresh install, a schema change, or Meilisearch reset.
-  """
-  def reindex_all do
-    setup_indexes()
-
-    import Ecto.Query
-    alias ForgeNexus.Repo
-
-    threads =
-      from(t in ForgeNexus.Forums.Thread)
-      |> Repo.all()
-
-    posts =
-      from(p in ForgeNexus.Forums.Post, where: p.is_hidden == false)
-      |> Repo.all()
-
-    Enum.each(threads, &index_thread/1)
-    Enum.each(posts, &index_post/1)
-
-    %{threads_indexed: length(threads), posts_indexed: length(posts)}
-  end
-
   # === Indexing ===
 
   def index_thread(thread) do
@@ -156,6 +132,10 @@ defmodule ForgeNexus.Search do
 
   # === Bulk Reindex ===
 
+  @doc """
+  One-shot bulk reindex of all existing threads and posts, in batches of 100.
+  Useful after a fresh install, a schema change, or Meilisearch reset.
+  """
   def reindex_all do
     alias ForgeNexus.Repo
     alias ForgeNexus.Forums.{Thread, Post}

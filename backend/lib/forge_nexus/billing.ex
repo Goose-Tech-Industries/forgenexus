@@ -79,7 +79,7 @@ defmodule ForgeNexus.Billing do
     end
   end
 
-  defp ensure_customer(%Community{stripe_customer_id: id} = community)
+  defp ensure_customer(%Community{stripe_customer_id: id})
        when is_binary(id) and id != "" do
     {:ok, id}
   end

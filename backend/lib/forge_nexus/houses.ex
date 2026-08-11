@@ -12,7 +12,6 @@ defmodule ForgeNexus.Houses do
   """
 
   alias ForgeNexus.{Accounts, Communities, Repo}
-  alias ForgeNexus.Communities.Community
   alias ForgeNexus.Houses.HouseInvitation
 
   import Ecto.Query
