@@ -1,5 +1,10 @@
 defmodule ForgeNexus.Voice.TipCalculatorTest do
-  use ForgeNexus.DataCase, async: true
+  # async: false — a "fresh room has no community" test intermittently saw a
+  # different test's community leak in under async: true (Sandbox owned-mode
+  # concurrency), even though each test inserts and queries by its own fresh
+  # UUID. Running sequentially eliminates that whole class of flakiness while
+  # this gets root-caused properly.
+  use ForgeNexus.DataCase, async: false
 
   alias ForgeNexus.Voice.TipCalculator
   alias ForgeNexus.Communities.Community
