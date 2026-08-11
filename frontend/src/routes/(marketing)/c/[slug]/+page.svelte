@@ -35,7 +35,7 @@
 
   async function load() {
     try {
-      const res = await fetch(`/api/communities/${encodeURIComponent(slug)}`, {
+      const res = await fetch(`/api/communities/${encodeURIComponent(slug ?? '')}`, {
         credentials: 'include'
       });
       if (res.status === 404) {
@@ -63,7 +63,7 @@
 
     submitting = true;
     try {
-      const res = await fetch(`/api/communities/${encodeURIComponent(slug)}/members/signup`, {
+      const res = await fetch(`/api/communities/${encodeURIComponent(slug ?? '')}/members/signup`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

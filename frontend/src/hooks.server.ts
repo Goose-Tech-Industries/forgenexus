@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import { handleErrorWithSentry, sentryHandle } from '@sentry/sveltekit';
 import { sequence } from '@sveltejs/kit/hooks';
+import type { Handle } from '@sveltejs/kit';
 
 const dsn = process.env.SENTRY_DSN;
 
@@ -13,5 +14,5 @@ if (dsn) {
   });
 }
 
-export const handle = dsn ? sequence(sentryHandle()) : async ({ event, resolve }) => resolve(event);
+export const handle: Handle = dsn ? sequence(sentryHandle()) : async ({ event, resolve }) => resolve(event);
 export const handleError = handleErrorWithSentry();
