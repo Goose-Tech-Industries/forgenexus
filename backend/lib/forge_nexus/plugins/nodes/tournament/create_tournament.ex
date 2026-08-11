@@ -36,7 +36,10 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.CreateTournament do
       |> then(fn e ->
         if Map.get(config, "format") in ~w(single_elimination double_elimination round_robin swiss),
           do: e,
-          else: ["format must be one of: single_elimination, double_elimination, round_robin, swiss" | e]
+          else: [
+            "format must be one of: single_elimination, double_elimination, round_robin, swiss"
+            | e
+          ]
       end)
       |> then(fn e ->
         max = Map.get(config, "max_participants")
@@ -65,8 +68,19 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.CreateTournament do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "format", type: "select", options: ~w(single_elimination double_elimination round_robin swiss), default: "single_elimination", description: "Tournament bracket format"},
-        %{name: "max_participants", type: "number", default: 16, description: "Maximum number of participants"}
+        %{
+          name: "format",
+          type: "select",
+          options: ~w(single_elimination double_elimination round_robin swiss),
+          default: "single_elimination",
+          description: "Tournament bracket format"
+        },
+        %{
+          name: "max_participants",
+          type: "number",
+          default: 16,
+          description: "Maximum number of participants"
+        }
       ]
     }
   end

@@ -45,7 +45,12 @@ defmodule ForgeNexus.Plugins.Nodes.Data.UpdateRow do
       ],
       outputs: [%{name: "updated", type: "boolean"}],
       config_fields: [
-        %{name: "table_slug", type: "string", default: "", description: "Table slug (for reference)"}
+        %{
+          name: "table_slug",
+          type: "string",
+          default: "",
+          description: "Table slug (for reference)"
+        }
       ]
     }
   end

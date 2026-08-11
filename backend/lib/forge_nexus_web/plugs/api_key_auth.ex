@@ -21,15 +21,24 @@ defmodule ForgeNexusWeb.Plugs.ApiKeyAuth do
 
         case Repo.get_by(ApiKey, key_hash: hash, is_active: true) do
           nil ->
-            conn |> put_status(:unauthorized) |> Phoenix.Controller.json(%{error: "Invalid API key"}) |> halt()
+            conn
+            |> put_status(:unauthorized)
+            |> Phoenix.Controller.json(%{error: "Invalid API key"})
+            |> halt()
 
           %ApiKey{} = key ->
             cond do
               key.expires_at && DateTime.compare(key.expires_at, DateTime.utc_now()) == :lt ->
-                conn |> put_status(:unauthorized) |> Phoenix.Controller.json(%{error: "API key expired"}) |> halt()
+                conn
+                |> put_status(:unauthorized)
+                |> Phoenix.Controller.json(%{error: "API key expired"})
+                |> halt()
 
               required_scope not in key.scopes ->
-                conn |> put_status(:forbidden) |> Phoenix.Controller.json(%{error: "Insufficient scope"}) |> halt()
+                conn
+                |> put_status(:forbidden)
+                |> Phoenix.Controller.json(%{error: "Insufficient scope"})
+                |> halt()
 
               true ->
                 from(k in ApiKey, where: k.id == ^key.id)

@@ -23,7 +23,19 @@ defmodule ForgeNexus.Achievements.Achievement do
 
   def changeset(achievement, attrs) do
     achievement
-    |> cast(attrs, [:name, :slug, :description, :icon, :category, :points, :badge_id, :criteria, :is_hidden, :is_active, :sort_order])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :icon,
+      :category,
+      :points,
+      :badge_id,
+      :criteria,
+      :is_hidden,
+      :is_active,
+      :sort_order
+    ])
     |> validate_required([:name, :slug, :criteria])
     |> unique_constraint(:slug)
   end

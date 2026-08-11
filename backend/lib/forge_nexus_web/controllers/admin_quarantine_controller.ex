@@ -34,10 +34,17 @@ defmodule ForgeNexusWeb.AdminQuarantineController do
     actor = Guardian.Plug.current_resource(conn)
 
     case Moderation.release_quarantine(user_id, actor && actor.id) do
-      {:ok, _user} -> conn |> json(%{ok: true})
-      {:error, :not_quarantined} -> conn |> put_status(:not_found) |> json(%{error: "User is not quarantined"})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "User not found"})
-      {:error, reason} -> conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
+      {:ok, _user} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_quarantined} ->
+        conn |> put_status(:not_found) |> json(%{error: "User is not quarantined"})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "User not found"})
+
+      {:error, reason} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
     end
   end
 

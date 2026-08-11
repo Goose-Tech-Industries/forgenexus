@@ -58,7 +58,12 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.SendReminder do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "minutes_before", type: "number", default: 60, description: "Minutes before event to send reminder"}
+        %{
+          name: "minutes_before",
+          type: "number",
+          default: 60,
+          description: "Minutes before event to send reminder"
+        }
       ]
     }
   end

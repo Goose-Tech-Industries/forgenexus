@@ -34,7 +34,12 @@ defmodule ForgeNexus.Plugins.Nodes.Trigger.OnSlashCommand do
         %{name: "raw_input", type: "string"}
       ],
       config_fields: [
-        %{name: "command_name", type: "string", default: "", description: "Slash command name to listen for (without leading /)"}
+        %{
+          name: "command_name",
+          type: "string",
+          default: "",
+          description: "Slash command name to listen for (without leading /)"
+        }
       ]
     }
   end

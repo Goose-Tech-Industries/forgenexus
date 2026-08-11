@@ -6,7 +6,8 @@ defmodule ForgeNexusWeb.OAuthController do
 
   @frontend_url "http://localhost:5173"
   @state_cookie "oauth_state"
-  @state_max_age 600 # 10 minutes
+  # 10 minutes
+  @state_max_age 600
 
   # GET /auth/oauth/:provider — redirect to provider's authorize page
   def redirect_to_provider(conn, %{"provider" => provider}) do
@@ -91,7 +92,9 @@ defmodule ForgeNexusWeb.OAuthController do
           |> json(%{redirect_url: url})
 
         {:error, reason} ->
-          conn |> put_status(:internal_server_error) |> json(%{error: "Config error: #{inspect(reason)}"})
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: "Config error: #{inspect(reason)}"})
       end
     end
   end
@@ -161,6 +164,7 @@ defmodule ForgeNexusWeb.OAuthController do
       result =
         if link_user_id do
           _conn = delete_resp_cookie(conn, "oauth_link_user", path: "/")
+
           case Accounts.link_oauth_account(link_user_id, provider, user_info) do
             {:ok, _} -> {:linked, link_user_id}
             {:error, %Ecto.Changeset{} = cs} -> {:error, format_changeset_error(cs)}
@@ -172,7 +176,9 @@ defmodule ForgeNexusWeb.OAuthController do
 
       case result do
         {:linked, _user_id} ->
-          redirect(conn, external: "#{frontend_url()}/settings/account?oauth=linked&provider=#{provider}")
+          redirect(conn,
+            external: "#{frontend_url()}/settings/account?oauth=linked&provider=#{provider}"
+          )
 
         {:ok, user} ->
           {:ok, token, claims} = Guardian.encode_and_sign(user)

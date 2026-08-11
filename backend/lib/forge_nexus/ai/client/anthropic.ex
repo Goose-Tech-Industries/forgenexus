@@ -13,24 +13,27 @@ defmodule ForgeNexus.AI.Client.Anthropic do
       max_tokens: max_tokens,
       messages: user_messages
     }
+
     body = if system_msg, do: Map.put(body, :system, system_msg), else: body
 
     case Req.post("https://api.anthropic.com/v1/messages",
-      json: body,
-      headers: [
-        {"x-api-key", provider.api_key_encrypted},
-        {"anthropic-version", "2023-06-01"},
-        {"content-type", "application/json"}
-      ],
-      receive_timeout: 60_000
-    ) do
+           json: body,
+           headers: [
+             {"x-api-key", provider.api_key_encrypted},
+             {"anthropic-version", "2023-06-01"},
+             {"content-type", "application/json"}
+           ],
+           receive_timeout: 60_000
+         ) do
       {:ok, %{status: 200, body: body}} ->
         content = body["content"] |> List.first() |> Map.get("text", "")
-        {:ok, %{
-          content: content,
-          input_tokens: body["usage"]["input_tokens"],
-          output_tokens: body["usage"]["output_tokens"]
-        }}
+
+        {:ok,
+         %{
+           content: content,
+           input_tokens: body["usage"]["input_tokens"],
+           output_tokens: body["usage"]["output_tokens"]
+         }}
 
       {:ok, %{status: status, body: body}} ->
         {:error, "Anthropic API error #{status}: #{inspect(body)}"}

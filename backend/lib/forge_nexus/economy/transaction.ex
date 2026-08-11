@@ -21,7 +21,16 @@ defmodule ForgeNexus.Economy.Transaction do
 
   def changeset(tx, attrs) do
     tx
-    |> cast(attrs, [:user_id, :currency_id, :amount, :balance_after, :type, :reason, :reference_type, :reference_id])
+    |> cast(attrs, [
+      :user_id,
+      :currency_id,
+      :amount,
+      :balance_after,
+      :type,
+      :reason,
+      :reference_type,
+      :reference_id
+    ])
     |> validate_required([:user_id, :currency_id, :amount, :balance_after, :type])
     |> validate_inclusion(:type, ~w(award deduct transfer interest refund))
   end

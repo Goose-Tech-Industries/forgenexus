@@ -24,7 +24,19 @@ defmodule ForgeNexus.AI.ModerationAnalysis do
 
   def changeset(moderation_analysis, attrs) do
     moderation_analysis
-    |> cast(attrs, [:suggested_action, :confidence, :reasoning, :context_summary, :mod_decision, :was_accepted, :report_id, :post_id, :thread_id, :mod_id, :provider_id])
+    |> cast(attrs, [
+      :suggested_action,
+      :confidence,
+      :reasoning,
+      :context_summary,
+      :mod_decision,
+      :was_accepted,
+      :report_id,
+      :post_id,
+      :thread_id,
+      :mod_id,
+      :provider_id
+    ])
     |> validate_required([:suggested_action, :confidence, :reasoning])
     |> foreign_key_constraint(:report_id)
     |> foreign_key_constraint(:post_id)

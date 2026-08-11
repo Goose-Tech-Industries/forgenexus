@@ -104,7 +104,8 @@ defmodule ForgeNexus.Analytics do
       content_score = min(avg_threads / 3, 1.0) * 20
       response_score = (avg_response_rate || 0) * 20
 
-      total = round(activity_score + engagement_score + growth_score + content_score + response_score)
+      total =
+        round(activity_score + engagement_score + growth_score + content_score + response_score)
 
       %{
         score: min(total, 100),
@@ -120,6 +121,7 @@ defmodule ForgeNexus.Analytics do
   end
 
   defp average([]), do: 0.0
+
   defp average(list) do
     Enum.sum(list) / length(list)
   end
@@ -151,7 +153,8 @@ defmodule ForgeNexus.Analytics do
     cutoff_dt = DateTime.new!(cutoff, ~T[00:00:00], "Etc/UTC")
 
     from(t in "threads",
-      left_join: p in "posts", on: p.thread_id == t.id,
+      left_join: p in "posts",
+      on: p.thread_id == t.id,
       where: p.inserted_at >= ^cutoff_dt,
       group_by: [t.id, t.title],
       select: %{thread_id: type(t.id, :binary_id), title: t.title, reply_count: count(p.id)},

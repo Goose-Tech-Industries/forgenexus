@@ -47,7 +47,12 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.MentionSpamCheck do
         %{name: "spam", type: "branch", fields: [%{name: "mention_count", type: "number"}]}
       ],
       config_fields: [
-        %{name: "max_mentions", type: "number", default: 5, description: "Maximum allowed mentions"}
+        %{
+          name: "max_mentions",
+          type: "number",
+          default: 5,
+          description: "Maximum allowed mentions"
+        }
       ]
     }
   end

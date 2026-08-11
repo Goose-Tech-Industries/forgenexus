@@ -39,21 +39,24 @@ defmodule ForgeNexus.Tournaments.BracketGenerator do
     future_matches = generate_future_rounds(matches, 2, rounds)
     all_matches = matches ++ future_matches
 
-    {:ok, %{
-      format: "single_elimination",
-      rounds: rounds,
-      participant_count: length(ids),
-      matches: all_matches
-    }}
+    {:ok,
+     %{
+       format: "single_elimination",
+       rounds: rounds,
+       participant_count: length(ids),
+       matches: all_matches
+     }}
   end
 
   defp double_elimination(ids) do
     {:ok, winners} = single_elimination(ids)
 
     losers_rounds = winners.rounds
+
     losers_matches =
       Enum.map(1..losers_rounds, fn round ->
         match_count = max(div(length(ids), trunc(:math.pow(2, round))), 1)
+
         Enum.map(1..match_count, fn idx ->
           %{
             id: "L_r#{round}_m#{idx}",
@@ -80,14 +83,15 @@ defmodule ForgeNexus.Tournaments.BracketGenerator do
       status: "pending"
     }
 
-    {:ok, %{
-      format: "double_elimination",
-      rounds: winners.rounds + losers_rounds + 1,
-      participant_count: length(ids),
-      winners_bracket: winners.matches,
-      losers_bracket: losers_matches,
-      grand_final: grand_final
-    }}
+    {:ok,
+     %{
+       format: "double_elimination",
+       rounds: winners.rounds + losers_rounds + 1,
+       participant_count: length(ids),
+       winners_bracket: winners.matches,
+       losers_bracket: losers_matches,
+       grand_final: grand_final
+     }}
   end
 
   defp round_robin(ids) do
@@ -126,7 +130,7 @@ defmodule ForgeNexus.Tournaments.BracketGenerator do
       if map_size(standings) == 0 do
         Enum.shuffle(ids)
       else
-        Enum.sort_by(ids, fn id -> -(Map.get(standings, id, 0)) end)
+        Enum.sort_by(ids, fn id -> -Map.get(standings, id, 0) end)
       end
 
     matches =
@@ -136,6 +140,7 @@ defmodule ForgeNexus.Tournaments.BracketGenerator do
       |> Enum.map(fn {pair, idx} ->
         [p1 | rest] = pair
         p2 = List.first(rest)
+
         %{
           id: "sw_r#{round_number}_m#{idx}",
           round: round_number,

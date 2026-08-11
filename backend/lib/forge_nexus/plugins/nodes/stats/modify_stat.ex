@@ -13,13 +13,17 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.ModifyStat do
 
     delta =
       cond do
-        is_number(delta) -> delta
+        is_number(delta) ->
+          delta
+
         is_binary(delta) ->
           case Float.parse(delta) do
             {n, _} -> n
             :error -> 0
           end
-        true -> 0
+
+        true ->
+          0
       end
 
     old_value = ForgeNexus.UserStats.get_stat(user_id, stat_key)
@@ -55,8 +59,18 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.ModifyStat do
         %{name: "old_value", type: "number"}
       ],
       config_fields: [
-        %{name: "min_value", type: "number", default: nil, description: "Optional minimum value clamp"},
-        %{name: "max_value", type: "number", default: nil, description: "Optional maximum value clamp"}
+        %{
+          name: "min_value",
+          type: "number",
+          default: nil,
+          description: "Optional minimum value clamp"
+        },
+        %{
+          name: "max_value",
+          type: "number",
+          default: nil,
+          description: "Optional maximum value clamp"
+        }
       ]
     }
   end

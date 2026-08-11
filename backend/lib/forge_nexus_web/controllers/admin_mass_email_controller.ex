@@ -21,7 +21,8 @@ defmodule ForgeNexusWeb.AdminMassEmailController do
       action: "mass_email_sent",
       category: "communication",
       target_type: "mass_email",
-      description: "Sent mass email \"#{subject}\" to segment: #{segment} (~#{recipient_count} recipients)"
+      description:
+        "Sent mass email \"#{subject}\" to segment: #{segment} (~#{recipient_count} recipients)"
     })
 
     conn

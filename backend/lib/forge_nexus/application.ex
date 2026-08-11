@@ -23,26 +23,29 @@ defmodule ForgeNexus.Application do
         []
       end
 
-    children = [
-      ForgeNexusWeb.Telemetry,
-      ForgeNexus.Repo
-    ] ++ replica_children ++ [
-      {DNSCluster, query: Application.get_env(:forge_nexus, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: ForgeNexus.PubSub},
-      {Oban, Application.fetch_env!(:forge_nexus, Oban)},
-      {Task.Supervisor, name: ForgeNexus.PluginTaskSupervisor},
-      ForgeNexus.Cache,
-      ForgeNexus.RateLimitCleaner,
-      ForgeNexus.SettingsCache,
-      ForgeNexus.StatsCache,
-      ForgeNexus.PresenceTracker,
-      ForgeNexus.Plugins.Hooks,
-      ForgeNexus.Importer.Progress,
-      {Registry, keys: :unique, name: ForgeNexus.Voice.RoomRegistry},
-      {DynamicSupervisor, name: ForgeNexus.Voice.RoomSupervisor, strategy: :one_for_one},
-      ForgeNexusWeb.Presence,
-      ForgeNexusWeb.Endpoint
-    ]
+    children =
+      [
+        ForgeNexusWeb.Telemetry,
+        ForgeNexus.Repo
+      ] ++
+        replica_children ++
+        [
+          {DNSCluster, query: Application.get_env(:forge_nexus, :dns_cluster_query) || :ignore},
+          {Phoenix.PubSub, name: ForgeNexus.PubSub},
+          {Oban, Application.fetch_env!(:forge_nexus, Oban)},
+          {Task.Supervisor, name: ForgeNexus.PluginTaskSupervisor},
+          ForgeNexus.Cache,
+          ForgeNexus.RateLimitCleaner,
+          ForgeNexus.SettingsCache,
+          ForgeNexus.StatsCache,
+          ForgeNexus.PresenceTracker,
+          ForgeNexus.Plugins.Hooks,
+          ForgeNexus.Importer.Progress,
+          {Registry, keys: :unique, name: ForgeNexus.Voice.RoomRegistry},
+          {DynamicSupervisor, name: ForgeNexus.Voice.RoomSupervisor, strategy: :one_for_one},
+          ForgeNexusWeb.Presence,
+          ForgeNexusWeb.Endpoint
+        ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -14,18 +14,25 @@ defmodule ForgeNexus.Tickets do
 
   def list_tickets(opts \\ []) do
     query = Ticket |> order_by(desc: :inserted_at)
-    query = case Keyword.get(opts, :status) do
-     nil -> query
-      status -> where(query, [t], t.status == ^status)
-    end
-    query = case Keyword.get(opts, :assigned_to) do
-     nil -> query
-      staff_id -> where(query, [t], t.assigned_to_id == ^staff_id)
-    end
-    query = case Keyword.get(opts, :user_id) do
-     nil -> query
-      uid -> where(query, [t], t.user_id == ^uid)
-    end
+
+    query =
+      case Keyword.get(opts, :status) do
+        nil -> query
+        status -> where(query, [t], t.status == ^status)
+      end
+
+    query =
+      case Keyword.get(opts, :assigned_to) do
+        nil -> query
+        staff_id -> where(query, [t], t.assigned_to_id == ^staff_id)
+      end
+
+    query =
+      case Keyword.get(opts, :user_id) do
+        nil -> query
+        uid -> where(query, [t], t.user_id == ^uid)
+      end
+
     query |> preload([:user, :assigned_to]) |> Repo.all()
   end
 
@@ -41,7 +48,10 @@ defmodule ForgeNexus.Tickets do
 
   def claim_ticket(ticket_id, staff_user_id) do
     ticket = Repo.get!(Ticket, ticket_id)
-    ticket |> Ticket.changeset(%{assigned_to_id: staff_user_id, status: "in_progress"}) |> Repo.update()
+
+    ticket
+    |> Ticket.changeset(%{assigned_to_id: staff_user_id, status: "in_progress"})
+    |> Repo.update()
   end
 
   def add_message(attrs) do

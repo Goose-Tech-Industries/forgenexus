@@ -41,7 +41,8 @@ defmodule ForgeNexus.Settings do
     # Welcome Center
     "welcome_center_enabled" => "true",
     "welcome_center_title" => "Welcome to ForgeNexus",
-    "welcome_center_guest_message" => "Welcome! Join our community to participate in discussions.",
+    "welcome_center_guest_message" =>
+      "Welcome! Join our community to participate in discussions.",
     "welcome_center_member_message" => "Welcome back! Check out the latest threads and activity.",
     "welcome_center_show_stats" => "true",
     "welcome_center_show_recent_threads" => "true",
@@ -119,30 +120,39 @@ defmodule ForgeNexus.Settings do
     # AI flow generator (natural language -> no-code flow)
     "ai_flow_generator_enabled" => "false",
     "ai_flow_generator_provider" => "anthropic",
-    "ai_flow_generator_model" => "claude-sonnet-4-6",
+    "ai_flow_generator_model" => "claude-sonnet-4-6"
   }
 
   @categories %{
-    "general" => ~w(site_name site_description site_logo_url site_favicon_url meta_description default_timezone default_locale),
+    "general" =>
+      ~w(site_name site_description site_logo_url site_favicon_url meta_description default_timezone default_locale),
     "registration" => ~w(registration_mode require_email_verification min_password_length),
-    "content" => ~w(max_post_length allow_signatures allow_bbcode allow_images_in_posts posts_per_page threads_per_page),
+    "content" =>
+      ~w(max_post_length allow_signatures allow_bbcode allow_images_in_posts posts_per_page threads_per_page),
     "chat" => ~w(chat_bar_enabled shoutbox_enabled max_chat_message_length),
     "moderation" => ~w(new_user_post_delay_seconds auto_escalation_enabled post_edit_time_limit),
     "plugins" => ~w(claude_api_enabled claude_api_key),
-    "welcome_center" => ~w(welcome_center_enabled welcome_center_title welcome_center_guest_message welcome_center_member_message welcome_center_show_stats welcome_center_show_recent_threads welcome_center_show_birthdays welcome_center_show_new_members),
+    "welcome_center" =>
+      ~w(welcome_center_enabled welcome_center_title welcome_center_guest_message welcome_center_member_message welcome_center_show_stats welcome_center_show_recent_threads welcome_center_show_birthdays welcome_center_show_new_members),
     "online_tracking" => ~w(most_online_count most_online_at),
     "maintenance" => ~w(maintenance_mode maintenance_message),
     "features" => ~w(reply_via_email_enabled custom_reactions_enabled thread_ratings_enabled),
     "white_label" => ~w(white_label_enabled white_label_name white_label_logo_url),
-    "portal" => ~w(homepage_mode portal_page_slug portal_show_shoutbox portal_show_welcome portal_show_stats portal_show_online portal_featured_threads_count),
-    "email" => ~w(smtp_host smtp_port smtp_username smtp_password smtp_from_address smtp_from_name smtp_encryption),
-    "engagement" => ~w(engagement_window_days engagement_weight_post engagement_cap_post engagement_weight_thread engagement_cap_thread engagement_weight_reputation engagement_cap_reputation engagement_recency_max engagement_tier_power engagement_tier_active engagement_tier_casual),
-    "voice" => ~w(voice_recording_enabled voice_recording_max_duration_minutes voice_recording_max_size_mb voice_transcription_enabled voice_transcription_provider voice_transcription_max_size_mb voice_transcription_whisper_cpp_bin voice_transcription_whisper_cpp_model),
+    "portal" =>
+      ~w(homepage_mode portal_page_slug portal_show_shoutbox portal_show_welcome portal_show_stats portal_show_online portal_featured_threads_count),
+    "email" =>
+      ~w(smtp_host smtp_port smtp_username smtp_password smtp_from_address smtp_from_name smtp_encryption),
+    "engagement" =>
+      ~w(engagement_window_days engagement_weight_post engagement_cap_post engagement_weight_thread engagement_cap_thread engagement_weight_reputation engagement_cap_reputation engagement_recency_max engagement_tier_power engagement_tier_active engagement_tier_casual),
+    "voice" =>
+      ~w(voice_recording_enabled voice_recording_max_duration_minutes voice_recording_max_size_mb voice_transcription_enabled voice_transcription_provider voice_transcription_max_size_mb voice_transcription_whisper_cpp_bin voice_transcription_whisper_cpp_model),
     "ai" => ~w(ai_flow_generator_enabled ai_flow_generator_provider ai_flow_generator_model),
-    "livekit" => ~w(livekit_url livekit_api_key livekit_api_secret livekit_max_participants_default),
+    "livekit" =>
+      ~w(livekit_url livekit_api_key livekit_api_secret livekit_max_participants_default),
     "turn" => ~w(turn_url turn_url_tls turn_credential_ttl_seconds),
-    "voice_rewards" => ~w(voice_reward_enabled voice_reward_points_per_minute voice_reward_min_duration_seconds voice_reward_max_points_per_session),
-    "voice_auto_thread" => ~w(voice_auto_thread_enabled voice_auto_thread_forum_id),
+    "voice_rewards" =>
+      ~w(voice_reward_enabled voice_reward_points_per_minute voice_reward_min_duration_seconds voice_reward_max_points_per_session),
+    "voice_auto_thread" => ~w(voice_auto_thread_enabled voice_auto_thread_forum_id)
   }
 
   def get(key) do
@@ -162,6 +172,7 @@ defmodule ForgeNexus.Settings do
   end
 
   def get_bool(key), do: get(key) == "true"
+
   def get_int(key) do
     case Integer.parse(get(key) || "0") do
       {n, _} -> n
@@ -174,7 +185,11 @@ defmodule ForgeNexus.Settings do
       case Repo.get_by(SiteSetting, key: key) do
         nil ->
           %SiteSetting{}
-          |> SiteSetting.changeset(%{key: key, value: to_string(value), value_type: value_type(value)})
+          |> SiteSetting.changeset(%{
+            key: key,
+            value: to_string(value),
+            value_type: value_type(value)
+          })
           |> Repo.insert()
 
         setting ->
@@ -201,8 +216,13 @@ defmodule ForgeNexus.Settings do
 
   def get_all_grouped do
     all = get_all_with_defaults()
+
     Enum.map(@categories, fn {category, keys} ->
-      settings = Enum.map(keys, fn key -> %{key: key, value: Map.get(all, key, ""), default: Map.get(@defaults, key, "")} end)
+      settings =
+        Enum.map(keys, fn key ->
+          %{key: key, value: Map.get(all, key, ""), default: Map.get(@defaults, key, "")}
+        end)
+
       {category, settings}
     end)
     |> Map.new()
@@ -214,6 +234,7 @@ defmodule ForgeNexus.Settings do
         set(key, value)
       end
     end)
+
     :ok
   end
 

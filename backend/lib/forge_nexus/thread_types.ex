@@ -50,13 +50,69 @@ defmodule ForgeNexus.ThreadTypes do
 
   def seed_builtin_types do
     builtin_types = [
-      %{name: "discussion", slug: "discussion", label: "Discussion", icon: "chat-bubble", description: "General discussion thread", position: 0, is_builtin: true},
-      %{name: "question", slug: "question", label: "Q&A", icon: "question-mark-circle", description: "Ask a question and get answers", position: 1, is_builtin: true},
-      %{name: "debate", slug: "debate", label: "Debate", icon: "scale", description: "Structured debate with pro/con positions", position: 2, is_builtin: true},
-      %{name: "ama", slug: "ama", label: "AMA", icon: "microphone", description: "Ask Me Anything session", position: 3, is_builtin: true},
-      %{name: "marketplace", slug: "marketplace", label: "Marketplace", icon: "shopping-bag", description: "Buy, sell, or trade items", position: 4, is_builtin: true},
-      %{name: "wiki", slug: "wiki", label: "Wiki", icon: "book-open", description: "Collaboratively edited knowledge article", position: 5, is_builtin: true},
-      %{name: "announcement", slug: "announcement", label: "Announcement", icon: "megaphone", description: "Official announcements", position: 6, is_builtin: true}
+      %{
+        name: "discussion",
+        slug: "discussion",
+        label: "Discussion",
+        icon: "chat-bubble",
+        description: "General discussion thread",
+        position: 0,
+        is_builtin: true
+      },
+      %{
+        name: "question",
+        slug: "question",
+        label: "Q&A",
+        icon: "question-mark-circle",
+        description: "Ask a question and get answers",
+        position: 1,
+        is_builtin: true
+      },
+      %{
+        name: "debate",
+        slug: "debate",
+        label: "Debate",
+        icon: "scale",
+        description: "Structured debate with pro/con positions",
+        position: 2,
+        is_builtin: true
+      },
+      %{
+        name: "ama",
+        slug: "ama",
+        label: "AMA",
+        icon: "microphone",
+        description: "Ask Me Anything session",
+        position: 3,
+        is_builtin: true
+      },
+      %{
+        name: "marketplace",
+        slug: "marketplace",
+        label: "Marketplace",
+        icon: "shopping-bag",
+        description: "Buy, sell, or trade items",
+        position: 4,
+        is_builtin: true
+      },
+      %{
+        name: "wiki",
+        slug: "wiki",
+        label: "Wiki",
+        icon: "book-open",
+        description: "Collaboratively edited knowledge article",
+        position: 5,
+        is_builtin: true
+      },
+      %{
+        name: "announcement",
+        slug: "announcement",
+        label: "Announcement",
+        icon: "megaphone",
+        description: "Official announcements",
+        position: 6,
+        is_builtin: true
+      }
     ]
 
     Enum.each(builtin_types, fn type_attrs ->
@@ -79,7 +135,11 @@ defmodule ForgeNexus.ThreadTypes do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     answer
-    |> ThreadAnswer.changeset(%{is_accepted: true, accepted_at: now, accepted_by_id: accepted_by_id})
+    |> ThreadAnswer.changeset(%{
+      is_accepted: true,
+      accepted_at: now,
+      accepted_by_id: accepted_by_id
+    })
     |> Repo.update()
   end
 
@@ -87,7 +147,11 @@ defmodule ForgeNexus.ThreadTypes do
     case Repo.get_by(AnswerVote, thread_answer_id: thread_answer_id, user_id: user_id) do
       nil ->
         %AnswerVote{}
-        |> AnswerVote.changeset(%{thread_answer_id: thread_answer_id, user_id: user_id, value: value})
+        |> AnswerVote.changeset(%{
+          thread_answer_id: thread_answer_id,
+          user_id: user_id,
+          value: value
+        })
         |> Repo.insert()
         |> update_answer_vote_count(thread_answer_id)
 
@@ -122,14 +186,17 @@ defmodule ForgeNexus.ThreadTypes do
   def get_answers(thread_id) do
     ThreadAnswer
     |> where([a], a.thread_id == ^thread_id)
-    |> order_by([a], [desc: a.is_accepted, desc: a.vote_count])
+    |> order_by([a], desc: a.is_accepted, desc: a.vote_count)
     |> Repo.all()
   end
 
   # ── Debate ──
 
   def set_position(attrs \\ %{}) do
-    case Repo.get_by(DebatePosition, thread_id: attrs[:thread_id] || attrs["thread_id"], user_id: attrs[:user_id] || attrs["user_id"]) do
+    case Repo.get_by(DebatePosition,
+           thread_id: attrs[:thread_id] || attrs["thread_id"],
+           user_id: attrs[:user_id] || attrs["user_id"]
+         ) do
       nil ->
         %DebatePosition{}
         |> DebatePosition.changeset(attrs)

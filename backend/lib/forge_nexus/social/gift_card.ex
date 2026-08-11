@@ -23,8 +23,18 @@ defmodule ForgeNexus.Social.GiftCard do
 
   def changeset(card, attrs) do
     card
-    |> cast(attrs, [:community_id, :purchaser_id, :redeemed_by_id, :code, :amount_cents,
-                     :points_amount, :type, :status, :redeemed_at, :expires_at])
+    |> cast(attrs, [
+      :community_id,
+      :purchaser_id,
+      :redeemed_by_id,
+      :code,
+      :amount_cents,
+      :points_amount,
+      :type,
+      :status,
+      :redeemed_at,
+      :expires_at
+    ])
     |> validate_required([:code])
     |> validate_inclusion(:type, ~w(points money premium_time))
     |> validate_inclusion(:status, ~w(active redeemed expired))

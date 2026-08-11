@@ -22,7 +22,12 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CheckOnboardingComplete do
         checklist ->
           tasks = checklist.tasks || []
           total = length(tasks)
-          done = Enum.count(tasks, fn t -> Map.get(t, "completed") == true or Map.get(t, :completed) == true end)
+
+          done =
+            Enum.count(tasks, fn t ->
+              Map.get(t, "completed") == true or Map.get(t, :completed) == true
+            end)
+
           {done, total}
       end
 
@@ -48,8 +53,22 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CheckOnboardingComplete do
       description: "Branches based on whether a user has completed all onboarding tasks.",
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [
-        %{name: "complete", type: "branch", fields: [%{name: "completed_count", type: "number"}, %{name: "total_count", type: "number"}]},
-        %{name: "incomplete", type: "branch", fields: [%{name: "completed_count", type: "number"}, %{name: "total_count", type: "number"}]}
+        %{
+          name: "complete",
+          type: "branch",
+          fields: [
+            %{name: "completed_count", type: "number"},
+            %{name: "total_count", type: "number"}
+          ]
+        },
+        %{
+          name: "incomplete",
+          type: "branch",
+          fields: [
+            %{name: "completed_count", type: "number"},
+            %{name: "total_count", type: "number"}
+          ]
+        }
       ],
       config_fields: []
     }

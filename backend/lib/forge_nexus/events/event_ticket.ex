@@ -21,8 +21,16 @@ defmodule ForgeNexus.Events.EventTicket do
 
   def changeset(ticket, attrs) do
     ticket
-    |> cast(attrs, [:event_id, :user_id, :community_id, :ticket_number, :payment_type,
-                     :amount_cents, :stripe_payment_intent_id, :status])
+    |> cast(attrs, [
+      :event_id,
+      :user_id,
+      :community_id,
+      :ticket_number,
+      :payment_type,
+      :amount_cents,
+      :stripe_payment_intent_id,
+      :status
+    ])
     |> validate_required([:event_id, :user_id])
     |> validate_inclusion(:status, ~w(valid used cancelled refunded))
     |> validate_inclusion(:payment_type, ~w(free points money))

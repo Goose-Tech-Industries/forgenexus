@@ -26,7 +26,17 @@ defmodule ForgeNexus.Accounts.UserGroup do
 
   def changeset(group, attrs) do
     group
-    |> cast(attrs, [:name, :slug, :description, :color, :icon, :is_default, :is_staff, :position, :permissions])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :color,
+      :icon,
+      :is_default,
+      :is_staff,
+      :position,
+      :permissions
+    ])
     |> validate_required([:name])
     |> generate_slug()
     |> unique_constraint(:slug)
@@ -34,7 +44,19 @@ defmodule ForgeNexus.Accounts.UserGroup do
 
   def admin_changeset(group, attrs) do
     group
-    |> cast(attrs, [:name, :slug, :description, :color, :icon, :is_default, :is_staff, :position, :permissions, :username_color, :username_effect])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :color,
+      :icon,
+      :is_default,
+      :is_staff,
+      :position,
+      :permissions,
+      :username_color,
+      :username_effect
+    ])
     |> validate_required([:name])
     |> generate_slug()
     |> unique_constraint(:slug)
@@ -42,7 +64,9 @@ defmodule ForgeNexus.Accounts.UserGroup do
 
   defp generate_slug(changeset) do
     case get_change(changeset, :name) do
-      nil -> changeset
+      nil ->
+        changeset
+
       name ->
         slug = get_change(changeset, :slug) || Slug.slugify(name)
         put_change(changeset, :slug, slug)

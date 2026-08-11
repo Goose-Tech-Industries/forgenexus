@@ -34,8 +34,18 @@ defmodule ForgeNexus.Platform.ApiKey do
 
   def changeset(key, attrs) do
     key
-    |> cast(attrs, [:community_id, :user_id, :name, :key_hash, :key_prefix, :scopes,
-                     :rate_limit_per_minute, :plan, :is_active, :expires_at])
+    |> cast(attrs, [
+      :community_id,
+      :user_id,
+      :name,
+      :key_hash,
+      :key_prefix,
+      :scopes,
+      :rate_limit_per_minute,
+      :plan,
+      :is_active,
+      :expires_at
+    ])
     |> validate_required([:name, :key_hash, :key_prefix, :user_id])
     |> validate_length(:name, max: 100)
     |> unique_constraint(:key_hash)

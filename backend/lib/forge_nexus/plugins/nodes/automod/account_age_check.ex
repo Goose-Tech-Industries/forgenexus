@@ -70,7 +70,14 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.AccountAgeCheck do
         %{name: "mature", type: "branch", fields: [%{name: "account_age_days", type: "number"}]},
         %{name: "new", type: "branch", fields: [%{name: "account_age_days", type: "number"}]}
       ],
-      config_fields: [%{name: "min_days", type: "number", default: 7, description: "Minimum account age in days"}]
+      config_fields: [
+        %{
+          name: "min_days",
+          type: "number",
+          default: 7,
+          description: "Minimum account age in days"
+        }
+      ]
     }
   end
 end

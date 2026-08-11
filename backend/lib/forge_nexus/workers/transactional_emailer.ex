@@ -27,10 +27,15 @@ defmodule ForgeNexus.Workers.TransactionalEmailer do
     end)
   end
 
-  def perform(%Oban.Job{args: %{"template" => "email_change", "user_id" => user_id, "new_email" => new_email}}) do
+  def perform(%Oban.Job{
+        args: %{"template" => "email_change", "user_id" => user_id, "new_email" => new_email}
+      }) do
     with_user(user_id, fn user ->
       with {:ok, plaintext, token} <- Accounts.create_email_change_token(user, new_email) do
-        user |> Emails.email_change_email(token.email, plaintext) |> Mailer.deliver() |> normalize()
+        user
+        |> Emails.email_change_email(token.email, plaintext)
+        |> Mailer.deliver()
+        |> normalize()
       end
     end)
   end
@@ -43,9 +48,18 @@ defmodule ForgeNexus.Workers.TransactionalEmailer do
     end)
   end
 
-  def perform(%Oban.Job{args: %{"template" => "email_changed_notice", "user_id" => user_id, "old_email" => old_email}}) do
+  def perform(%Oban.Job{
+        args: %{
+          "template" => "email_changed_notice",
+          "user_id" => user_id,
+          "old_email" => old_email
+        }
+      }) do
     with_user(user_id, fn user ->
-      user |> Emails.email_changed_notice(old_email, user.email) |> Mailer.deliver() |> normalize()
+      user
+      |> Emails.email_changed_notice(old_email, user.email)
+      |> Mailer.deliver()
+      |> normalize()
     end)
   end
 
@@ -55,7 +69,10 @@ defmodule ForgeNexus.Workers.TransactionalEmailer do
       reason = Map.get(args, "reason", "Violation of community guidelines")
       expires_at = Map.get(args, "expires_at")
 
-      user |> Emails.ban_notice_email(ban_type, reason, expires_at) |> Mailer.deliver() |> normalize()
+      user
+      |> Emails.ban_notice_email(ban_type, reason, expires_at)
+      |> Mailer.deliver()
+      |> normalize()
     end)
   end
 
@@ -74,7 +91,9 @@ defmodule ForgeNexus.Workers.TransactionalEmailer do
     end)
   end
 
-  def perform(%Oban.Job{args: %{"template" => "warning_revoked_notice", "user_id" => user_id} = args}) do
+  def perform(%Oban.Job{
+        args: %{"template" => "warning_revoked_notice", "user_id" => user_id} = args
+      }) do
     with_user(user_id, fn user ->
       reason = Map.get(args, "reason", "")
       user |> Emails.warning_revoked_notice_email(reason) |> Mailer.deliver() |> normalize()

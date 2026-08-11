@@ -4,7 +4,32 @@ defmodule ForgeNexus.Forums do
   """
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Forums.{Category, Forum, Thread, Post, Poll, PollOption, Badge, UserBadge, ThreadPrefix, PostDraft, PostRating, ContentIgnore, ThreadRating, ThreadRead, ThreadSubscription, PostBookmark, ReputationEvent, CustomBBCode, ForumWebhook, ForumPermission, ThreadParticipant, PostEdit}
+
+  alias ForgeNexus.Forums.{
+    Category,
+    Forum,
+    Thread,
+    Post,
+    Poll,
+    PollOption,
+    Badge,
+    UserBadge,
+    ThreadPrefix,
+    PostDraft,
+    PostRating,
+    ContentIgnore,
+    ThreadRating,
+    ThreadRead,
+    ThreadSubscription,
+    PostBookmark,
+    ReputationEvent,
+    CustomBBCode,
+    ForumWebhook,
+    ForumPermission,
+    ThreadParticipant,
+    PostEdit
+  }
+
   alias ForgeNexus.Moderation.Reaction
   alias ForgeNexus.{Accounts, Notifications, Search}
   alias ForgeNexus.Workers.NotificationEmailer
@@ -86,19 +111,21 @@ defmodule ForgeNexus.Forums do
       end
 
     # Apply prefix filter
-    query = if prefix && prefix != "" do
-      where(query, [t], t.prefix == ^prefix)
-    else
-      query
-    end
+    query =
+      if prefix && prefix != "" do
+        where(query, [t], t.prefix == ^prefix)
+      else
+        query
+      end
 
     # Apply sort (pinned threads always first)
-    query = case sort do
-      "most_replies" -> order_by(query, [t], [desc: t.is_pinned, desc: t.reply_count])
-      "most_views" -> order_by(query, [t], [desc: t.is_pinned, desc: t.view_count])
-      "oldest" -> order_by(query, [t], [desc: t.is_pinned, asc: t.inserted_at])
-      _ -> order_by(query, [t], [desc: t.is_pinned, desc: t.last_post_at])
-    end
+    query =
+      case sort do
+        "most_replies" -> order_by(query, [t], desc: t.is_pinned, desc: t.reply_count)
+        "most_views" -> order_by(query, [t], desc: t.is_pinned, desc: t.view_count)
+        "oldest" -> order_by(query, [t], desc: t.is_pinned, asc: t.inserted_at)
+        _ -> order_by(query, [t], desc: t.is_pinned, desc: t.last_post_at)
+      end
 
     query
     |> limit(^limit)
@@ -142,6 +169,7 @@ defmodule ForgeNexus.Forums do
       # Create the first post — auto-convert BBCode to HTML if the caller
       # didn't ship pre-rendered HTML. The frontend submits body only.
       body = attrs["body"] || attrs[:body]
+
       body_html =
         case attrs["body_html"] || attrs[:body_html] do
           nil -> if body, do: ForgeNexus.BBCode.to_html(body), else: nil
@@ -158,12 +186,13 @@ defmodule ForgeNexus.Forums do
           user_id: thread.user_id,
           is_first_post: true,
           ip_address: attrs["ip_address"] || attrs[:ip_address]
-      })
-      |> Repo.insert!()
+        })
+        |> Repo.insert!()
 
       # Update forum counters: thread_count + post_count (OP counts as a post).
       # Track it as the latest post too so forum listings don't lag behind.
       now = DateTime.utc_now() |> DateTime.truncate(:second)
+
       from(f in Forum, where: f.id == ^thread.forum_id)
       |> Repo.update_all(
         inc: [thread_count: 1, post_count: 1],
@@ -185,13 +214,15 @@ defmodule ForgeNexus.Forums do
       # Extract thumbnail from first post body
       body = attrs["body"] || attrs[:body] || ""
       thumbnail_url = extract_first_image(body)
-      thread = if thumbnail_url do
-        thread
-        |> Ecto.Changeset.change(thumbnail_url: thumbnail_url)
-        |> Repo.update!()
-      else
-        thread
-      end
+
+      thread =
+        if thumbnail_url do
+          thread
+          |> Ecto.Changeset.change(thumbnail_url: thumbnail_url)
+          |> Repo.update!()
+        else
+          thread
+        end
 
       # Index in search (async, don't fail transaction)
       Task.start(fn -> Search.index_thread(thread) end)
@@ -203,7 +234,9 @@ defmodule ForgeNexus.Forums do
 
       # Log reputation event for thread creation (only for published threads)
       if thread.status == "published" do
-        Task.start(fn -> log_reputation_event(thread.user_id, "thread_created", 2, "thread", thread.id) end)
+        Task.start(fn ->
+          log_reputation_event(thread.user_id, "thread_created", 2, "thread", thread.id)
+        end)
       end
 
       {thread, now}
@@ -219,6 +252,7 @@ defmodule ForgeNexus.Forums do
             last_post_user_id: thread.user_id
           })
         end)
+
         {:ok, thread}
 
       other ->
@@ -231,12 +265,15 @@ defmodule ForgeNexus.Forums do
       # BBCode [img] tag
       match = Regex.run(~r/\[img\](https?:\/\/[^\[]+)\[\/img\]/i, body) ->
         Enum.at(match, 1)
+
       # HTML <img src="..."> tag
       match = Regex.run(~r/<img[^>]+src=["'](https?:\/\/[^"']+)["']/i, body) ->
         Enum.at(match, 1)
+
       # Plain image URL
       match = Regex.run(~r/(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp))/i, body) ->
         Enum.at(match, 1)
+
       true ->
         nil
     end
@@ -291,6 +328,7 @@ defmodule ForgeNexus.Forums do
   defp do_create_post(attrs) do
     body = attrs["body"] || attrs[:body]
     existing_html = attrs["body_html"] || attrs[:body_html]
+
     attrs =
       if body && (is_nil(existing_html) or existing_html == "") do
         Map.put(attrs, "body_html", ForgeNexus.BBCode.to_html(body))
@@ -316,14 +354,20 @@ defmodule ForgeNexus.Forums do
         user_id = attrs["user_id"] || attrs[:user_id]
 
         from(t in Thread, where: t.id == ^thread_id)
-        |> Repo.update_all(inc: [reply_count: 1], set: [last_post_at: now, last_post_user_id: user_id])
+        |> Repo.update_all(
+          inc: [reply_count: 1],
+          set: [last_post_at: now, last_post_user_id: user_id]
+        )
 
         forum_id =
           from(t in Thread, where: t.id == ^thread_id, select: t.forum_id)
           |> Repo.one!()
 
         from(f in Forum, where: f.id == ^forum_id)
-        |> Repo.update_all(inc: [post_count: 1], set: [last_post_at: now, last_post_user_id: user_id])
+        |> Repo.update_all(
+          inc: [post_count: 1],
+          set: [last_post_at: now, last_post_user_id: user_id]
+        )
 
         from(u in ForgeNexus.Accounts.User, where: u.id == ^user_id)
         |> Repo.update_all(inc: [post_count: 1], set: [last_post_at: now])
@@ -337,6 +381,7 @@ defmodule ForgeNexus.Forums do
         Task.start(fn -> process_mentions(post, user_id) end)
         Task.start(fn -> process_quotes(post, user_id) end)
         Task.start(fn -> notify_thread_watchers(post.thread_id, user_id, post) end)
+
         Task.start(fn ->
           ForgeNexusWeb.Endpoint.broadcast("forums:index", "forum_updated", %{
             forum_id: forum_id,
@@ -345,6 +390,7 @@ defmodule ForgeNexus.Forums do
             last_post_user_id: user_id
           })
         end)
+
         {:ok, post}
 
       other ->
@@ -358,11 +404,12 @@ defmodule ForgeNexus.Forums do
     editor_id = attrs["editor_id"] || attrs[:editor_id] || post.user_id
     edit_reason = attrs["edit_reason"] || attrs[:edit_reason]
 
-    attrs = if body do
-      Map.put(attrs, "body_html", ForgeNexus.BBCode.to_html(body))
-    else
-      attrs
-    end
+    attrs =
+      if body do
+        Map.put(attrs, "body_html", ForgeNexus.BBCode.to_html(body))
+      else
+        attrs
+      end
 
     Repo.transaction(fn ->
       with {:ok, updated} <- post |> Post.edit_changeset(attrs) |> Repo.update() do
@@ -419,17 +466,20 @@ defmodule ForgeNexus.Forums do
     Repo.transaction(fn ->
       # Move all posts from source to target, marking their origin
       from(p in Post, where: p.thread_id == ^source.id)
-      |> Repo.update_all(set: [
-        thread_id: target.id,
-        merged_from_thread_id: source.id
-      ])
+      |> Repo.update_all(
+        set: [
+          thread_id: target.id,
+          merged_from_thread_id: source.id
+        ]
+      )
 
       # Update target thread reply count
-      new_reply_count = Repo.one(
-        from p in Post,
-          where: p.thread_id == ^target.id and p.is_first_post == false,
-          select: count(p.id)
-      )
+      new_reply_count =
+        Repo.one(
+          from p in Post,
+            where: p.thread_id == ^target.id and p.is_first_post == false,
+            select: count(p.id)
+        )
 
       target
       |> Ecto.Changeset.change(reply_count: new_reply_count)
@@ -483,26 +533,29 @@ defmodule ForgeNexus.Forums do
     limit = Keyword.get(opts, :limit, 25)
     offset = Keyword.get(opts, :offset, 0)
 
-    cutoff = case period do
-      "today" -> DateTime.utc_now() |> DateTime.add(-1 * 24 * 3600, :second)
-      "week" -> DateTime.utc_now() |> DateTime.add(-7 * 24 * 3600, :second)
-      "month" -> DateTime.utc_now() |> DateTime.add(-30 * 24 * 3600, :second)
-      _ -> nil
-    end
+    cutoff =
+      case period do
+        "today" -> DateTime.utc_now() |> DateTime.add(-1 * 24 * 3600, :second)
+        "week" -> DateTime.utc_now() |> DateTime.add(-7 * 24 * 3600, :second)
+        "month" -> DateTime.utc_now() |> DateTime.add(-30 * 24 * 3600, :second)
+        _ -> nil
+      end
 
-    query = Thread
+    query =
+      Thread
       |> where([t], t.is_hidden == false)
       |> join(:inner, [t], f in Forum, on: t.forum_id == f.id)
       |> preload([:user, :forum])
 
-    query = if cutoff do
-      where(query, [t], t.last_post_at >= ^cutoff)
-    else
-      query
-    end
+    query =
+      if cutoff do
+        where(query, [t], t.last_post_at >= ^cutoff)
+      else
+        query
+      end
 
     query
-    |> order_by([t], [desc: fragment("(? * 2 + ?)", t.reply_count, t.view_count)])
+    |> order_by([t], desc: fragment("(? * 2 + ?)", t.reply_count, t.view_count))
     |> limit(^limit)
     |> offset(^offset)
     |> Repo.all()
@@ -529,7 +582,11 @@ defmodule ForgeNexus.Forums do
           nil ->
             result =
               %PostRating{}
-              |> PostRating.changeset(%{post_id: post_id, user_id: user_id, rating_type: rating_type})
+              |> PostRating.changeset(%{
+                post_id: post_id,
+                user_id: user_id,
+                rating_type: rating_type
+              })
               |> Repo.insert()
 
             if rating_type == "like" do
@@ -540,7 +597,8 @@ defmodule ForgeNexus.Forums do
             result
 
           existing ->
-            Repo.delete(existing)  # Toggle off
+            # Toggle off
+            Repo.delete(existing)
         end
     end
   end
@@ -593,11 +651,14 @@ defmodule ForgeNexus.Forums do
 
   def user_rating_summary(user_id) do
     from(r in PostRating,
-      join: p in Post, on: p.id == r.post_id,
+      join: p in Post,
+      on: p.id == r.post_id,
       where: p.user_id == ^user_id,
       group_by: r.rating_type,
       select: {r.rating_type, count(r.id)}
-    ) |> Repo.all() |> Map.new()
+    )
+    |> Repo.all()
+    |> Map.new()
   end
 
   # === Post Reactions (Emoji) ===
@@ -614,11 +675,21 @@ defmodule ForgeNexus.Forums do
         {:error, :self_reaction}
 
       true ->
-        case Repo.get_by(Reaction, reactable_type: "post", reactable_id: post_id, user_id: user_id, type: reaction_type) do
+        case Repo.get_by(Reaction,
+               reactable_type: "post",
+               reactable_id: post_id,
+               user_id: user_id,
+               type: reaction_type
+             ) do
           nil ->
             result =
               %Reaction{}
-              |> Reaction.changeset(%{type: reaction_type, reactable_type: "post", reactable_id: post_id, user_id: user_id})
+              |> Reaction.changeset(%{
+                type: reaction_type,
+                reactable_type: "post",
+                reactable_id: post_id,
+                user_id: user_id
+              })
               |> Repo.insert()
 
             # Fire reaction notification (function existed but was never called).
@@ -681,7 +752,10 @@ defmodule ForgeNexus.Forums do
 
   def user_reactions_for_post(post_id, user_id) do
     Reaction
-    |> where([r], r.reactable_type == "post" and r.reactable_id == ^post_id and r.user_id == ^user_id)
+    |> where(
+      [r],
+      r.reactable_type == "post" and r.reactable_id == ^post_id and r.user_id == ^user_id
+    )
     |> select([r], r.type)
     |> Repo.all()
   end
@@ -692,12 +766,17 @@ defmodule ForgeNexus.Forums do
     |> group_by([r], [r.reactable_id, r.type])
     |> select([r], {r.reactable_id, r.type, count(r.id)})
     |> Repo.all()
-    |> Enum.group_by(fn {post_id, _type, _count} -> post_id end, fn {_post_id, type, count} -> %{type: type, count: count} end)
+    |> Enum.group_by(fn {post_id, _type, _count} -> post_id end, fn {_post_id, type, count} ->
+      %{type: type, count: count}
+    end)
   end
 
   def user_reactions_for_posts(post_ids, user_id) when is_list(post_ids) do
     Reaction
-    |> where([r], r.reactable_type == "post" and r.reactable_id in ^post_ids and r.user_id == ^user_id)
+    |> where(
+      [r],
+      r.reactable_type == "post" and r.reactable_id in ^post_ids and r.user_id == ^user_id
+    )
     |> select([r], {r.reactable_id, r.type})
     |> Repo.all()
     |> Enum.group_by(fn {post_id, _type} -> post_id end, fn {_post_id, type} -> type end)
@@ -729,7 +808,12 @@ defmodule ForgeNexus.Forums do
 
   def award_badge(user_id, badge_id, awarded_by_id \\ nil, reason \\ nil) do
     %UserBadge{}
-    |> UserBadge.changeset(%{user_id: user_id, badge_id: badge_id, awarded_by_id: awarded_by_id, reason: reason})
+    |> UserBadge.changeset(%{
+      user_id: user_id,
+      badge_id: badge_id,
+      awarded_by_id: awarded_by_id,
+      reason: reason
+    })
     |> Repo.insert(on_conflict: :nothing)
   end
 
@@ -760,21 +844,33 @@ defmodule ForgeNexus.Forums do
 
     for badge <- badges do
       criteria = badge.auto_criteria || %{}
-      earned = case criteria do
-        %{"type" => "post_count", "value" => v} -> user.post_count >= v
-        %{"type" => "thread_count", "value" => v} -> user.thread_count >= v
-        %{"type" => "reputation", "value" => v} -> user.reputation >= v
-        %{"type" => "days_member", "value" => v} ->
-          days = DateTime.diff(DateTime.utc_now(), user.inserted_at, :second) / 86400
-          days >= v
-        _ -> false
-      end
+
+      earned =
+        case criteria do
+          %{"type" => "post_count", "value" => v} ->
+            user.post_count >= v
+
+          %{"type" => "thread_count", "value" => v} ->
+            user.thread_count >= v
+
+          %{"type" => "reputation", "value" => v} ->
+            user.reputation >= v
+
+          %{"type" => "days_member", "value" => v} ->
+            days = DateTime.diff(DateTime.utc_now(), user.inserted_at, :second) / 86400
+            days >= v
+
+          _ ->
+            false
+        end
 
       if earned do
         case award_badge(user.id, badge.id) do
           {:ok, _} ->
             log_reputation_event(user.id, "achievement_earned", 5, "badge", badge.id)
-          _ -> :ok
+
+          _ ->
+            :ok
         end
       end
     end
@@ -784,13 +880,17 @@ defmodule ForgeNexus.Forums do
 
   def mark_solved(thread_id, post_id) do
     thread = Repo.get!(Thread, thread_id)
-    result = thread |> Ecto.Changeset.change(solved_post_id: post_id, is_solved: true) |> Repo.update()
+
+    result =
+      thread |> Ecto.Changeset.change(solved_post_id: post_id, is_solved: true) |> Repo.update()
 
     case result do
       {:ok, _} ->
         post = Repo.get(Post, post_id)
         if post, do: log_reputation_event(post.user_id, "best_answer", 5, "post", post_id)
-      _ -> :ok
+
+      _ ->
+        :ok
     end
 
     result
@@ -815,7 +915,10 @@ defmodule ForgeNexus.Forums do
   end
 
   def create_prefix(attrs), do: %ThreadPrefix{} |> ThreadPrefix.changeset(attrs) |> Repo.insert()
-  def update_prefix(id, attrs), do: Repo.get!(ThreadPrefix, id) |> ThreadPrefix.changeset(attrs) |> Repo.update()
+
+  def update_prefix(id, attrs),
+    do: Repo.get!(ThreadPrefix, id) |> ThreadPrefix.changeset(attrs) |> Repo.update()
+
   def delete_prefix(id), do: Repo.get!(ThreadPrefix, id) |> Repo.delete()
 
   def set_thread_prefix(thread_id, prefix_id) do
@@ -827,10 +930,20 @@ defmodule ForgeNexus.Forums do
   # === Drafts ===
 
   def save_draft(user_id, context_type, context_id, body, title \\ nil) do
-    case Repo.get_by(PostDraft, user_id: user_id, context_type: context_type, context_id: context_id || "") do
+    case Repo.get_by(PostDraft,
+           user_id: user_id,
+           context_type: context_type,
+           context_id: context_id || ""
+         ) do
       nil ->
         %PostDraft{}
-        |> PostDraft.changeset(%{user_id: user_id, context_type: context_type, context_id: context_id || "", body: body, title: title})
+        |> PostDraft.changeset(%{
+          user_id: user_id,
+          context_type: context_type,
+          context_id: context_id || "",
+          body: body,
+          title: title
+        })
         |> Repo.insert()
 
       existing ->
@@ -841,11 +954,19 @@ defmodule ForgeNexus.Forums do
   end
 
   def get_draft(user_id, context_type, context_id) do
-    Repo.get_by(PostDraft, user_id: user_id, context_type: context_type, context_id: context_id || "")
+    Repo.get_by(PostDraft,
+      user_id: user_id,
+      context_type: context_type,
+      context_id: context_id || ""
+    )
   end
 
   def delete_draft(user_id, context_type, context_id) do
-    case Repo.get_by(PostDraft, user_id: user_id, context_type: context_type, context_id: context_id || "") do
+    case Repo.get_by(PostDraft,
+           user_id: user_id,
+           context_type: context_type,
+           context_id: context_id || ""
+         ) do
       nil -> :ok
       draft -> Repo.delete(draft)
     end
@@ -854,7 +975,8 @@ defmodule ForgeNexus.Forums do
   # === Similar Threads ===
 
   def find_similar_threads(title, forum_id \\ nil, limit \\ 5) do
-    base = Thread
+    base =
+      Thread
       |> where([t], t.is_hidden == false)
       |> where([t], fragment("similarity(?, ?) > 0.2", t.title, ^title))
       |> order_by([t], fragment("similarity(?, ?) DESC", t.title, ^title))
@@ -868,6 +990,7 @@ defmodule ForgeNexus.Forums do
     # If pg_trgm is not installed, fall back to ILIKE
     _ ->
       words = title |> String.split() |> Enum.take(3) |> Enum.join("%")
+
       Thread
       |> where([t], t.is_hidden == false and ilike(t.title, ^"%#{words}%"))
       |> order_by(desc: :inserted_at)
@@ -896,8 +1019,10 @@ defmodule ForgeNexus.Forums do
       new_post_counts =
         from(p in Post,
           join: tr in ThreadRead,
-            on: tr.thread_id == p.thread_id and tr.user_id == ^user_id,
-          where: p.thread_id in ^thread_ids and p.is_hidden == false and p.inserted_at > tr.last_read_at,
+          on: tr.thread_id == p.thread_id and tr.user_id == ^user_id,
+          where:
+            p.thread_id in ^thread_ids and p.is_hidden == false and
+              p.inserted_at > tr.last_read_at,
           group_by: p.thread_id,
           select: {p.thread_id, count(p.id)}
         )
@@ -906,9 +1031,17 @@ defmodule ForgeNexus.Forums do
 
       Enum.map(threads, fn thread ->
         last_read = Map.get(reads, thread.id)
-        has_unread = is_nil(last_read) or
-          (!is_nil(thread.last_post_at) and !is_nil(last_read) and DateTime.compare(thread.last_post_at, last_read) == :gt)
-        new_post_count = if is_nil(last_read), do: thread.reply_count + 1, else: Map.get(new_post_counts, thread.id, 0)
+
+        has_unread =
+          is_nil(last_read) or
+            (!is_nil(thread.last_post_at) and !is_nil(last_read) and
+               DateTime.compare(thread.last_post_at, last_read) == :gt)
+
+        new_post_count =
+          if is_nil(last_read),
+            do: thread.reply_count + 1,
+            else: Map.get(new_post_counts, thread.id, 0)
+
         thread
         |> Map.put(:has_unread, has_unread)
         |> Map.put(:last_read_at, last_read)
@@ -916,7 +1049,10 @@ defmodule ForgeNexus.Forums do
       end)
     else
       Enum.map(threads, fn thread ->
-        thread |> Map.put(:has_unread, false) |> Map.put(:last_read_at, nil) |> Map.put(:new_post_count, 0)
+        thread
+        |> Map.put(:has_unread, false)
+        |> Map.put(:last_read_at, nil)
+        |> Map.put(:new_post_count, 0)
       end)
     end
   end
@@ -952,7 +1088,7 @@ defmodule ForgeNexus.Forums do
   def unread_counts_by_forum(user_id) do
     from(t in Thread,
       left_join: tr in ThreadRead,
-        on: tr.thread_id == t.id and tr.user_id == ^user_id,
+      on: tr.thread_id == t.id and tr.user_id == ^user_id,
       where: t.is_hidden == false,
       where: is_nil(tr.id) or tr.last_read_at < t.last_post_at,
       group_by: t.forum_id,
@@ -994,14 +1130,16 @@ defmodule ForgeNexus.Forums do
     from(ci in ContentIgnore,
       where: ci.user_id == ^user_id and not is_nil(ci.forum_id),
       select: ci.forum_id
-    ) |> Repo.all()
+    )
+    |> Repo.all()
   end
 
   def ignored_thread_ids(user_id) do
     from(ci in ContentIgnore,
       where: ci.user_id == ^user_id and not is_nil(ci.thread_id),
       select: ci.thread_id
-    ) |> Repo.all()
+    )
+    |> Repo.all()
   end
 
   def list_ignores(user_id) do
@@ -1009,7 +1147,8 @@ defmodule ForgeNexus.Forums do
       where: ci.user_id == ^user_id,
       preload: [:forum, :thread],
       order_by: [desc: :inserted_at]
-    ) |> Repo.all()
+    )
+    |> Repo.all()
   end
 
   # === Thread Ratings ===
@@ -1050,7 +1189,11 @@ defmodule ForgeNexus.Forums do
     case Repo.get_by(ThreadSubscription, thread_id: thread_id, user_id: user_id) do
       nil ->
         %ThreadSubscription{}
-        |> ThreadSubscription.changeset(%{thread_id: thread_id, user_id: user_id, notification_level: level})
+        |> ThreadSubscription.changeset(%{
+          thread_id: thread_id,
+          user_id: user_id,
+          notification_level: level
+        })
         |> Repo.insert()
 
       existing ->
@@ -1077,21 +1220,25 @@ defmodule ForgeNexus.Forums do
     limit = Keyword.get(opts, :limit, 25)
     offset = Keyword.get(opts, :offset, 0)
 
-    posts = from(p in Post,
-      where: p.user_id == ^user_id and p.is_hidden == false,
-      order_by: [desc: :inserted_at],
-      limit: ^limit,
-      offset: ^offset,
-      preload: [thread: :forum]
-    ) |> Repo.all()
+    posts =
+      from(p in Post,
+        where: p.user_id == ^user_id and p.is_hidden == false,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset,
+        preload: [thread: :forum]
+      )
+      |> Repo.all()
 
-    threads = from(t in Thread,
-      where: t.user_id == ^user_id and t.is_hidden == false,
-      order_by: [desc: :inserted_at],
-      limit: ^limit,
-      offset: ^offset,
-      preload: [:forum]
-    ) |> Repo.all()
+    threads =
+      from(t in Thread,
+        where: t.user_id == ^user_id and t.is_hidden == false,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset,
+        preload: [:forum]
+      )
+      |> Repo.all()
 
     %{posts: posts, threads: threads}
   end
@@ -1103,10 +1250,13 @@ defmodule ForgeNexus.Forums do
 
     if user_id do
       ignored = ignored_forum_ids(user_id)
+
       Enum.map(categories, fn cat ->
-        filtered_forums = Enum.reject(cat.forums, fn f ->
-          f.is_private || Enum.member?(ignored, f.id)
-        end)
+        filtered_forums =
+          Enum.reject(cat.forums, fn f ->
+            f.is_private || Enum.member?(ignored, f.id)
+          end)
+
         %{cat | forums: filtered_forums}
       end)
     else
@@ -1154,11 +1304,14 @@ defmodule ForgeNexus.Forums do
 
   defp notify_thread_watchers(thread_id, post_author_id, post) do
     thread = Repo.get(Thread, thread_id) |> Repo.preload(:user)
+
     if thread do
       # Find all users watching this thread, excluding the post author
       watchers =
         from(s in ThreadSubscription,
-          where: s.thread_id == ^thread_id and s.user_id != ^post_author_id and s.notification_level == "watching",
+          where:
+            s.thread_id == ^thread_id and s.user_id != ^post_author_id and
+              s.notification_level == "watching",
           select: s.user_id
         )
         |> Repo.all()
@@ -1182,12 +1335,17 @@ defmodule ForgeNexus.Forums do
         case Notifications.create_notification(attrs) do
           {:ok, notification} ->
             Notifications.broadcast_notification(notification, post_author)
-          _ -> :ok
+
+          _ ->
+            :ok
         end
 
         # Enqueue email notification
         NotificationEmailer.enqueue_reply_notification(
-          watcher_id, actor_name, thread.title, thread.slug
+          watcher_id,
+          actor_name,
+          thread.title,
+          thread.slug
         )
       end
     end
@@ -1212,6 +1370,7 @@ defmodule ForgeNexus.Forums do
   def bulk_hide_threads(thread_ids) when is_list(thread_ids) do
     from(t in Thread, where: t.id in ^thread_ids)
     |> Repo.update_all(set: [is_hidden: true])
+
     :ok
   end
 
@@ -1361,13 +1520,25 @@ defmodule ForgeNexus.Forums do
   # --- Stats (added for stats page) ---
 
   def new_threads_this_month do
-    start_of_month = Date.utc_today() |> Date.beginning_of_month() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
-    Repo.one(from t in Thread, where: t.is_hidden == false and t.inserted_at >= ^start_of_month, select: count(t.id)) || 0
+    start_of_month =
+      Date.utc_today() |> Date.beginning_of_month() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+
+    Repo.one(
+      from t in Thread,
+        where: t.is_hidden == false and t.inserted_at >= ^start_of_month,
+        select: count(t.id)
+    ) || 0
   end
 
   def new_posts_this_month do
-    start_of_month = Date.utc_today() |> Date.beginning_of_month() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
-    Repo.one(from p in Post, where: p.is_hidden == false and p.inserted_at >= ^start_of_month, select: count(p.id)) || 0
+    start_of_month =
+      Date.utc_today() |> Date.beginning_of_month() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+
+    Repo.one(
+      from p in Post,
+        where: p.is_hidden == false and p.inserted_at >= ^start_of_month,
+        select: count(p.id)
+    ) || 0
   end
 
   def most_popular_threads(limit \\ 10) do
@@ -1408,7 +1579,6 @@ defmodule ForgeNexus.Forums do
     )
     |> Repo.all()
   end
-
 
   alias ForgeNexus.Forums.ReputationEvent
 

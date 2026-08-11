@@ -4,10 +4,15 @@ defmodule ForgeNexus.Repo.Migrations.CreateDmCalls do
   def change do
     create table(:dm_calls, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :conversation_id, references(:conversations, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :conversation_id, references(:conversations, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :caller_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
-      add :status, :string, default: "ringing"  # ringing, active, ended, missed, declined
-      add :type, :string, default: "audio"  # audio, video
+      # ringing, active, ended, missed, declined
+      add :status, :string, default: "ringing"
+      # audio, video
+      add :type, :string, default: "audio"
       add :started_at, :utc_datetime
       add :answered_at, :utc_datetime
       add :ended_at, :utc_datetime

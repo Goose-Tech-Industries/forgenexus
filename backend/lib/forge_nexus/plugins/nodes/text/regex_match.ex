@@ -59,7 +59,12 @@ defmodule ForgeNexus.Plugins.Nodes.Text.RegexMatch do
       ],
       config_fields: [
         %{name: "pattern", type: "string", default: "", description: "Regex pattern"},
-        %{name: "flags", type: "string", default: "", description: "Flags: i=case-insensitive, m=multiline, s=dotall"}
+        %{
+          name: "flags",
+          type: "string",
+          default: "",
+          description: "Flags: i=case-insensitive, m=multiline, s=dotall"
+        }
       ]
     }
   end

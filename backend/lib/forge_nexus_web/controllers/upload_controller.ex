@@ -11,7 +11,9 @@ defmodule ForgeNexusWeb.UploadController do
 
     # Rate limit
     if Uploads.user_upload_count_today(user.id) >= @max_daily_uploads do
-      conn |> put_status(:too_many_requests) |> json(%{error: "Daily upload limit reached (#{@max_daily_uploads} files)"})
+      conn
+      |> put_status(:too_many_requests)
+      |> json(%{error: "Daily upload limit reached (#{@max_daily_uploads} files)"})
     else
       case Uploads.upload_file(upload, user.id, type, id) do
         {:ok, attachment} ->
@@ -45,7 +47,9 @@ defmodule ForgeNexusWeb.UploadController do
           |> json(%{attachment: attachment_json(attachment)})
 
         {:error, :invalid_type} ->
-          conn |> put_status(:unprocessable_entity) |> json(%{error: "Only images are allowed (jpg, png, gif, webp)"})
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: "Only images are allowed (jpg, png, gif, webp)"})
 
         {:error, :too_large} ->
           conn |> put_status(:unprocessable_entity) |> json(%{error: "File too large (max 5MB)"})
@@ -67,8 +71,11 @@ defmodule ForgeNexusWeb.UploadController do
     user = Guardian.Plug.current_resource(conn)
 
     case Uploads.delete_attachment(id, user.id) do
-      {:ok, _} -> conn |> json(%{status: "ok"})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Attachment not found"})
+      {:ok, _} ->
+        conn |> json(%{status: "ok"})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Attachment not found"})
     end
   end
 

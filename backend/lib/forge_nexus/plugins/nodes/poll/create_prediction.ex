@@ -90,9 +90,24 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePrediction do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "options", type: "string", default: "", description: "Comma-separated prediction options"},
-        %{name: "closes_in_hours", type: "number", default: 24, description: "Hours until prediction closes for new wagers"},
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency used for wagers"}
+        %{
+          name: "options",
+          type: "string",
+          default: "",
+          description: "Comma-separated prediction options"
+        },
+        %{
+          name: "closes_in_hours",
+          type: "number",
+          default: 24,
+          description: "Hours until prediction closes for new wagers"
+        },
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency used for wagers"
+        }
       ]
     }
   end

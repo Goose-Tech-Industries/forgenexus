@@ -45,7 +45,12 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.GetStandings do
         %{name: "standings", type: "list"}
       ],
       config_fields: [
-        %{name: "limit", type: "number", default: 20, description: "Maximum number of standings to return"}
+        %{
+          name: "limit",
+          type: "number",
+          default: 20,
+          description: "Maximum number of standings to return"
+        }
       ]
     }
   end

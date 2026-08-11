@@ -69,7 +69,11 @@ defmodule ForgeNexus.Reputation do
         _ -> abs(amount)
       end
 
-    case award(to, delta, event_type: "vote_#{type}", source_type: "user", source_id: params.from_user_id) do
+    case award(to, delta,
+           event_type: "vote_#{type}",
+           source_type: "user",
+           source_id: params.from_user_id
+         ) do
       {:ok, %{new_total: total}} -> {:ok, total}
       other -> other
     end
@@ -209,11 +213,13 @@ defmodule ForgeNexus.Reputation do
   defp to_integer(_), do: 0
 
   defp to_float(n) when is_number(n), do: n * 1.0
+
   defp to_float(n) when is_binary(n) do
     case Float.parse(n) do
       {f, _} -> f
       :error -> 0.0
     end
   end
+
   defp to_float(_), do: 0.0
 end

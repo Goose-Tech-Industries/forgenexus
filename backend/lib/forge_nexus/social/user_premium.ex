@@ -66,7 +66,15 @@ defmodule ForgeNexus.Social.UserPremium do
 
   def changeset(premium, attrs) do
     premium
-    |> cast(attrs, [:user_id, :plan, :status, :started_at, :expires_at, :stripe_subscription_id, :features])
+    |> cast(attrs, [
+      :user_id,
+      :plan,
+      :status,
+      :started_at,
+      :expires_at,
+      :stripe_subscription_id,
+      :features
+    ])
     |> validate_required([:user_id, :plan])
     |> validate_inclusion(:plan, @plans)
     |> validate_inclusion(:status, ~w(active cancelled expired))

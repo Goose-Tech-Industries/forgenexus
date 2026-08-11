@@ -22,7 +22,17 @@ defmodule ForgeNexus.AI.UsageLog do
 
   def changeset(usage_log, attrs) do
     usage_log
-    |> cast(attrs, [:feature, :input_tokens, :output_tokens, :cost_cents, :latency_ms, :metadata, :error, :provider_id, :user_id])
+    |> cast(attrs, [
+      :feature,
+      :input_tokens,
+      :output_tokens,
+      :cost_cents,
+      :latency_ms,
+      :metadata,
+      :error,
+      :provider_id,
+      :user_id
+    ])
     |> validate_required([:feature, :provider_id])
     |> foreign_key_constraint(:provider_id)
     |> foreign_key_constraint(:user_id)

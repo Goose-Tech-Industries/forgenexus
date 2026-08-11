@@ -65,7 +65,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.CheckBalance do
         %{name: "insufficient", type: "number"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"},
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        },
         %{name: "threshold", type: "number", default: 0, description: "Minimum balance threshold"}
       ]
     }

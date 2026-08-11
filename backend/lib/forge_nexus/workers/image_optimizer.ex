@@ -49,7 +49,10 @@ defmodule ForgeNexus.Workers.ImageOptimizer do
         :ok
       else
         {:error, reason} ->
-          Logger.warning("[ImageOptimizer] Failed to process #{attachment.filename}: #{inspect(reason)}")
+          Logger.warning(
+            "[ImageOptimizer] Failed to process #{attachment.filename}: #{inspect(reason)}"
+          )
+
           :ok
       end
     else
@@ -62,15 +65,22 @@ defmodule ForgeNexus.Workers.ImageOptimizer do
   defp resize_original(path) do
     case System.cmd("identify", ["-format", "%wx%h", path], stderr_to_stdout: true) do
       {dimensions, 0} ->
-        [w, h] = dimensions |> String.trim() |> String.split("x") |> Enum.map(&String.to_integer/1)
+        [w, h] =
+          dimensions |> String.trim() |> String.split("x") |> Enum.map(&String.to_integer/1)
 
         if w > @max_dimension or h > @max_dimension do
-          case System.cmd("convert", [
-            path,
-            "-resize", "#{@max_dimension}x#{@max_dimension}>",
-            "-quality", "85",
-            path
-          ], stderr_to_stdout: true) do
+          case System.cmd(
+                 "convert",
+                 [
+                   path,
+                   "-resize",
+                   "#{@max_dimension}x#{@max_dimension}>",
+                   "-quality",
+                   "85",
+                   path
+                 ],
+                 stderr_to_stdout: true
+               ) do
             {_, 0} -> :ok
             {err, _} -> {:error, "resize failed: #{err}"}
           end
@@ -89,19 +99,29 @@ defmodule ForgeNexus.Workers.ImageOptimizer do
     thumb_name = Path.basename(source_path, ext) <> "_thumb" <> ext
     thumb_path = Path.join(Path.dirname(source_path), thumb_name)
 
-    case System.cmd("convert", [
-      source_path,
-      "-thumbnail", "#{@thumb_dimension}x#{@thumb_dimension}^",
-      "-gravity", "center",
-      "-extent", "#{@thumb_dimension}x#{@thumb_dimension}",
-      "-quality", "80",
-      thumb_path
-    ], stderr_to_stdout: true) do
+    case System.cmd(
+           "convert",
+           [
+             source_path,
+             "-thumbnail",
+             "#{@thumb_dimension}x#{@thumb_dimension}^",
+             "-gravity",
+             "center",
+             "-extent",
+             "#{@thumb_dimension}x#{@thumb_dimension}",
+             "-quality",
+             "80",
+             thumb_path
+           ],
+           stderr_to_stdout: true
+         ) do
       {_, 0} ->
         thumb_url = String.replace(attachment.url, Path.basename(attachment.url), thumb_name)
+
         attachment
         |> Ecto.Changeset.change(%{thumbnail_url: thumb_url})
         |> Repo.update()
+
         :ok
 
       {err, _} ->
@@ -118,11 +138,16 @@ defmodule ForgeNexus.Workers.ImageOptimizer do
       webp_name = Path.basename(source_path, Path.extname(source_path)) <> ".webp"
       webp_path = Path.join(Path.dirname(source_path), webp_name)
 
-      case System.cmd("convert", [
-        source_path,
-        "-quality", "82",
-        webp_path
-      ], stderr_to_stdout: true) do
+      case System.cmd(
+             "convert",
+             [
+               source_path,
+               "-quality",
+               "82",
+               webp_path
+             ],
+             stderr_to_stdout: true
+           ) do
         {_, 0} -> :ok
         {err, _} -> {:error, "webp conversion failed: #{err}"}
       end

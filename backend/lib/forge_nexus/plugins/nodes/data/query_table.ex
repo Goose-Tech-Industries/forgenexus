@@ -84,8 +84,19 @@ defmodule ForgeNexus.Plugins.Nodes.Data.QueryTable do
       config_fields: [
         %{name: "table_slug", type: "string", default: "", description: "Table slug to query"},
         %{name: "filters", type: "json", default: [], description: "Filter conditions"},
-        %{name: "limit", type: "number", default: 50, description: "Max rows to return (max 100)"},
-        %{name: "order_by", type: "select", options: ~w(inserted_at updated_at), default: "inserted_at", description: "Sort order"}
+        %{
+          name: "limit",
+          type: "number",
+          default: 50,
+          description: "Max rows to return (max 100)"
+        },
+        %{
+          name: "order_by",
+          type: "select",
+          options: ~w(inserted_at updated_at),
+          default: "inserted_at",
+          description: "Sort order"
+        }
       ]
     }
   end

@@ -16,7 +16,10 @@ defmodule ForgeNexus.Repo.Migrations.CommunitySubscriptions do
     # subscription object; community.plan/plan_status tracks the active row.
     create table(:community_subscriptions, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :stripe_subscription_id, :string, null: false
       add :stripe_customer_id, :string
       add :stripe_price_id, :string

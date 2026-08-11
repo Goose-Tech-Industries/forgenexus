@@ -50,7 +50,13 @@ defmodule ForgeNexus.Plugins.Nodes.Math.Arithmetic do
       ],
       outputs: [%{name: "result", type: "number"}],
       config_fields: [
-        %{name: "operation", type: "select", options: ~w(add subtract multiply divide), default: "add", description: "Math operation"}
+        %{
+          name: "operation",
+          type: "select",
+          options: ~w(add subtract multiply divide),
+          default: "add",
+          description: "Math operation"
+        }
       ]
     }
   end

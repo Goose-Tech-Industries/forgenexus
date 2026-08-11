@@ -29,8 +29,18 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetBattle do
            "#{winner.nickname} wins!"
          ],
          stats_comparison: %{
-           pet1: %{id: pet1.id, nickname: pet1.nickname, level: pet1.level, experience: pet1.experience},
-           pet2: %{id: pet2.id, nickname: pet2.nickname, level: pet2.level, experience: pet2.experience}
+           pet1: %{
+             id: pet1.id,
+             nickname: pet1.nickname,
+             level: pet1.level,
+             experience: pet1.experience
+           },
+           pet2: %{
+             id: pet2.id,
+             nickname: pet2.nickname,
+             level: pet2.level,
+             experience: pet2.experience
+           }
          }
        }, ctx}
     else

@@ -87,7 +87,12 @@ defmodule ForgeNexus.Plugins.JsPlugins do
 
   defp validate_plugin(plugin) do
     errors = []
-    errors = if plugin.code == "" or is_nil(plugin.code), do: ["Plugin code cannot be empty" | errors], else: errors
+
+    errors =
+      if plugin.code == "" or is_nil(plugin.code),
+        do: ["Plugin code cannot be empty" | errors],
+        else: errors
+
     hooks = Map.get(plugin.manifest, "hooks", [])
     errors = if hooks == [], do: ["Plugin must register at least one hook" | errors], else: errors
     errors
@@ -160,9 +165,11 @@ defmodule ForgeNexus.Plugins.JsPlugins do
 
   def check_rate_limit!(plugin_id) do
     now = DateTime.utc_now()
-    window_start = DateTime.truncate(now, :second)
-    |> Map.put(:minute, 0)
-    |> Map.put(:second, 0)
+
+    window_start =
+      DateTime.truncate(now, :second)
+      |> Map.put(:minute, 0)
+      |> Map.put(:second, 0)
 
     rate_limit =
       from(r in JsPluginRateLimit,
@@ -179,6 +186,7 @@ defmodule ForgeNexus.Plugins.JsPlugins do
           execution_count: 1
         })
         |> Repo.insert!()
+
         :ok
 
       %{execution_count: count} when count >= @max_executions_per_hour ->
@@ -188,6 +196,7 @@ defmodule ForgeNexus.Plugins.JsPlugins do
         rate_limit
         |> Ecto.Changeset.change(execution_count: rate_limit.execution_count + 1)
         |> Repo.update!()
+
         :ok
     end
   end

@@ -68,7 +68,9 @@ defmodule ForgeNexus.Wiki do
     Multi.new()
     |> Multi.insert(:page, fn _changes ->
       %WikiPage{}
-      |> WikiPage.changeset(Map.merge(attrs, %{created_by_id: user_id, last_edited_by_id: user_id}))
+      |> WikiPage.changeset(
+        Map.merge(attrs, %{created_by_id: user_id, last_edited_by_id: user_id})
+      )
     end)
     |> Multi.insert(:revision, fn %{page: page} ->
       %WikiRevision{}
@@ -139,11 +141,15 @@ defmodule ForgeNexus.Wiki do
   def revert_to_revision(%WikiPage{} = page, revision_id) do
     revision = get_revision!(revision_id)
 
-    update_page(page, %{
-      body: revision.body,
-      body_html: revision.body_html,
-      edit_summary: "Reverted to revision ##{revision.revision_number}"
-    }, revision.edited_by_id)
+    update_page(
+      page,
+      %{
+        body: revision.body,
+        body_html: revision.body_html,
+        edit_summary: "Reverted to revision ##{revision.revision_number}"
+      },
+      revision.edited_by_id
+    )
   end
 
   # ── Edit Locks ──
@@ -155,7 +161,12 @@ defmodule ForgeNexus.Wiki do
     case check_edit_lock(page_id) do
       nil ->
         %EditLock{}
-        |> EditLock.changeset(%{page_id: page_id, user_id: user_id, locked_at: now, expires_at: expires_at})
+        |> EditLock.changeset(%{
+          page_id: page_id,
+          user_id: user_id,
+          locked_at: now,
+          expires_at: expires_at
+        })
         |> Repo.insert()
 
       %EditLock{user_id: ^user_id} = lock ->

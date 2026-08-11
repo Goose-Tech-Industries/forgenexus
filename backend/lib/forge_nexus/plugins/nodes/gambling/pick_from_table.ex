@@ -8,9 +8,18 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.PickFromTable do
 
     items =
       cond do
-        is_list(items) -> items
-        is_binary(items) -> (try do Jason.decode!(items) rescue _ -> [] end)
-        true -> []
+        is_list(items) ->
+          items
+
+        is_binary(items) ->
+          try do
+            Jason.decode!(items)
+          rescue
+            _ -> []
+          end
+
+        true ->
+          []
       end
 
     if items == [] do

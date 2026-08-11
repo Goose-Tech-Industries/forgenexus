@@ -65,8 +65,18 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CreateIntroductionPrompt do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "intro_forum_slug", type: "string", default: "introductions", description: "Slug of the forum for introduction threads"},
-        %{name: "template", type: "text", default: "Welcome to the community! Tell us about yourself.", description: "Template for the introduction post"}
+        %{
+          name: "intro_forum_slug",
+          type: "string",
+          default: "introductions",
+          description: "Slug of the forum for introduction threads"
+        },
+        %{
+          name: "template",
+          type: "text",
+          default: "Welcome to the community! Tell us about yourself.",
+          description: "Template for the introduction post"
+        }
       ]
     }
   end

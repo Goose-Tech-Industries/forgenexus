@@ -48,7 +48,12 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.MuteUserShoutbox do
         %{name: "muted_until", type: "string"}
       ],
       config_fields: [
-        %{name: "duration_seconds", type: "number", default: 300, description: "Mute duration in seconds (default 5 minutes)"}
+        %{
+          name: "duration_seconds",
+          type: "number",
+          default: 300,
+          description: "Mute duration in seconds (default 5 minutes)"
+        }
       ]
     }
   end

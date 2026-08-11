@@ -83,9 +83,19 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.CreateEvent do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "starts_at", type: "string", default: "", description: "Event start time (ISO 8601)"},
+        %{
+          name: "starts_at",
+          type: "string",
+          default: "",
+          description: "Event start time (ISO 8601)"
+        },
         %{name: "ends_at", type: "string", default: "", description: "Event end time (ISO 8601)"},
-        %{name: "location", type: "string", default: "", description: "Event location (URL or text)"}
+        %{
+          name: "location",
+          type: "string",
+          default: "",
+          description: "Event location (URL or text)"
+        }
       ]
     }
   end

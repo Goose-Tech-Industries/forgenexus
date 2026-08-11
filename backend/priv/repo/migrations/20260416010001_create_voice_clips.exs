@@ -4,7 +4,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateVoiceClips do
   def change do
     create table(:voice_clips, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :recording_id, references(:voice_recordings, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :recording_id, references(:voice_recordings, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :title, :string
       add :start_ms, :integer, null: false

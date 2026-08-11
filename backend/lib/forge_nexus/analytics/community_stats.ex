@@ -21,8 +21,14 @@ defmodule ForgeNexus.Analytics.CommunityStats do
   def changeset(struct, attrs) do
     struct
     |> cast(attrs, [
-      :date, :new_members, :active_members, :posts_created, :threads_created,
-      :avg_reply_time_minutes, :response_rate, :top_topics
+      :date,
+      :new_members,
+      :active_members,
+      :posts_created,
+      :threads_created,
+      :avg_reply_time_minutes,
+      :response_rate,
+      :top_topics
     ])
     |> validate_required([:date])
     |> unique_constraint(:date)

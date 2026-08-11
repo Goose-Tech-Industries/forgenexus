@@ -24,7 +24,15 @@ defmodule ForgeNexus.Channels.ChatThread do
 
   def changeset(thread, attrs) do
     thread
-    |> cast(attrs, [:name, :channel_id, :parent_message_id, :created_by_id, :is_archived, :is_locked, :auto_archive_minutes])
+    |> cast(attrs, [
+      :name,
+      :channel_id,
+      :parent_message_id,
+      :created_by_id,
+      :is_archived,
+      :is_locked,
+      :auto_archive_minutes
+    ])
     |> validate_required([:name, :channel_id, :parent_message_id, :created_by_id])
     |> validate_length(:name, min: 1, max: 100)
     |> unique_constraint(:parent_message_id)

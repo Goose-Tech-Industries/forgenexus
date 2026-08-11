@@ -6,7 +6,8 @@ defmodule ForgeNexus.Forums.Attachment do
   @foreign_key_type :binary_id
 
   @allowed_types ~w(image/jpeg image/png image/gif image/webp application/pdf text/plain application/zip)
-  @max_size 10_000_000 # 10MB
+  # 10MB
+  @max_size 10_000_000
 
   schema "attachments" do
     field :filename, :string
@@ -16,7 +17,8 @@ defmodule ForgeNexus.Forums.Attachment do
     field :thumbnail_url, :string
     field :width, :integer
     field :height, :integer
-    field :attachable_type, :string # "post", "thread", "message"
+    # "post", "thread", "message"
+    field :attachable_type, :string
     field :attachable_id, :binary_id
 
     belongs_to :user, ForgeNexus.Accounts.User
@@ -26,7 +28,18 @@ defmodule ForgeNexus.Forums.Attachment do
 
   def changeset(attachment, attrs) do
     attachment
-    |> cast(attrs, [:filename, :content_type, :size, :url, :thumbnail_url, :width, :height, :attachable_type, :attachable_id, :user_id])
+    |> cast(attrs, [
+      :filename,
+      :content_type,
+      :size,
+      :url,
+      :thumbnail_url,
+      :width,
+      :height,
+      :attachable_type,
+      :attachable_id,
+      :user_id
+    ])
     |> validate_required([:filename, :content_type, :size, :url, :user_id])
     |> validate_inclusion(:content_type, @allowed_types)
     |> validate_number(:size, less_than_or_equal_to: @max_size)

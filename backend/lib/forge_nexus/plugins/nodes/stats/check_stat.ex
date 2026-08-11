@@ -26,7 +26,10 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.CheckStat do
       []
       |> then(fn e ->
         op = Map.get(config, "operator", "gte")
-        if op in ~w(eq gt gte lt lte), do: e, else: ["operator must be one of: eq, gt, gte, lt, lte" | e]
+
+        if op in ~w(eq gt gte lt lte),
+          do: e,
+          else: ["operator must be one of: eq, gt, gte, lt, lte" | e]
       end)
       |> then(fn e ->
         t = Map.get(config, "threshold")
@@ -52,7 +55,13 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.CheckStat do
         %{name: "false", type: "number"}
       ],
       config_fields: [
-        %{name: "operator", type: "select", options: ~w(eq gt gte lt lte), default: "gte", description: "Comparison operator"},
+        %{
+          name: "operator",
+          type: "select",
+          options: ~w(eq gt gte lt lte),
+          default: "gte",
+          description: "Comparison operator"
+        },
         %{name: "threshold", type: "number", default: 0, description: "Value to compare against"}
       ]
     }

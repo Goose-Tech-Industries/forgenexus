@@ -57,7 +57,8 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.OpenPack do
       type: "inventory/open_pack",
       category: "inventory",
       label: "Open Pack",
-      description: "Opens an item pack, consuming it and awarding random items based on rarity weights.",
+      description:
+        "Opens an item pack, consuming it and awarding random items based on rarity weights.",
       inputs: [
         %{name: "user_id", type: "string", required: true},
         %{name: "pack_template_id", type: "string", required: true}
@@ -67,8 +68,18 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.OpenPack do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "items_count", type: "number", default: 5, description: "Number of items in the pack"},
-        %{name: "rates", type: "json", default: "{}", description: "JSON map of rarity => weight for item generation"}
+        %{
+          name: "items_count",
+          type: "number",
+          default: 5,
+          description: "Number of items in the pack"
+        },
+        %{
+          name: "rates",
+          type: "json",
+          default: "{}",
+          description: "JSON map of rarity => weight for item generation"
+        }
       ]
     }
   end

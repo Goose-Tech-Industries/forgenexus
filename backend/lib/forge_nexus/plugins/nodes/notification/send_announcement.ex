@@ -9,9 +9,7 @@ defmodule ForgeNexus.Plugins.Nodes.Notification.SendAnnouncement do
     body = Map.get(inputs, :body) || Map.get(inputs, "body")
     channel = Map.get(config, "channel", "")
 
-    Logger.info(
-      "[PluginFlow] send_announcement: channel=#{channel}, title=#{inspect(title)}"
-    )
+    Logger.info("[PluginFlow] send_announcement: channel=#{channel}, title=#{inspect(title)}")
 
     # Broadcast announcement via PubSub to the target channel
     Phoenix.PubSub.broadcast(
@@ -45,7 +43,12 @@ defmodule ForgeNexus.Plugins.Nodes.Notification.SendAnnouncement do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "channel", type: "string", default: "", description: "Forum slug or chat channel to post to"}
+        %{
+          name: "channel",
+          type: "string",
+          default: "",
+          description: "Forum slug or chat channel to post to"
+        }
       ]
     }
   end

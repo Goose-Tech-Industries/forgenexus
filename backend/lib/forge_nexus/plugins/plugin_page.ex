@@ -21,7 +21,16 @@ defmodule ForgeNexus.Plugins.PluginPage do
 
   def changeset(page, attrs) do
     page
-    |> cast(attrs, [:flow_id, :slug, :title, :description, :template, :is_published, :nav_position, :nav_label])
+    |> cast(attrs, [
+      :flow_id,
+      :slug,
+      :title,
+      :description,
+      :template,
+      :is_published,
+      :nav_position,
+      :nav_label
+    ])
     |> validate_required([:flow_id, :slug, :title])
     |> unique_constraint(:slug)
     |> foreign_key_constraint(:flow_id)

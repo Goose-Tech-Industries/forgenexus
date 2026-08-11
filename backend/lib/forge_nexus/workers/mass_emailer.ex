@@ -14,7 +14,9 @@ defmodule ForgeNexus.Workers.MassEmailer do
   @batch_size 50
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"subject" => subject, "body_html" => body_html, "segment" => segment}}) do
+  def perform(%Oban.Job{
+        args: %{"subject" => subject, "body_html" => body_html, "segment" => segment}
+      }) do
     users = query_users(segment)
 
     users
@@ -58,23 +60,26 @@ defmodule ForgeNexus.Workers.MassEmailer do
   defp base_query("active_30d") do
     thirty_days_ago = DateTime.utc_now() |> DateTime.add(-30, :day)
 
-    Ecto.Query.from u in User,
+    Ecto.Query.from(u in User,
       where: u.status == "active",
       where: not is_nil(u.email),
       where: u.last_seen_at >= ^thirty_days_ago
+    )
   end
 
   defp base_query("verified") do
-    Ecto.Query.from u in User,
+    Ecto.Query.from(u in User,
       where: u.status == "active",
       where: not is_nil(u.email),
       where: not is_nil(u.email_verified_at)
+    )
   end
 
   defp base_query(_all) do
-    Ecto.Query.from u in User,
+    Ecto.Query.from(u in User,
       where: u.status == "active",
       where: not is_nil(u.email)
+    )
   end
 
   defp strip_html(html) do

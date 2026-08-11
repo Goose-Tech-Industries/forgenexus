@@ -22,7 +22,10 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.AddVote do
         case ForgeNexus.Forums.Polls.vote(poll_id, user_id, [opt.id]) do
           {:ok, _} ->
             updated = ForgeNexus.Forums.Polls.get_results(poll_id, user_id)
-            count = (Enum.find(updated.options, &(&1.id == opt.id)) || %{vote_count: 0}).vote_count
+
+            count =
+              (Enum.find(updated.options, &(&1.id == opt.id)) || %{vote_count: 0}).vote_count
+
             ctx = Sandbox.increment_db_ops(ctx)
             {:ok, %{success: true, current_count: count}, ctx}
 

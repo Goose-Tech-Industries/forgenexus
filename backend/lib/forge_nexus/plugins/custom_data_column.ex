@@ -25,7 +25,18 @@ defmodule ForgeNexus.Plugins.CustomDataColumn do
 
   def changeset(column, attrs) do
     column
-    |> cast(attrs, [:table_id, :name, :slug, :data_type, :default_value, :is_required, :is_indexed, :is_unique, :position, :validations])
+    |> cast(attrs, [
+      :table_id,
+      :name,
+      :slug,
+      :data_type,
+      :default_value,
+      :is_required,
+      :is_indexed,
+      :is_unique,
+      :position,
+      :validations
+    ])
     |> validate_required([:table_id, :name, :slug, :data_type])
     |> validate_inclusion(:data_type, @data_types)
     |> unique_constraint([:table_id, :slug])

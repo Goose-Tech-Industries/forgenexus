@@ -38,9 +38,22 @@ defmodule ForgeNexus.Channels.Channel do
   def changeset(channel, attrs) do
     channel
     |> cast(attrs, [
-      :name, :slug, :description, :topic, :type, :icon, :color, :position,
-      :category_id, :is_private, :allowed_group_ids, :is_read_only,
-      :slowmode_seconds, :is_nsfw, :is_archived, :created_by_id
+      :name,
+      :slug,
+      :description,
+      :topic,
+      :type,
+      :icon,
+      :color,
+      :position,
+      :category_id,
+      :is_private,
+      :allowed_group_ids,
+      :is_read_only,
+      :slowmode_seconds,
+      :is_nsfw,
+      :is_archived,
+      :created_by_id
     ])
     |> validate_required([:name])
     |> validate_inclusion(:type, ["text", "voice", "announcements"])
@@ -51,7 +64,9 @@ defmodule ForgeNexus.Channels.Channel do
 
   defp generate_slug(changeset) do
     case get_change(changeset, :name) do
-      nil -> changeset
+      nil ->
+        changeset
+
       name ->
         slug = get_change(changeset, :slug) || Slug.slugify(name)
         put_change(changeset, :slug, slug)

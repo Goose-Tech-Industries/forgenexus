@@ -17,7 +17,9 @@ defmodule ForgeNexusWeb.ThreadChatController do
               conn |> put_status(:created) |> json(%{thread: thread_json(thread)})
 
             {:error, _} ->
-              conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to create thread"})
+              conn
+              |> put_status(:unprocessable_entity)
+              |> json(%{error: "Failed to create thread"})
           end
         else
           conn |> put_status(:forbidden) |> json(%{error: "Cannot create threads here"})
@@ -55,7 +57,9 @@ defmodule ForgeNexusWeb.ThreadChatController do
   def messages(conn, %{"id" => id} = params) do
     opts = []
     opts = if params["before"], do: [{:before_id, params["before"]} | opts], else: opts
-    opts = if params["limit"], do: [{:limit, safe_to_integer(params["limit"], 50)} | opts], else: opts
+
+    opts =
+      if params["limit"], do: [{:limit, safe_to_integer(params["limit"], 50)} | opts], else: opts
 
     messages = Channels.list_thread_messages(id, opts)
     conn |> json(%{messages: Enum.map(messages, &thread_message_json/1)})
@@ -79,7 +83,12 @@ defmodule ForgeNexusWeb.ThreadChatController do
       true ->
         case Channels.create_thread_message(id, user.id, body) do
           {:ok, message} ->
-            ForgeNexusWeb.Endpoint.broadcast("thread:#{id}", "new_message", thread_message_json(message))
+            ForgeNexusWeb.Endpoint.broadcast(
+              "thread:#{id}",
+              "new_message",
+              thread_message_json(message)
+            )
+
             conn |> put_status(:created) |> json(%{message: thread_message_json(message)})
 
           {:error, _} ->
@@ -99,11 +108,13 @@ defmodule ForgeNexusWeb.ThreadChatController do
       message_count: thread.message_count,
       last_message_at: thread.last_message_at,
       auto_archive_minutes: thread.auto_archive_minutes,
-      created_by: thread.created_by && %{
-        id: thread.created_by.id,
-        username: thread.created_by.username,
-        avatar_url: thread.created_by.avatar_url
-      },
+      created_by:
+        thread.created_by &&
+          %{
+            id: thread.created_by.id,
+            username: thread.created_by.username,
+            avatar_url: thread.created_by.avatar_url
+          },
       inserted_at: thread.inserted_at
     }
   end
@@ -116,16 +127,19 @@ defmodule ForgeNexusWeb.ThreadChatController do
       id: message.id,
       body: message.body,
       thread_id: message.thread_id,
-      user: user && %{
-        id: user.id,
-        username: user.username,
-        slug: user.slug,
-        avatar_url: user.avatar_url,
-        username_color: user.username_color || (group && group.username_color) || (group && group.color),
-        username_effect: user.username_effect || (group && group.username_effect) || "none",
-        avatar_frame: user.avatar_frame,
-        custom_title: user.custom_title
-      },
+      user:
+        user &&
+          %{
+            id: user.id,
+            username: user.username,
+            slug: user.slug,
+            avatar_url: user.avatar_url,
+            username_color:
+              user.username_color || (group && group.username_color) || (group && group.color),
+            username_effect: user.username_effect || (group && group.username_effect) || "none",
+            avatar_frame: user.avatar_frame,
+            custom_title: user.custom_title
+          },
       is_edited: message.is_edited,
       edited_at: message.edited_at,
       is_deleted: message.is_deleted,
@@ -139,7 +153,7 @@ defmodule ForgeNexusWeb.ThreadChatController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

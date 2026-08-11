@@ -24,7 +24,20 @@ defmodule ForgeNexus.Inventory.ItemTemplate do
 
   def changeset(template, attrs) do
     template
-    |> cast(attrs, [:name, :slug, :description, :icon, :category, :rarity, :is_stackable, :is_tradeable, :is_consumable, :is_equippable, :max_stack, :properties])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :icon,
+      :category,
+      :rarity,
+      :is_stackable,
+      :is_tradeable,
+      :is_consumable,
+      :is_equippable,
+      :max_stack,
+      :properties
+    ])
     |> validate_required([:name, :slug])
     |> validate_inclusion(:rarity, ~w(common uncommon rare epic legendary))
     |> unique_constraint(:slug)

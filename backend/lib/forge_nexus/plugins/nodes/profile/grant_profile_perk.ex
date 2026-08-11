@@ -59,7 +59,14 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.GrantProfilePerk do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "perk_type", type: "select", options: ~w(custom_title avatar_frame name_color name_effect postbit_bg profile_bg signature), default: "custom_title", description: "Type of profile perk to grant"}
+        %{
+          name: "perk_type",
+          type: "select",
+          options:
+            ~w(custom_title avatar_frame name_color name_effect postbit_bg profile_bg signature),
+          default: "custom_title",
+          description: "Type of profile perk to grant"
+        }
       ]
     }
   end

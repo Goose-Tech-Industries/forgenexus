@@ -12,15 +12,16 @@ defmodule ForgeNexus.AI.Client.Ollama do
     }
 
     case Req.post("#{base_url}/api/chat",
-      json: body,
-      receive_timeout: 120_000
-    ) do
+           json: body,
+           receive_timeout: 120_000
+         ) do
       {:ok, %{status: 200, body: body}} ->
-        {:ok, %{
-          content: body["message"]["content"],
-          input_tokens: body["prompt_eval_count"] || 0,
-          output_tokens: body["eval_count"] || 0
-        }}
+        {:ok,
+         %{
+           content: body["message"]["content"],
+           input_tokens: body["prompt_eval_count"] || 0,
+           output_tokens: body["eval_count"] || 0
+         }}
 
       {:ok, %{status: status, body: body}} ->
         {:error, "Ollama error #{status}: #{inspect(body)}"}
@@ -35,9 +36,9 @@ defmodule ForgeNexus.AI.Client.Ollama do
     model = Keyword.get(opts, :model, "nomic-embed-text")
 
     case Req.post("#{base_url}/api/embeddings",
-      json: %{model: model, prompt: text},
-      receive_timeout: 30_000
-    ) do
+           json: %{model: model, prompt: text},
+           receive_timeout: 30_000
+         ) do
       {:ok, %{status: 200, body: body}} ->
         {:ok, body["embedding"]}
 

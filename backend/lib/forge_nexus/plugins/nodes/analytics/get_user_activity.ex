@@ -16,12 +16,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetUserActivity do
 
   defp to_int(v) when is_integer(v), do: v
   defp to_int(v) when is_float(v), do: trunc(v)
+
   defp to_int(v) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       _ -> 0
     end
   end
+
   defp to_int(_), do: 0
 
   @impl true
@@ -42,7 +44,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetUserActivity do
         %{name: "reactions_received", type: "number"},
         %{name: "logins", type: "number"}
       ],
-      config_fields: [%{name: "period_days", type: "number", default: 30, description: "Number of days to look back"}]
+      config_fields: [
+        %{
+          name: "period_days",
+          type: "number",
+          default: 30,
+          description: "Number of days to look back"
+        }
+      ]
     }
   end
 end

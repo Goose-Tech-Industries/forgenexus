@@ -20,7 +20,15 @@ defmodule ForgeNexus.Inventory.CraftingRecipe do
 
   def changeset(recipe, attrs) do
     recipe
-    |> cast(attrs, [:name, :description, :success_rate, :ingredients, :result_item_id, :result_quantity, :is_active])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :success_rate,
+      :ingredients,
+      :result_item_id,
+      :result_quantity,
+      :is_active
+    ])
     |> validate_required([:name, :ingredients, :result_item_id])
     |> validate_number(:success_rate, greater_than: 0.0, less_than_or_equal_to: 1.0)
   end

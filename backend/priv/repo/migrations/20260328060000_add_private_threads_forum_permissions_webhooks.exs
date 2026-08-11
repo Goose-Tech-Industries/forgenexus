@@ -23,7 +23,10 @@ defmodule ForgeNexus.Repo.Migrations.AddPrivateThreadsForumPermissionsWebhooks d
     create table(:forum_permissions, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :forum_id, references(:forums, type: :binary_id, on_delete: :delete_all), null: false
-      add :group_id, references(:user_groups, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :group_id, references(:user_groups, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :can_view, :boolean, default: true, null: false
       add :can_post, :boolean, default: true, null: false
       add :can_create_threads, :boolean, default: true, null: false

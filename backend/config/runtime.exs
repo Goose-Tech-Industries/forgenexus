@@ -61,7 +61,9 @@ if config_env() == :prod do
 
   check_origins =
     case System.get_env("ALLOWED_ORIGINS") do
-      nil -> ["//#{host}"]
+      nil ->
+        ["//#{host}"]
+
       origins ->
         origins
         |> String.split(",", trim: true)
@@ -85,8 +87,7 @@ if config_env() == :prod do
       System.get_env("SECRET_KEY_BASE") ||
       raise "GUARDIAN_SECRET_KEY or SECRET_KEY_BASE required"
 
-  config :forge_nexus, ForgeNexus.Guardian,
-    secret_key: guardian_secret
+  config :forge_nexus, ForgeNexus.Guardian, secret_key: guardian_secret
 
   # -------------------------------------------------------
   # CORS

@@ -57,16 +57,19 @@ defmodule ForgeNexus.AI.Client do
 
   defp estimate_cost(provider, result) do
     # Rough cost estimates per 1K tokens (in hundredths of a cent)
-    {input_rate, output_rate} = case provider.default_model do
-      "gpt-4o" -> {0.25, 1.0}
-      "gpt-4o-mini" -> {0.015, 0.06}
-      m when m in ["claude-sonnet-4-6-20251001", "claude-sonnet-4-6-20251001"] -> {0.3, 1.5}
-      "claude-haiku-4-5-20251001" -> {0.025, 0.125}
-      _ -> {0.0, 0.0}  # Local/Ollama = free
-    end
+    {input_rate, output_rate} =
+      case provider.default_model do
+        "gpt-4o" -> {0.25, 1.0}
+        "gpt-4o-mini" -> {0.015, 0.06}
+        m when m in ["claude-sonnet-4-6-20251001", "claude-sonnet-4-6-20251001"] -> {0.3, 1.5}
+        "claude-haiku-4-5-20251001" -> {0.025, 0.125}
+        # Local/Ollama = free
+        _ -> {0.0, 0.0}
+      end
 
     input_cost = (result[:input_tokens] || 0) / 1000 * input_rate
     output_cost = (result[:output_tokens] || 0) / 1000 * output_rate
-    round((input_cost + output_cost) * 100)  # Store as cents
+    # Store as cents
+    round((input_cost + output_cost) * 100)
   end
 end

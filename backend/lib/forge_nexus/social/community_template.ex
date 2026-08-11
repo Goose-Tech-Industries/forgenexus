@@ -26,8 +26,17 @@ defmodule ForgeNexus.Social.CommunityTemplate do
 
   def changeset(template, attrs) do
     template
-    |> cast(attrs, [:creator_id, :name, :description, :category, :preview_url,
-                     :template_data, :price_cents, :is_free, :is_published])
+    |> cast(attrs, [
+      :creator_id,
+      :name,
+      :description,
+      :category,
+      :preview_url,
+      :template_data,
+      :price_cents,
+      :is_free,
+      :is_published
+    ])
     |> validate_required([:name, :template_data])
     |> validate_inclusion(:category, @categories)
   end

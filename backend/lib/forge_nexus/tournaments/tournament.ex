@@ -25,7 +25,18 @@ defmodule ForgeNexus.Tournaments.Tournament do
 
   def changeset(tournament, attrs) do
     tournament
-    |> cast(attrs, [:name, :description, :format, :status, :max_participants, :starts_at, :ends_at, :prize_pool, :rules, :created_by_id])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :format,
+      :status,
+      :max_participants,
+      :starts_at,
+      :ends_at,
+      :prize_pool,
+      :rules,
+      :created_by_id
+    ])
     |> validate_required([:name, :format])
     |> validate_inclusion(:format, ~w(single_elimination double_elimination round_robin swiss))
     |> validate_inclusion(:status, ~w(registration active in_progress completed cancelled))

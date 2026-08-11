@@ -42,7 +42,9 @@ defmodule ForgeNexusWeb.AdminLoginEventController do
 
   defp parse_since(str) when is_binary(str) do
     case DateTime.from_iso8601(str) do
-      {:ok, dt, _} -> dt
+      {:ok, dt, _} ->
+        dt
+
       _ ->
         case Integer.parse(str) do
           {hours, _} when hours > 0 ->

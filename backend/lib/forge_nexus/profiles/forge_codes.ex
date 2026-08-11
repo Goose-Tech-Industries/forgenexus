@@ -309,11 +309,20 @@ defmodule ForgeNexus.Profiles.ForgeCodes do
 
     query =
       case tab do
-        "featured" -> from(f in base, where: f.is_official == true, order_by: [desc: f.inserted_at])
-        "trending" -> from(f in base, order_by: [desc: f.applies_count, desc: f.inserted_at])
-        "new" -> from(f in base, order_by: [desc: f.inserted_at])
-        "mine" -> raise ArgumentError, "pass user to list_mine/2 instead"
-        _ -> base
+        "featured" ->
+          from(f in base, where: f.is_official == true, order_by: [desc: f.inserted_at])
+
+        "trending" ->
+          from(f in base, order_by: [desc: f.applies_count, desc: f.inserted_at])
+
+        "new" ->
+          from(f in base, order_by: [desc: f.inserted_at])
+
+        "mine" ->
+          raise ArgumentError, "pass user to list_mine/2 instead"
+
+        _ ->
+          base
       end
 
     query

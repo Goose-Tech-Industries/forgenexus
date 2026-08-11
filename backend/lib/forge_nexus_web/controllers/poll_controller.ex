@@ -33,6 +33,7 @@ defmodule ForgeNexusWeb.PollController do
       case Polls.create_poll(attrs, options) do
         {:ok, poll} ->
           conn |> put_status(:created) |> json(%{poll: Polls.get_results(poll.id, user.id)})
+
         {:error, _} ->
           conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to create poll"})
       end
@@ -46,14 +47,19 @@ defmodule ForgeNexusWeb.PollController do
     case Polls.vote(poll_id, user.id, option_ids) do
       {:ok, _} ->
         conn |> json(%{poll: Polls.get_results(poll_id, user.id)})
+
       {:error, :already_voted} ->
         conn |> put_status(:conflict) |> json(%{error: "Already voted"})
+
       {:error, :poll_closed} ->
         conn |> put_status(:forbidden) |> json(%{error: "Poll is closed"})
+
       {:error, :single_choice_only} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Only one choice allowed"})
+
       {:error, :too_many_choices} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Too many choices selected"})
+
       {:error, _} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to vote"})
     end
@@ -63,8 +69,11 @@ defmodule ForgeNexusWeb.PollController do
     user = Guardian.Plug.current_resource(conn)
 
     case Polls.close_poll(poll_id) do
-      {:ok, _} -> conn |> json(%{poll: Polls.get_results(poll_id, user.id)})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to close poll"})
+      {:ok, _} ->
+        conn |> json(%{poll: Polls.get_results(poll_id, user.id)})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to close poll"})
     end
   end
 end

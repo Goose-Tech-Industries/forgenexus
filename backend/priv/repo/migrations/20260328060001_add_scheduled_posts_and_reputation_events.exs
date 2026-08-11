@@ -9,9 +9,9 @@ defmodule ForgeNexus.Repo.Migrations.AddScheduledPostsAndReputationEvents do
     end
 
     create index(:threads, [:status, :scheduled_at],
-      where: "status = 'scheduled' AND scheduled_at IS NOT NULL",
-      name: :threads_scheduled_at_pending_idx
-    )
+             where: "status = 'scheduled' AND scheduled_at IS NOT NULL",
+             name: :threads_scheduled_at_pending_idx
+           )
 
     # --- Reputation Events ---
     create table(:reputation_events, primary_key: false) do

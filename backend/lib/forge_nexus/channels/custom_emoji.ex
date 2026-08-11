@@ -20,9 +20,19 @@ defmodule ForgeNexus.Channels.CustomEmoji do
 
   def changeset(emoji, attrs) do
     emoji
-    |> cast(attrs, [:name, :shortcode, :image_url, :category, :is_animated, :is_active, :created_by_id])
+    |> cast(attrs, [
+      :name,
+      :shortcode,
+      :image_url,
+      :category,
+      :is_animated,
+      :is_active,
+      :created_by_id
+    ])
     |> validate_required([:name, :shortcode, :image_url])
-    |> validate_format(:shortcode, ~r/^[a-z0-9_]+$/, message: "must be lowercase alphanumeric with underscores")
+    |> validate_format(:shortcode, ~r/^[a-z0-9_]+$/,
+      message: "must be lowercase alphanumeric with underscores"
+    )
     |> validate_length(:shortcode, min: 2, max: 32)
     |> unique_constraint(:shortcode)
   end

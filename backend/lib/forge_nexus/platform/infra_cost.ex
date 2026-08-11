@@ -19,7 +19,16 @@ defmodule ForgeNexus.Platform.InfraCost do
 
   def changeset(cost, attrs) do
     cost
-    |> cast(attrs, [:provider, :service, :amount_cents, :currency, :period_start, :period_end, :is_recurring, :notes])
+    |> cast(attrs, [
+      :provider,
+      :service,
+      :amount_cents,
+      :currency,
+      :period_start,
+      :period_end,
+      :is_recurring,
+      :notes
+    ])
     |> validate_required([:provider, :service, :amount_cents, :period_start, :period_end])
   end
 end

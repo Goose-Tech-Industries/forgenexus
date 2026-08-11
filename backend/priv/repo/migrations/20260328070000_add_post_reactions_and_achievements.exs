@@ -19,7 +19,10 @@ defmodule ForgeNexus.Repo.Migrations.AddPostReactionsAndAchievements do
     create table(:user_achievements, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :achievement_id, references(:achievements, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :achievement_id, references(:achievements, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :earned_at, :utc_datetime, null: false
 
       timestamps()

@@ -54,7 +54,11 @@ defmodule ForgeNexusWeb.ModerationController do
   def resolve_report(conn, %{"id" => id} = params) do
     user = Guardian.Plug.current_resource(conn)
 
-    case Moderation.resolve_report(id, %{resolution_note: Map.get(params, "resolution_note")}, user) do
+    case Moderation.resolve_report(
+           id,
+           %{resolution_note: Map.get(params, "resolution_note")},
+           user
+         ) do
       {:ok, report} ->
         conn |> json(%{report: report_json(report)})
 
@@ -66,7 +70,11 @@ defmodule ForgeNexusWeb.ModerationController do
   def dismiss_report(conn, %{"id" => id} = params) do
     user = Guardian.Plug.current_resource(conn)
 
-    case Moderation.dismiss_report(id, %{resolution_note: Map.get(params, "resolution_note")}, user) do
+    case Moderation.dismiss_report(
+           id,
+           %{resolution_note: Map.get(params, "resolution_note")},
+           user
+         ) do
       {:ok, report} ->
         conn |> json(%{report: report_json(report)})
 
@@ -131,7 +139,9 @@ defmodule ForgeNexusWeb.ModerationController do
     user_id = Map.get(params, "user_id")
 
     if user_id do
-      warnings = Moderation.list_warnings(user_id, active_only: Map.get(params, "active_only") == "true")
+      warnings =
+        Moderation.list_warnings(user_id, active_only: Map.get(params, "active_only") == "true")
+
       conn |> json(%{warnings: Enum.map(warnings, &warning_json/1)})
     else
       conn |> put_status(:bad_request) |> json(%{error: "user_id is required"})
@@ -245,7 +255,12 @@ defmodule ForgeNexusWeb.ModerationController do
     case Forums.update_thread(thread, %{is_locked: true}) do
       {:ok, thread} ->
         Moderation.log_action(user, "lock_thread", "thread", id)
-        ForgeNexus.Forums.fire_webhook_event("forum.thread.locked", %{thread_id: id, locked_by: user.id})
+
+        ForgeNexus.Forums.fire_webhook_event("forum.thread.locked", %{
+          thread_id: id,
+          locked_by: user.id
+        })
+
         conn |> json(%{ok: true, thread: %{id: thread.id, is_locked: true}})
 
       {:error, _} ->
@@ -260,7 +275,12 @@ defmodule ForgeNexusWeb.ModerationController do
     case Forums.update_thread(thread, %{is_locked: false}) do
       {:ok, thread} ->
         Moderation.log_action(user, "unlock_thread", "thread", id)
-        ForgeNexus.Forums.fire_webhook_event("forum.thread.unlocked", %{thread_id: id, unlocked_by: user.id})
+
+        ForgeNexus.Forums.fire_webhook_event("forum.thread.unlocked", %{
+          thread_id: id,
+          unlocked_by: user.id
+        })
+
         conn |> json(%{ok: true, thread: %{id: thread.id, is_locked: false}})
 
       {:error, _} ->
@@ -275,7 +295,12 @@ defmodule ForgeNexusWeb.ModerationController do
     case Forums.update_thread(thread, %{is_pinned: true}) do
       {:ok, thread} ->
         Moderation.log_action(user, "pin_thread", "thread", id)
-        ForgeNexus.Forums.fire_webhook_event("forum.thread.pinned", %{thread_id: id, pinned_by: user.id})
+
+        ForgeNexus.Forums.fire_webhook_event("forum.thread.pinned", %{
+          thread_id: id,
+          pinned_by: user.id
+        })
+
         conn |> json(%{ok: true, thread: %{id: thread.id, is_pinned: true}})
 
       {:error, _} ->
@@ -290,7 +315,12 @@ defmodule ForgeNexusWeb.ModerationController do
     case Forums.update_thread(thread, %{is_pinned: false}) do
       {:ok, thread} ->
         Moderation.log_action(user, "unpin_thread", "thread", id)
-        ForgeNexus.Forums.fire_webhook_event("forum.thread.unpinned", %{thread_id: id, unpinned_by: user.id})
+
+        ForgeNexus.Forums.fire_webhook_event("forum.thread.unpinned", %{
+          thread_id: id,
+          unpinned_by: user.id
+        })
+
         conn |> json(%{ok: true, thread: %{id: thread.id, is_pinned: false}})
 
       {:error, _} ->
@@ -342,6 +372,7 @@ defmodule ForgeNexusWeb.ModerationController do
 
         # Notify thread author
         new_forum = Forums.get_forum!(forum_id)
+
         if thread.user_id != user.id do
           ForgeNexus.Notifications.notify_thread_moved(
             thread.user_id,
@@ -371,7 +402,9 @@ defmodule ForgeNexusWeb.ModerationController do
         conn |> json(%{ok: true, target_thread: %{id: target.id, slug: target.slug}})
 
       {:error, reason} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to merge: #{inspect(reason)}"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Failed to merge: #{inspect(reason)}"})
     end
   end
 
@@ -379,44 +412,52 @@ defmodule ForgeNexusWeb.ModerationController do
   # Bulk Thread Management
   # =====================
 
-  def bulk_thread_action(conn, %{"action" => action, "thread_ids" => thread_ids}) when is_list(thread_ids) do
+  def bulk_thread_action(conn, %{"action" => action, "thread_ids" => thread_ids})
+      when is_list(thread_ids) do
     user = Guardian.Plug.current_resource(conn)
 
-    result = case action do
-      "lock" ->
-        Forums.bulk_update_threads(thread_ids, %{is_locked: true})
-      "unlock" ->
-        Forums.bulk_update_threads(thread_ids, %{is_locked: false})
-      "hide" ->
-        Forums.bulk_hide_threads(thread_ids)
-      "move" ->
-        target_forum_id = conn.params["target_forum_id"]
-        if target_forum_id do
-          # Fetch threads before move to get author info
-          threads_to_move = Enum.map(thread_ids, &Forums.get_thread!/1)
-          result = Forums.bulk_move_threads(thread_ids, target_forum_id)
+    result =
+      case action do
+        "lock" ->
+          Forums.bulk_update_threads(thread_ids, %{is_locked: true})
 
-          # Notify all thread authors about the move
-          if result == :ok do
-            new_forum = Forums.get_forum!(target_forum_id)
-            for thread <- threads_to_move, thread.user_id != user.id do
-              ForgeNexus.Notifications.notify_thread_moved(
-                thread.user_id,
-                thread.title,
-                thread.slug,
-                new_forum.name,
-                user.id
-              )
+        "unlock" ->
+          Forums.bulk_update_threads(thread_ids, %{is_locked: false})
+
+        "hide" ->
+          Forums.bulk_hide_threads(thread_ids)
+
+        "move" ->
+          target_forum_id = conn.params["target_forum_id"]
+
+          if target_forum_id do
+            # Fetch threads before move to get author info
+            threads_to_move = Enum.map(thread_ids, &Forums.get_thread!/1)
+            result = Forums.bulk_move_threads(thread_ids, target_forum_id)
+
+            # Notify all thread authors about the move
+            if result == :ok do
+              new_forum = Forums.get_forum!(target_forum_id)
+
+              for thread <- threads_to_move, thread.user_id != user.id do
+                ForgeNexus.Notifications.notify_thread_moved(
+                  thread.user_id,
+                  thread.title,
+                  thread.slug,
+                  new_forum.name,
+                  user.id
+                )
+              end
             end
+
+            result
+          else
+            {:error, "target_forum_id required for move action"}
           end
 
-          result
-        else
-          {:error, "target_forum_id required for move action"}
-        end
-      _ ->
-        {:error, "Unknown action: #{action}"}
-    end
+        _ ->
+          {:error, "Unknown action: #{action}"}
+      end
 
     case result do
       :ok ->
@@ -424,6 +465,7 @@ defmodule ForgeNexusWeb.ModerationController do
           thread_ids: thread_ids,
           count: length(thread_ids)
         })
+
         conn |> json(%{ok: true, action: action, count: length(thread_ids)})
 
       {:error, reason} ->
@@ -550,11 +592,12 @@ defmodule ForgeNexusWeb.ModerationController do
 
   def list_suspicious_accounts(conn, params) do
     opts = [
-      reviewed: case Map.get(params, "reviewed") do
-        "true" -> true
-        "false" -> false
-        _ -> nil
-      end,
+      reviewed:
+        case Map.get(params, "reviewed") do
+          "true" -> true
+          "false" -> false
+          _ -> nil
+        end,
       limit: parse_int(params, "limit", 25),
       offset: parse_int(params, "offset", 0)
     ]
@@ -572,7 +615,11 @@ defmodule ForgeNexusWeb.ModerationController do
           matches_found: length(results)
         })
 
-        conn |> json(%{matches: length(results), suspicious_accounts: Enum.map(results, &suspicious_account_json/1)})
+        conn
+        |> json(%{
+          matches: length(results),
+          suspicious_accounts: Enum.map(results, &suspicious_account_json/1)
+        })
 
       {:error, reason} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
@@ -604,7 +651,9 @@ defmodule ForgeNexusWeb.ModerationController do
         conn |> json(%{impersonation: impersonation_json(log)})
 
       {:error, :already_impersonating} ->
-        conn |> put_status(:conflict) |> json(%{error: "You already have an active impersonation session"})
+        conn
+        |> put_status(:conflict)
+        |> json(%{error: "You already have an active impersonation session"})
 
       {:error, _changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Operation failed"})
@@ -717,7 +766,16 @@ defmodule ForgeNexusWeb.ModerationController do
 
     attrs =
       policy_params
-      |> Map.take(["name", "description", "is_active", "ai_moderation_enabled", "rules", "escalation_overrides", "forum_id", "category_id"])
+      |> Map.take([
+        "name",
+        "description",
+        "is_active",
+        "ai_moderation_enabled",
+        "rules",
+        "escalation_overrides",
+        "forum_id",
+        "category_id"
+      ])
       |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
       |> Map.new()
 
@@ -756,12 +814,12 @@ defmodule ForgeNexusWeb.ModerationController do
     user = Guardian.Plug.current_resource(conn)
 
     case ForgeNexus.Moderation.SoftBlockFlow.create(%{
-      post_id: post_id,
-      moderator_id: user.id,
-      reason: params["reason"] || "Content flagged for review",
-      rule_violated: params["rule"],
-      window_hours: params["window_hours"]
-    }) do
+           post_id: post_id,
+           moderator_id: user.id,
+           reason: params["reason"] || "Content flagged for review",
+           rule_violated: params["rule"],
+           window_hours: params["window_hours"]
+         }) do
       {:ok, sb} ->
         conn |> json(%{soft_block: %{id: sb.id, expires_at: sb.expires_at, status: sb.status}})
 
@@ -782,12 +840,22 @@ defmodule ForgeNexusWeb.ModerationController do
     community_id = conn.assigns.community_id
     blocks = ForgeNexus.Moderation.SoftBlockFlow.list_pending(community_id)
 
-    conn |> json(%{soft_blocks: Enum.map(blocks, fn sb ->
-      %{id: sb.id, post_id: sb.post_id, reason: sb.reason, rule: sb.rule_violated,
-        expires_at: sb.expires_at, status: sb.status,
-        author: sb.author && %{id: sb.author.id, username: sb.author.username},
-        moderator: sb.moderator && %{id: sb.moderator.id, username: sb.moderator.username}}
-    end)})
+    conn
+    |> json(%{
+      soft_blocks:
+        Enum.map(blocks, fn sb ->
+          %{
+            id: sb.id,
+            post_id: sb.post_id,
+            reason: sb.reason,
+            rule: sb.rule_violated,
+            expires_at: sb.expires_at,
+            status: sb.status,
+            author: sb.author && %{id: sb.author.id, username: sb.author.username},
+            moderator: sb.moderator && %{id: sb.moderator.id, username: sb.moderator.username}
+          }
+        end)
+    })
   end
 
   # =====================
@@ -888,7 +956,10 @@ defmodule ForgeNexusWeb.ModerationController do
       decided_at: appeal.decided_at,
       inserted_at: appeal.inserted_at,
       user: if(Ecto.assoc_loaded?(appeal.user), do: user_mini_json(appeal.user)),
-      reviewer: if(appeal.reviewer && Ecto.assoc_loaded?(appeal.reviewer), do: user_mini_json(appeal.reviewer))
+      reviewer:
+        if(appeal.reviewer && Ecto.assoc_loaded?(appeal.reviewer),
+          do: user_mini_json(appeal.reviewer)
+        )
     }
   end
 
@@ -902,7 +973,10 @@ defmodule ForgeNexusWeb.ModerationController do
       inserted_at: sa.inserted_at,
       user: if(Ecto.assoc_loaded?(sa.user), do: user_mini_json(sa.user)),
       linked_user: if(Ecto.assoc_loaded?(sa.linked_user), do: user_mini_json(sa.linked_user)),
-      reviewed_by: if(sa.reviewed_by && Ecto.assoc_loaded?(sa.reviewed_by), do: user_mini_json(sa.reviewed_by))
+      reviewed_by:
+        if(sa.reviewed_by && Ecto.assoc_loaded?(sa.reviewed_by),
+          do: user_mini_json(sa.reviewed_by)
+        )
     }
   end
 
@@ -946,14 +1020,13 @@ defmodule ForgeNexusWeb.ModerationController do
     end
   end
 
-
   defp safe_to_integer(val, default) when is_binary(val) do
     case Integer.parse(val) do
       {int, _} -> int
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

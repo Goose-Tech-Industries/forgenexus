@@ -106,7 +106,11 @@ defmodule ForgeNexusWeb.VoiceChannel do
 
   # ICE candidate exchange
   @impl true
-  def handle_in("signal:ice_candidate", %{"to" => target_user_id, "candidate" => candidate}, socket) do
+  def handle_in(
+        "signal:ice_candidate",
+        %{"to" => target_user_id, "candidate" => candidate},
+        socket
+      ) do
     user = socket.assigns.current_user
 
     broadcast_from!(socket, "signal:ice_candidate", %{
@@ -215,11 +219,23 @@ defmodule ForgeNexusWeb.VoiceChannel do
     room_id = socket.assigns.room_id
     items = Voice.list_redeemables(room_id)
 
-    {:reply, {:ok, %{redeemables: Enum.map(items, fn r ->
-      %{id: r.id, name: r.name, description: r.description, emoji: r.emoji,
-        cost: r.cost, type: r.type, requires_text: r.requires_text,
-        cooldown_seconds: r.cooldown_seconds}
-    end)}}, socket}
+    {:reply,
+     {:ok,
+      %{
+        redeemables:
+          Enum.map(items, fn r ->
+            %{
+              id: r.id,
+              name: r.name,
+              description: r.description,
+              emoji: r.emoji,
+              cost: r.cost,
+              type: r.type,
+              requires_text: r.requires_text,
+              cooldown_seconds: r.cooldown_seconds
+            }
+          end)
+      }}, socket}
   end
 
   # --- In-room polls ---
@@ -294,10 +310,21 @@ defmodule ForgeNexusWeb.VoiceChannel do
     room_id = socket.assigns.room_id
     clips = Voice.list_soundboard_clips(room_id)
 
-    {:reply, {:ok, %{clips: Enum.map(clips, fn c ->
-      %{id: c.id, name: c.name, emoji: c.emoji, audio_url: c.audio_url,
-        duration_ms: c.duration_ms, play_count: c.play_count}
-    end)}}, socket}
+    {:reply,
+     {:ok,
+      %{
+        clips:
+          Enum.map(clips, fn c ->
+            %{
+              id: c.id,
+              name: c.name,
+              emoji: c.emoji,
+              audio_url: c.audio_url,
+              duration_ms: c.duration_ms,
+              play_count: c.play_count
+            }
+          end)
+      }}, socket}
   end
 
   # --- Live reactions (TikTok/Spaces-style emoji bursts) ---
@@ -420,7 +447,11 @@ defmodule ForgeNexusWeb.VoiceChannel do
   @impl true
   def handle_in(event, payload, socket) do
     require Logger
-    Logger.warning("[VoiceChannel] unhandled or malformed event #{inspect(event)} payload=#{inspect(payload)}")
+
+    Logger.warning(
+      "[VoiceChannel] unhandled or malformed event #{inspect(event)} payload=#{inspect(payload)}"
+    )
+
     {:reply, {:error, %{reason: "unknown or malformed event", event: event}}, socket}
   end
 end

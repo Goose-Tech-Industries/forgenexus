@@ -11,8 +11,14 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.RestrictProfilePerk do
     "avatar_frame" => %{metadata_key: "avatar_frame"},
     "name_color" => %{metadata_key: "name_color"},
     "name_effect" => %{metadata_key: "name_effect"},
-    "postbit_background" => %{fields: %{postbit_background_url: nil, postbit_background_opacity: nil}, metadata_key: "postbit_background"},
-    "profile_background" => %{fields: %{post_background_url: nil, post_background_opacity: nil}, metadata_key: "profile_background"},
+    "postbit_background" => %{
+      fields: %{postbit_background_url: nil, postbit_background_opacity: nil},
+      metadata_key: "postbit_background"
+    },
+    "profile_background" => %{
+      fields: %{post_background_url: nil, post_background_opacity: nil},
+      metadata_key: "profile_background"
+    },
     "custom_title" => %{fields: %{custom_title: nil}}
   }
 
@@ -37,7 +43,9 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.RestrictProfilePerk do
         # Reset metadata key if any
         metadata_changes =
           case Map.get(reset_info, :metadata_key) do
-            nil -> %{}
+            nil ->
+              %{}
+
             key ->
               metadata = Map.get(user, :metadata) || %{}
               updated_metadata = Map.delete(metadata, key)
@@ -73,7 +81,8 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.RestrictProfilePerk do
       type: "profile/restrict_profile_perk",
       category: "profile",
       label: "Restrict Profile Perk",
-      description: "Removes/resets a cosmetic profile perk from a user (opposite of grant_profile_perk).",
+      description:
+        "Removes/resets a cosmetic profile perk from a user (opposite of grant_profile_perk).",
       inputs: [
         %{name: "user_id", type: "string", required: true}
       ],
@@ -81,7 +90,14 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.RestrictProfilePerk do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "perk_type", type: "select", options: ~w(avatar_frame name_color name_effect postbit_background profile_background custom_title), default: "custom_title", description: "Type of profile perk to remove/reset"}
+        %{
+          name: "perk_type",
+          type: "select",
+          options:
+            ~w(avatar_frame name_color name_effect postbit_background profile_background custom_title),
+          default: "custom_title",
+          description: "Type of profile perk to remove/reset"
+        }
       ]
     }
   end

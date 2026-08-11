@@ -46,7 +46,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
     create_if_not_exists table(:user_balances, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :currency_id, references(:currencies, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :currency_id, references(:currencies, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :balance, :bigint, default: 0
       add :lifetime_earned, :bigint, default: 0
 
@@ -59,7 +62,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :id, :binary_id, primary_key: true
       add :from_user_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :to_user_id, references(:users, type: :binary_id, on_delete: :nilify_all)
-      add :currency_id, references(:currencies, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :currency_id, references(:currencies, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :amount, :bigint, null: false
       add :transaction_type, :string, null: false
       add :description, :text
@@ -101,7 +107,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
     create_if_not_exists table(:user_inventory, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :item_template_id, references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :item_template_id,
+          references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+
       add :quantity, :integer, default: 1
       add :durability, :integer
       add :is_equipped, :boolean, default: false
@@ -116,7 +125,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
     create_if_not_exists table(:crafting_recipes, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
-      add :result_item_id, references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :result_item_id, references(:item_templates, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :result_quantity, :integer, default: 1
       add :success_rate, :float, default: 1.0
       add :required_level, :integer, default: 0
@@ -127,8 +139,13 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:crafting_ingredients, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :recipe_id, references(:crafting_recipes, type: :binary_id, on_delete: :delete_all), null: false
-      add :item_template_id, references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :recipe_id, references(:crafting_recipes, type: :binary_id, on_delete: :delete_all),
+        null: false
+
+      add :item_template_id,
+          references(:item_templates, type: :binary_id, on_delete: :delete_all), null: false
+
       add :quantity, :integer, default: 1
 
       timestamps()
@@ -200,7 +217,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:collection_items, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :collection_set_id, references(:collection_sets, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :collection_set_id,
+          references(:collection_sets, type: :binary_id, on_delete: :delete_all), null: false
+
       add :name, :string, null: false
       add :description, :text
       add :icon, :string
@@ -213,7 +233,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
     create_if_not_exists table(:user_collection_progress, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :collection_item_id, references(:collection_items, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :collection_item_id,
+          references(:collection_items, type: :binary_id, on_delete: :delete_all), null: false
+
       add :acquired_at, :utc_datetime
 
       timestamps()
@@ -236,7 +259,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :started_at, :utc_datetime
       add :completed_at, :utc_datetime
       add :prize_description, :text
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
+
       add :metadata, :map, default: %{}
 
       timestamps()
@@ -244,7 +270,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:tournament_participants, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :tournament_id, references(:tournaments, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :tournament_id, references(:tournaments, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :seed, :integer
       add :status, :string, default: "registered"
@@ -257,7 +286,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:tournament_matches, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :tournament_id, references(:tournaments, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :tournament_id, references(:tournaments, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :round, :integer, null: false
       add :match_number, :integer, null: false
       add :player1_id, references(:users, type: :binary_id, on_delete: :nilify_all)
@@ -281,7 +313,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :slug, :string, null: false
       add :description, :text
       add :icon, :string
-      add :base_stats, :map, default: %{"hunger" => 100, "happiness" => 100, "health" => 100, "energy" => 100}
+
+      add :base_stats, :map,
+        default: %{"hunger" => 100, "happiness" => 100, "health" => 100, "energy" => 100}
+
       add :evolution_from_id, references(:pet_templates, type: :binary_id, on_delete: :nilify_all)
       add :evolution_threshold, :integer
       add :rarity, :string, default: "common"
@@ -294,9 +329,15 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
     create_if_not_exists table(:user_pets, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :pet_template_id, references(:pet_templates, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :pet_template_id, references(:pet_templates, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :nickname, :string
-      add :stats, :map, default: %{"hunger" => 100, "happiness" => 100, "health" => 100, "energy" => 100}
+
+      add :stats, :map,
+        default: %{"hunger" => 100, "happiness" => 100, "health" => 100, "energy" => 100}
+
       add :experience, :integer, default: 0
       add :level, :integer, default: 1
       add :is_active, :boolean, default: true
@@ -402,7 +443,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
       add :id, :binary_id, primary_key: true
       add :question, :string, null: false
       add :status, :string, default: "open"
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
+
       add :outcome_count, :integer, default: 2
       add :total_pool, :bigint, default: 0
       add :currency_id, references(:currencies, type: :binary_id, on_delete: :nilify_all)
@@ -415,7 +459,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:prediction_options, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :prediction_id, references(:predictions, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :prediction_id, references(:predictions, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :label, :string, null: false
       add :total_bets, :bigint, default: 0
       add :bet_count, :integer, default: 0
@@ -425,8 +472,13 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:prediction_bets, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :prediction_id, references(:predictions, type: :binary_id, on_delete: :delete_all), null: false
-      add :option_id, references(:prediction_options, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :prediction_id, references(:predictions, type: :binary_id, on_delete: :delete_all),
+        null: false
+
+      add :option_id, references(:prediction_options, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :amount, :bigint, null: false
       add :payout, :bigint
@@ -450,7 +502,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateNocodeExpansionTables do
 
     create_if_not_exists table(:suggestion_votes, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :suggestion_id, references(:suggestions, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :suggestion_id, references(:suggestions, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :vote_type, :string, null: false
 

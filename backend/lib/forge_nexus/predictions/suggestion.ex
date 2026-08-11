@@ -20,7 +20,15 @@ defmodule ForgeNexus.Predictions.Suggestion do
 
   def changeset(suggestion, attrs) do
     suggestion
-    |> cast(attrs, [:title, :description, :status, :upvotes, :downvotes, :staff_response, :user_id])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :status,
+      :upvotes,
+      :downvotes,
+      :staff_response,
+      :user_id
+    ])
     |> validate_required([:title, :description, :user_id])
     |> validate_inclusion(:status, ~w(pending under_review accepted rejected completed))
   end

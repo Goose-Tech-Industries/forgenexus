@@ -50,7 +50,9 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.YoutubeCheck do
   defp to_rss_url(url) do
     cond do
       String.contains?(url, "/channel/") ->
-        channel_id = url |> String.split("/channel/") |> List.last() |> String.split("/") |> List.first()
+        channel_id =
+          url |> String.split("/channel/") |> List.last() |> String.split("/") |> List.first()
+
         "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
 
       String.contains?(url, "/@") ->
@@ -96,7 +98,12 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.YoutubeCheck do
         %{name: "has_new", type: "boolean"}
       ],
       config_fields: [
-        %{name: "channel_url", type: "string", default: "", description: "YouTube channel URL or channel ID"}
+        %{
+          name: "channel_url",
+          type: "string",
+          default: "",
+          description: "YouTube channel URL or channel ID"
+        }
       ]
     }
   end

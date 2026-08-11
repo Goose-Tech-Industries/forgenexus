@@ -55,10 +55,26 @@ defmodule ForgeNexus.Communities.Community do
 
   def changeset(community, attrs) do
     community
-    |> cast(attrs, [:name, :slug, :subdomain, :custom_domain, :description,
-                     :logo_url, :banner_url, :plan, :plan_status, :feature_flags, :settings,
-                     :is_active, :owner_id, :member_count, :monthly_fee_cents,
-                     :stripe_customer_id, :current_period_end, :cancel_at])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :subdomain,
+      :custom_domain,
+      :description,
+      :logo_url,
+      :banner_url,
+      :plan,
+      :plan_status,
+      :feature_flags,
+      :settings,
+      :is_active,
+      :owner_id,
+      :member_count,
+      :monthly_fee_cents,
+      :stripe_customer_id,
+      :current_period_end,
+      :cancel_at
+    ])
     |> validate_required([:name, :slug])
     |> validate_inclusion(:plan, @plans)
     |> validate_inclusion(:plan_status, @plan_statuses)
@@ -81,10 +97,45 @@ defmodule ForgeNexus.Communities.Community do
     %{
       "free" => %{"forums" => true, "profiles" => true},
       "starter" => %{"forums" => true, "profiles" => true, "chat" => true, "social_feed" => true},
-      "social" => %{"forums" => true, "profiles" => true, "chat" => true, "voice" => true, "social_feed" => true},
-      "creator" => %{"forums" => true, "profiles" => true, "chat" => true, "voice" => true, "streaming" => true, "economy" => true, "social_feed" => true},
-      "platform" => %{"forums" => true, "profiles" => true, "chat" => true, "voice" => true, "streaming" => true, "economy" => true, "social_feed" => true, "automation" => true, "marketplace" => true},
-      "enterprise" => %{"forums" => true, "profiles" => true, "chat" => true, "voice" => true, "streaming" => true, "economy" => true, "social_feed" => true, "automation" => true, "marketplace" => true, "white_label" => true}
+      "social" => %{
+        "forums" => true,
+        "profiles" => true,
+        "chat" => true,
+        "voice" => true,
+        "social_feed" => true
+      },
+      "creator" => %{
+        "forums" => true,
+        "profiles" => true,
+        "chat" => true,
+        "voice" => true,
+        "streaming" => true,
+        "economy" => true,
+        "social_feed" => true
+      },
+      "platform" => %{
+        "forums" => true,
+        "profiles" => true,
+        "chat" => true,
+        "voice" => true,
+        "streaming" => true,
+        "economy" => true,
+        "social_feed" => true,
+        "automation" => true,
+        "marketplace" => true
+      },
+      "enterprise" => %{
+        "forums" => true,
+        "profiles" => true,
+        "chat" => true,
+        "voice" => true,
+        "streaming" => true,
+        "economy" => true,
+        "social_feed" => true,
+        "automation" => true,
+        "marketplace" => true,
+        "white_label" => true
+      }
     }
   end
 end

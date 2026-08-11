@@ -12,13 +12,17 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.CheckQuestStep do
 
     progress_value =
       cond do
-        is_number(progress_value) -> progress_value
+        is_number(progress_value) ->
+          progress_value
+
         is_binary(progress_value) ->
           case Float.parse(progress_value) do
             {n, _} -> n
             :error -> 0
           end
-        true -> 0
+
+        true ->
+          0
       end
 
     case ForgeNexus.Quests.check_step_progress(user_quest_id, %{progress: progress_value}) do

@@ -26,8 +26,19 @@ defmodule ForgeNexus.Moderation.SoftBlock do
 
   def changeset(sb, attrs) do
     sb
-    |> cast(attrs, [:community_id, :post_id, :thread_id, :moderator_id, :author_id,
-                     :reason, :rule_violated, :expires_at, :status, :edited_at, :original_body])
+    |> cast(attrs, [
+      :community_id,
+      :post_id,
+      :thread_id,
+      :moderator_id,
+      :author_id,
+      :reason,
+      :rule_violated,
+      :expires_at,
+      :status,
+      :edited_at,
+      :original_body
+    ])
     |> validate_required([:post_id, :moderator_id, :author_id, :reason, :expires_at])
     |> validate_inclusion(:status, @statuses)
   end

@@ -21,8 +21,15 @@ defmodule ForgeNexus.Social.Referral do
 
   def changeset(ref, attrs) do
     ref
-    |> cast(attrs, [:referrer_id, :referred_community_id, :referred_user_id, :code,
-                     :commission_rate, :commission_duration_months, :status])
+    |> cast(attrs, [
+      :referrer_id,
+      :referred_community_id,
+      :referred_user_id,
+      :code,
+      :commission_rate,
+      :commission_duration_months,
+      :status
+    ])
     |> validate_required([:referrer_id, :code])
     |> unique_constraint(:code)
   end

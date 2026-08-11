@@ -38,9 +38,20 @@ defmodule ForgeNexus.Games.PartyGame do
 
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:community_id, :room_id, :host_id, :game_type, :status, :settings,
-                     :state, :max_players, :round_number, :total_rounds,
-                     :wager_enabled, :wager_per_round])
+    |> cast(attrs, [
+      :community_id,
+      :room_id,
+      :host_id,
+      :game_type,
+      :status,
+      :settings,
+      :state,
+      :max_players,
+      :round_number,
+      :total_rounds,
+      :wager_enabled,
+      :wager_per_round
+    ])
     |> validate_required([:game_type])
     |> validate_inclusion(:game_type, @game_types)
     |> validate_inclusion(:status, @statuses)

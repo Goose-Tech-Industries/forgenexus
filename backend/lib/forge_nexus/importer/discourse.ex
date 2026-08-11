@@ -50,7 +50,9 @@ defmodule ForgeNexus.Importer.Discourse do
                   user
                   |> Ecto.Changeset.change(inserted_at: DateTime.truncate(dt, :second))
                   |> Repo.update()
-                _ -> :ok
+
+                _ ->
+                  :ok
               end
             end
 
@@ -90,9 +92,12 @@ defmodule ForgeNexus.Importer.Discourse do
         }
 
         case %Category{} |> Category.changeset(attrs) |> Repo.insert() do
-          {:ok, category} -> Map.put(acc, cat_data["source_id"], category.id)
+          {:ok, category} ->
+            Map.put(acc, cat_data["source_id"], category.id)
+
           {:error, _} ->
             attrs_with_slug = Map.put(attrs, :slug, Slug.slugify(cat_data["name"]) <> "-imported")
+
             case %Category{} |> Category.changeset(attrs_with_slug) |> Repo.insert() do
               {:ok, category} -> Map.put(acc, cat_data["source_id"], category.id)
               {:error, _} -> acc
@@ -129,9 +134,13 @@ defmodule ForgeNexus.Importer.Discourse do
           }
 
           case %Forum{} |> Forum.changeset(attrs) |> Repo.insert() do
-            {:ok, forum} -> Map.put(acc, forum_data["source_id"], forum.id)
+            {:ok, forum} ->
+              Map.put(acc, forum_data["source_id"], forum.id)
+
             {:error, _} ->
-              attrs_with_slug = Map.put(attrs, :slug, Slug.slugify(forum_data["name"]) <> "-imported")
+              attrs_with_slug =
+                Map.put(attrs, :slug, Slug.slugify(forum_data["name"]) <> "-imported")
+
               case %Forum{} |> Forum.changeset(attrs_with_slug) |> Repo.insert() do
                 {:ok, forum} -> Map.put(acc, forum_data["source_id"], forum.id)
                 {:error, _} -> acc
@@ -181,13 +190,16 @@ defmodule ForgeNexus.Importer.Discourse do
                       last_post_at: DateTime.truncate(dt, :second)
                     )
                     |> Repo.update()
-                  _ -> :ok
+
+                  _ ->
+                    :ok
                 end
               end
 
               Map.put(acc, thread_data["source_id"], thread.id)
 
-            {:error, _} -> acc
+            {:error, _} ->
+              acc
           end
         end
       end)
@@ -232,13 +244,16 @@ defmodule ForgeNexus.Importer.Discourse do
                     post
                     |> Ecto.Changeset.change(inserted_at: DateTime.truncate(dt, :second))
                     |> Repo.update()
-                  _ -> :ok
+
+                  _ ->
+                    :ok
                 end
               end
 
               Map.put(acc, post_data["source_id"], post.id)
 
-            {:error, _} -> acc
+            {:error, _} ->
+              acc
           end
         end
       end)
@@ -293,6 +308,7 @@ defmodule ForgeNexus.Importer.Discourse do
         cond do
           String.starts_with?(line, "> ") ->
             content = String.trim_leading(line, "> ")
+
             if in_quote do
               {acc ++ [content], true}
             else
@@ -356,6 +372,7 @@ defmodule ForgeNexus.Importer.Discourse do
 
       user_data["username"] ->
         slug = Slug.slugify(user_data["username"])
+
         case Repo.one(from u in User, where: u.slug == ^slug, select: u.id) do
           nil -> :not_found
           id -> {:ok, id}

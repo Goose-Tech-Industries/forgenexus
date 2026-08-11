@@ -17,7 +17,9 @@ defmodule ForgeNexus.Plugins.Nodes.Content.EditThread do
       |> then(fn m -> if prefix, do: Map.put(m, :prefix, prefix), else: m end)
       |> then(fn m ->
         if tags_raw != "" do
-          tags = tags_raw |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+          tags =
+            tags_raw |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+
           Map.put(m, :tags, tags)
         else
           m
@@ -52,7 +54,12 @@ defmodule ForgeNexus.Plugins.Nodes.Content.EditThread do
       ],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "tags", type: "string", default: "", description: "Comma-separated tags (optional, replaces existing)"}
+        %{
+          name: "tags",
+          type: "string",
+          default: "",
+          description: "Comma-separated tags (optional, replaces existing)"
+        }
       ]
     }
   end

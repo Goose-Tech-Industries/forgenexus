@@ -22,7 +22,9 @@ defmodule ForgeNexusWeb.ForumWebhookController do
           target_id: webhook.id,
           description: "Created forum webhook #{webhook.name}"
         })
+
         conn |> put_status(:created) |> json(%{webhook: webhook_json(webhook)})
+
       {:error, changeset} ->
         errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _} -> msg end)
         conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
@@ -41,7 +43,9 @@ defmodule ForgeNexusWeb.ForumWebhookController do
           target_id: id,
           description: "Updated forum webhook #{webhook.name}"
         })
+
         conn |> json(%{webhook: webhook_json(webhook)})
+
       {:error, _} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update"})
     end
@@ -59,7 +63,9 @@ defmodule ForgeNexusWeb.ForumWebhookController do
           target_id: id,
           description: "Deleted forum webhook"
         })
+
         conn |> json(%{ok: true})
+
       {:error, _} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end

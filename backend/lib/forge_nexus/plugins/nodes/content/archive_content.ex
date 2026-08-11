@@ -33,7 +33,12 @@ defmodule ForgeNexus.Plugins.Nodes.Content.ArchiveContent do
       inputs: [%{name: "thread_id", type: "string", required: true}],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "archive_forum_slug", type: "string", default: "archive", description: "Slug of the archive forum to move the thread to"}
+        %{
+          name: "archive_forum_slug",
+          type: "string",
+          default: "archive",
+          description: "Slug of the archive forum to move the thread to"
+        }
       ]
     }
   end

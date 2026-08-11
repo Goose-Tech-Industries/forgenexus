@@ -50,7 +50,13 @@ defmodule ForgeNexus.Signup do
   the DB transaction isn't held open across a network call.
   """
   @spec provision(signup_attrs) ::
-          {:ok, %{user: map(), community: %Community{}, checkout_url: String.t() | nil, stripe_status: atom()}}
+          {:ok,
+           %{
+             user: map(),
+             community: %Community{},
+             checkout_url: String.t() | nil,
+             stripe_status: atom()
+           }}
           | {:error, atom() | Ecto.Changeset.t() | tuple()}
   def provision(%{plan: plan} = attrs) when plan in @paid_plans do
     Repo.transaction(fn ->
@@ -66,7 +72,14 @@ defmodule ForgeNexus.Signup do
     |> case do
       {:ok, %{user: user, community: community}} ->
         {checkout_url, stripe_status} = maybe_start_checkout(community, plan)
-        {:ok, %{user: user, community: community, checkout_url: checkout_url, stripe_status: stripe_status}}
+
+        {:ok,
+         %{
+           user: user,
+           community: community,
+           checkout_url: checkout_url,
+           stripe_status: stripe_status
+         }}
 
       {:error, reason} ->
         {:error, reason}
@@ -114,7 +127,9 @@ defmodule ForgeNexus.Signup do
 
       _price_id ->
         case create_checkout_with_trial(community, plan, trial_days) do
-          {:ok, %{url: url}} -> {url, :ok}
+          {:ok, %{url: url}} ->
+            {url, :ok}
+
           {:error, reason} ->
             Logger.warning("[Signup] Stripe checkout deferred: #{inspect(reason)}")
             {nil, :stripe_error}

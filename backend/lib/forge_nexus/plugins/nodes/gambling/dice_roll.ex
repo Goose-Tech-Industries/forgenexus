@@ -39,7 +39,9 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.DiceRoll do
   def validate_config(config) do
     case Map.get(config, "notation", "1d6") do
       notation when is_binary(notation) ->
-        if Regex.match?(~r/^\d+d\d+$/i, notation), do: :ok, else: {:error, ["notation must be in NdS format (e.g. 2d6)"]}
+        if Regex.match?(~r/^\d+d\d+$/i, notation),
+          do: :ok,
+          else: {:error, ["notation must be in NdS format (e.g. 2d6)"]}
 
       _ ->
         {:error, ["notation must be a string in NdS format"]}
@@ -60,7 +62,12 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.DiceRoll do
         %{name: "notation", type: "string"}
       ],
       config_fields: [
-        %{name: "notation", type: "string", default: "1d6", description: "Dice notation in NdS format"}
+        %{
+          name: "notation",
+          type: "string",
+          default: "1d6",
+          description: "Dice notation in NdS format"
+        }
       ]
     }
   end

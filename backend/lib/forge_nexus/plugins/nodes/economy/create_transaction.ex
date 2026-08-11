@@ -76,7 +76,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.CreateTransaction do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        }
       ]
     }
   end

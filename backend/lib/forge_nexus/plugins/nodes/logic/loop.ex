@@ -1,13 +1,13 @@
 defmodule ForgeNexus.Plugins.Nodes.Logic.Loop do
   @behaviour ForgeNexus.Plugins.Nodes.Behaviour
 
-
   @impl true
   def execute(config, inputs, ctx) do
     source_field = Map.get(config, "source_field", "items")
     item_variable = Map.get(config, "item_variable", "item")
 
-    items = Map.get(inputs, source_field) || Map.get(inputs, String.to_existing_atom(source_field))
+    items =
+      Map.get(inputs, source_field) || Map.get(inputs, String.to_existing_atom(source_field))
 
     case items do
       list when is_list(list) ->
@@ -55,8 +55,18 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.Loop do
         %{name: "count", type: "number"}
       ],
       config_fields: [
-        %{name: "source_field", type: "string", default: "items", description: "Field containing the list to iterate"},
-        %{name: "item_variable", type: "string", default: "item", description: "Variable name for the current item"}
+        %{
+          name: "source_field",
+          type: "string",
+          default: "items",
+          description: "Field containing the list to iterate"
+        },
+        %{
+          name: "item_variable",
+          type: "string",
+          default: "item",
+          description: "Variable name for the current item"
+        }
       ]
     }
   end

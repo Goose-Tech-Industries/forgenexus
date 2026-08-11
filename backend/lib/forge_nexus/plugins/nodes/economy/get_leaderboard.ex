@@ -49,7 +49,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.GetLeaderboard do
         %{name: "entries", type: "list"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"},
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        },
         %{name: "limit", type: "number", default: 10, description: "Number of entries to return"}
       ]
     }

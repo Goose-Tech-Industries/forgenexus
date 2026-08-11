@@ -25,7 +25,14 @@ defmodule ForgeNexus.Plugins.JsPluginExecution do
 
   def changeset(execution, attrs) do
     execution
-    |> cast(attrs, [:js_plugin_id, :status, :trigger_type, :trigger_data, :started_at, :triggered_by_id])
+    |> cast(attrs, [
+      :js_plugin_id,
+      :status,
+      :trigger_type,
+      :trigger_data,
+      :started_at,
+      :triggered_by_id
+    ])
     |> validate_required([:js_plugin_id, :started_at])
     |> validate_inclusion(:status, @statuses)
     |> foreign_key_constraint(:js_plugin_id)

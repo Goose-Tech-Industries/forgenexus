@@ -28,7 +28,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateApiKeysAndFinalFeatures do
     # API usage log (for billing + analytics)
     create table(:api_usage_daily, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :api_key_id, references(:api_keys, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :api_key_id, references(:api_keys, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :date, :date, null: false
       add :request_count, :integer, default: 0
       add :error_count, :integer, default: 0
@@ -45,7 +48,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateApiKeysAndFinalFeatures do
 
     # Subscription-gated voice rooms
     alter table(:voice_rooms) do
-      add :required_tier_id, references(:subscription_tiers, type: :binary_id, on_delete: :nilify_all)
+      add :required_tier_id,
+          references(:subscription_tiers, type: :binary_id, on_delete: :nilify_all)
     end
   end
 end

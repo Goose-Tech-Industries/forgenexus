@@ -44,14 +44,18 @@ defmodule ForgeNexus.Repo.Migrations.AddPerformanceIndexes do
     # ===========================================
 
     # Optimized for "show unread notifications for user, newest first"
-    create_if_not_exists index(:notifications, [:user_id, :is_read, :inserted_at], concurrently: true)
+    create_if_not_exists index(:notifications, [:user_id, :is_read, :inserted_at],
+                           concurrently: true
+                         )
 
     # ===========================================
     # Messages — conversation display
     # ===========================================
 
     # Messages in a conversation by user, sorted (DM history)
-    create_if_not_exists index(:messages, [:conversation_id, :user_id, :inserted_at], concurrently: true)
+    create_if_not_exists index(:messages, [:conversation_id, :user_id, :inserted_at],
+                           concurrently: true
+                         )
 
     # ===========================================
     # User follows — follower/following counts

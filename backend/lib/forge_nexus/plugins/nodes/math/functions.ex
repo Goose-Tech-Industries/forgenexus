@@ -83,7 +83,13 @@ defmodule ForgeNexus.Plugins.Nodes.Math.Functions do
       ],
       outputs: [%{name: "result", type: "number"}],
       config_fields: [
-        %{name: "function", type: "select", options: ~w(min max round random_number clamp), default: "min", description: "Math function to apply"}
+        %{
+          name: "function",
+          type: "select",
+          options: ~w(min max round random_number clamp),
+          default: "min",
+          description: "Math function to apply"
+        }
       ]
     }
   end

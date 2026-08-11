@@ -36,7 +36,12 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.HasItem do
         %{name: "no", type: "number"}
       ],
       config_fields: [
-        %{name: "min_quantity", type: "number", default: 1, description: "Minimum quantity required"}
+        %{
+          name: "min_quantity",
+          type: "number",
+          default: 1,
+          description: "Minimum quantity required"
+        }
       ]
     }
   end

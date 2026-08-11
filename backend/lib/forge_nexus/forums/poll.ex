@@ -21,7 +21,14 @@ defmodule ForgeNexus.Forums.Poll do
 
   def changeset(poll, attrs) do
     poll
-    |> cast(attrs, [:question, :is_multiple_choice, :is_public, :max_choices, :closes_at, :thread_id])
+    |> cast(attrs, [
+      :question,
+      :is_multiple_choice,
+      :is_public,
+      :max_choices,
+      :closes_at,
+      :thread_id
+    ])
     |> validate_required([:question, :thread_id])
     |> unique_constraint(:thread_id)
   end

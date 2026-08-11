@@ -53,12 +53,31 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.RateLimitCheck do
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [
         %{name: "allowed", type: "branch", fields: [%{name: "count", type: "number"}]},
-        %{name: "limited", type: "branch", fields: [%{name: "count", type: "number"}, %{name: "retry_after", type: "number"}]}
+        %{
+          name: "limited",
+          type: "branch",
+          fields: [%{name: "count", type: "number"}, %{name: "retry_after", type: "number"}]
+        }
       ],
       config_fields: [
-        %{name: "action_key", type: "string", default: "default", description: "Unique key for this rate limit action"},
-        %{name: "max_count", type: "number", default: 10, description: "Maximum actions allowed in window"},
-        %{name: "window_seconds", type: "number", default: 60, description: "Time window in seconds"}
+        %{
+          name: "action_key",
+          type: "string",
+          default: "default",
+          description: "Unique key for this rate limit action"
+        },
+        %{
+          name: "max_count",
+          type: "number",
+          default: 10,
+          description: "Maximum actions allowed in window"
+        },
+        %{
+          name: "window_seconds",
+          type: "number",
+          default: 60,
+          description: "Time window in seconds"
+        }
       ]
     }
   end

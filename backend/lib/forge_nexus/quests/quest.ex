@@ -23,7 +23,19 @@ defmodule ForgeNexus.Quests.Quest do
 
   def changeset(quest, attrs) do
     quest
-    |> cast(attrs, [:name, :description, :icon, :quest_type, :steps, :rewards, :is_daily, :is_repeatable, :is_active, :required_level, :sort_order])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :icon,
+      :quest_type,
+      :steps,
+      :rewards,
+      :is_daily,
+      :is_repeatable,
+      :is_active,
+      :required_level,
+      :sort_order
+    ])
     |> validate_required([:name, :steps])
     |> validate_inclusion(:quest_type, ~w(standard daily weekly chain))
   end

@@ -46,14 +46,29 @@ defmodule ForgeNexus.Setup do
 
     case Req.get("#{url}/health", receive_timeout: 3_000) do
       {:ok, %{status: 200}} ->
-        %{name: "Meilisearch", status: "ok", detail: "Connected — fast search enabled", optional: true}
+        %{
+          name: "Meilisearch",
+          status: "ok",
+          detail: "Connected — fast search enabled",
+          optional: true
+        }
 
       _ ->
-        %{name: "Meilisearch", status: "warn", detail: "Not reachable — search will use PostgreSQL fallback", optional: true}
+        %{
+          name: "Meilisearch",
+          status: "warn",
+          detail: "Not reachable — search will use PostgreSQL fallback",
+          optional: true
+        }
     end
   rescue
     _ ->
-      %{name: "Meilisearch", status: "warn", detail: "Not reachable — search will use PostgreSQL fallback", optional: true}
+      %{
+        name: "Meilisearch",
+        status: "warn",
+        detail: "Not reachable — search will use PostgreSQL fallback",
+        optional: true
+      }
   end
 
   defp check_elixir_version do
@@ -79,8 +94,10 @@ defmodule ForgeNexus.Setup do
       true
     else
       from(u in User,
-        join: m in UserGroupMembership, on: m.user_id == u.id,
-        join: g in UserGroup, on: g.id == m.group_id,
+        join: m in UserGroupMembership,
+        on: m.user_id == u.id,
+        join: g in UserGroup,
+        on: g.id == m.group_id,
         where: g.is_staff == true,
         limit: 1
       )
@@ -94,6 +111,7 @@ defmodule ForgeNexus.Setup do
 
   def validate_setup_params(params) do
     required = ~w(admin_username admin_email admin_password site_name)
+
     missing =
       Enum.filter(required, fn key ->
         value = Map.get(params, key) || Map.get(params, String.to_atom(key))
@@ -288,10 +306,17 @@ defmodule ForgeNexus.Setup do
         |> Repo.insert()
 
       forums = Map.get(cat_data, "forums", [])
+
       Enum.with_index(forums)
       |> Enum.each(fn {forum_data, forum_idx} ->
-        forum_name = if is_binary(forum_data), do: forum_data, else: Map.get(forum_data, "name", "Forum #{forum_idx + 1}")
-        forum_desc = if is_binary(forum_data), do: "", else: Map.get(forum_data, "description", "")
+        forum_name =
+          if is_binary(forum_data),
+            do: forum_data,
+            else: Map.get(forum_data, "name", "Forum #{forum_idx + 1}")
+
+        forum_desc =
+          if is_binary(forum_data), do: "", else: Map.get(forum_data, "description", "")
+
         forum_slug = Slug.slugify(forum_name) || "forum-#{forum_idx}"
 
         %Forum{}
@@ -316,18 +341,22 @@ defmodule ForgeNexus.Setup do
 
   defp create_default_forums do
     categories_and_forums = [
-      {"General", "general", 0, "#6366f1", [
-        {"Announcements", "announcements", "Official announcements and news", 0},
-        {"General Discussion", "general-discussion", "Talk about anything and everything", 1},
-        {"Introductions", "introductions", "Introduce yourself to the community", 2}
-      ]},
-      {"Community", "community", 1, "#8b5cf6", [
-        {"Events & Contests", "events-contests", "Community events, contests, and giveaways", 0},
-        {"Feedback & Suggestions", "feedback-suggestions", "Share your ideas to improve the community", 1}
-      ]},
-      {"Off Topic", "off-topic", 2, "#a855f7", [
-        {"The Lounge", "the-lounge", "Casual conversation and off-topic chat", 0}
-      ]}
+      {"General", "general", 0, "#6366f1",
+       [
+         {"Announcements", "announcements", "Official announcements and news", 0},
+         {"General Discussion", "general-discussion", "Talk about anything and everything", 1},
+         {"Introductions", "introductions", "Introduce yourself to the community", 2}
+       ]},
+      {"Community", "community", 1, "#8b5cf6",
+       [
+         {"Events & Contests", "events-contests", "Community events, contests, and giveaways", 0},
+         {"Feedback & Suggestions", "feedback-suggestions",
+          "Share your ideas to improve the community", 1}
+       ]},
+      {"Off Topic", "off-topic", 2, "#a855f7",
+       [
+         {"The Lounge", "the-lounge", "Casual conversation and off-topic chat", 0}
+       ]}
     ]
 
     Enum.each(categories_and_forums, fn {cat_name, cat_slug, cat_pos, cat_color, forums} ->
@@ -409,7 +438,7 @@ defmodule ForgeNexus.Setup do
 
   defp setup_search_indexes do
     if Code.ensure_loaded?(ForgeNexus.Search) and
-       function_exported?(ForgeNexus.Search, :setup_indexes, 0) do
+         function_exported?(ForgeNexus.Search, :setup_indexes, 0) do
       case ForgeNexus.Search.setup_indexes() do
         {:ok, _} -> {:ok, :search_indexes_created}
         _ -> {:ok, :search_skipped}
@@ -427,7 +456,7 @@ defmodule ForgeNexus.Setup do
 
   defp seed_slash_commands do
     if Code.ensure_loaded?(ForgeNexus.Plugins.SlashCommands) and
-       function_exported?(ForgeNexus.Plugins.SlashCommands, :seed_built_in_commands, 0) do
+         function_exported?(ForgeNexus.Plugins.SlashCommands, :seed_built_in_commands, 0) do
       ForgeNexus.Plugins.SlashCommands.seed_built_in_commands()
     end
 

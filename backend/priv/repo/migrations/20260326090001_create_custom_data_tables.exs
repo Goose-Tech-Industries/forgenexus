@@ -9,7 +9,9 @@ defmodule ForgeNexus.Repo.Migrations.CreateCustomDataTables do
       add :description, :text
       add :scope, :string, null: false, default: "global"
       add :max_rows, :integer, default: 10000
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
 
       timestamps()
     end
@@ -20,7 +22,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateCustomDataTables do
 
     create table(:custom_data_columns, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :table_id, references(:custom_data_tables, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :table_id, references(:custom_data_tables, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :name, :string, null: false
       add :slug, :string, null: false
       add :data_type, :string, null: false
@@ -39,7 +44,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateCustomDataTables do
 
     create table(:custom_data_rows, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :table_id, references(:custom_data_tables, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :table_id, references(:custom_data_tables, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :scope_id, :binary_id
       add :data, :map, null: false, default: %{}
       add :version, :integer, default: 1

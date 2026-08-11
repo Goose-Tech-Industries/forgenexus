@@ -33,8 +33,10 @@ defmodule ForgeNexusWeb.DataTableController do
       {:ok, table} ->
         # Create columns if provided
         columns = Map.get(params, "columns", [])
+
         for {col, i} <- Enum.with_index(columns) do
           col_slug = col |> Map.get("name", "") |> Slug.slugify()
+
           DataManager.add_column(%{
             table_id: table.id,
             name: Map.fetch!(col, "name"),
@@ -55,10 +57,14 @@ defmodule ForgeNexusWeb.DataTableController do
   end
 
   def update_table(conn, %{"id" => id, "table" => params}) do
-    case DataManager.update_table(id, Map.take(params, ["name", "description", "max_rows"]) |> atomize_keys()) do
+    case DataManager.update_table(
+           id,
+           Map.take(params, ["name", "description", "max_rows"]) |> atomize_keys()
+         ) do
       {:ok, table} ->
         table = DataManager.get_table!(table.id)
         conn |> json(%{table: table_json(table)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -66,8 +72,11 @@ defmodule ForgeNexusWeb.DataTableController do
 
   def delete_table(conn, %{"id" => id}) do
     case DataManager.delete_table(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
@@ -78,22 +87,31 @@ defmodule ForgeNexusWeb.DataTableController do
     attrs = params |> atomize_keys() |> Map.merge(%{table_id: table_id, slug: slug})
 
     case DataManager.add_column(attrs) do
-      {:ok, col} -> conn |> put_status(:created) |> json(%{column: column_json(col)})
-      {:error, changeset} -> conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
+      {:ok, col} ->
+        conn |> put_status(:created) |> json(%{column: column_json(col)})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
   end
 
   def update_column(conn, %{"id" => col_id, "column" => params}) do
     case DataManager.update_column(col_id, atomize_keys(params)) do
-      {:ok, col} -> conn |> json(%{column: column_json(col)})
-      {:error, changeset} -> conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
+      {:ok, col} ->
+        conn |> json(%{column: column_json(col)})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
   end
 
   def delete_column(conn, %{"id" => col_id}) do
     case DataManager.remove_column(col_id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
@@ -116,10 +134,17 @@ defmodule ForgeNexusWeb.DataTableController do
     data = Map.get(params, "data", %{})
 
     case DataManager.insert_row(table_id, scope_id, data) do
-      {:ok, row} -> conn |> put_status(:created) |> json(%{row: row_json(row)})
-      {:error, :max_rows_exceeded} -> conn |> put_status(:conflict) |> json(%{error: "Max rows exceeded"})
-      {:error, errors} when is_list(errors) -> conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
-      {:error, changeset} -> conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
+      {:ok, row} ->
+        conn |> put_status(:created) |> json(%{row: row_json(row)})
+
+      {:error, :max_rows_exceeded} ->
+        conn |> put_status(:conflict) |> json(%{error: "Max rows exceeded"})
+
+      {:error, errors} when is_list(errors) ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
   end
 
@@ -127,16 +152,24 @@ defmodule ForgeNexusWeb.DataTableController do
     data = Map.get(params, "data", %{})
 
     case DataManager.update_row(row_id, data) do
-      {:ok, row} -> conn |> json(%{row: row_json(row)})
-      {:error, errors} when is_list(errors) -> conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
-      {:error, changeset} -> conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
+      {:ok, row} ->
+        conn |> json(%{row: row_json(row)})
+
+      {:error, errors} when is_list(errors) ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
   end
 
   def delete_row(conn, %{"id" => row_id}) do
     case DataManager.delete_row(row_id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
@@ -151,7 +184,11 @@ defmodule ForgeNexusWeb.DataTableController do
       scope: table.scope,
       max_rows: table.max_rows,
       inserted_at: table.inserted_at,
-      columns: if(Ecto.assoc_loaded?(table.columns), do: Enum.map(table.columns, &column_json/1), else: [])
+      columns:
+        if(Ecto.assoc_loaded?(table.columns),
+          do: Enum.map(table.columns, &column_json/1),
+          else: []
+        )
     }
   end
 
@@ -170,7 +207,15 @@ defmodule ForgeNexusWeb.DataTableController do
   end
 
   defp row_json(row) do
-    %{id: row.id, table_id: row.table_id, scope_id: row.scope_id, data: row.data, version: row.version, inserted_at: row.inserted_at, updated_at: row.updated_at}
+    %{
+      id: row.id,
+      table_id: row.table_id,
+      scope_id: row.scope_id,
+      data: row.data,
+      version: row.version,
+      inserted_at: row.inserted_at,
+      updated_at: row.updated_at
+    }
   end
 
   defp parse_int(params, key, default) do
@@ -181,7 +226,9 @@ defmodule ForgeNexusWeb.DataTableController do
     end
   end
 
-  defp changeset_errors(%Ecto.Changeset{} = cs), do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)
+  defp changeset_errors(%Ecto.Changeset{} = cs),
+    do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)
+
   defp changeset_errors(err), do: inspect(err)
 
   defp atomize_keys(map) when is_map(map) do
@@ -192,7 +239,9 @@ defmodule ForgeNexusWeb.DataTableController do
         rescue
           _ -> {String.to_atom(k), v}
         end
-      {k, v} -> {k, v}
+
+      {k, v} ->
+        {k, v}
     end)
   end
 
@@ -202,7 +251,7 @@ defmodule ForgeNexusWeb.DataTableController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
 end
-

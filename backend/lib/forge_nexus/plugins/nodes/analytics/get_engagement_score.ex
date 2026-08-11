@@ -16,12 +16,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetEngagementScore do
 
   defp to_int(v) when is_integer(v), do: v
   defp to_int(v) when is_float(v), do: trunc(v)
+
   defp to_int(v) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       _ -> 0
     end
   end
+
   defp to_int(_), do: 0
 
   @impl true
@@ -36,7 +38,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetEngagementScore do
       description: "Calculates a composite engagement score (0-100) for a user with breakdown.",
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [%{name: "score", type: "number"}, %{name: "breakdown", type: "map"}],
-      config_fields: [%{name: "period_days", type: "number", default: 30, description: "Number of days to look back"}]
+      config_fields: [
+        %{
+          name: "period_days",
+          type: "number",
+          default: 30,
+          description: "Number of days to look back"
+        }
+      ]
     }
   end
 end

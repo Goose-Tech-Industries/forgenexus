@@ -64,8 +64,19 @@ defmodule ForgeNexus.Plugins.Nodes.Reputation.GiveReputation do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "amount", type: "number", default: 1, description: "Amount of reputation to give"},
-        %{name: "type", type: "select", options: ~w(positive negative), default: "positive", description: "Positive or negative reputation"}
+        %{
+          name: "amount",
+          type: "number",
+          default: 1,
+          description: "Amount of reputation to give"
+        },
+        %{
+          name: "type",
+          type: "select",
+          options: ~w(positive negative),
+          default: "positive",
+          description: "Positive or negative reputation"
+        }
       ]
     }
   end

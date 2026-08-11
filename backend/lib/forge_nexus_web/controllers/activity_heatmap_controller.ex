@@ -10,9 +10,12 @@ defmodule ForgeNexusWeb.ActivityHeatmapController do
 
       user ->
         heatmap_data = Forums.user_activity_heatmap(user.id)
-        entries = Enum.map(heatmap_data, fn %{date: date, count: count} ->
-          %{date: Date.to_iso8601(date), count: count}
-        end)
+
+        entries =
+          Enum.map(heatmap_data, fn %{date: date, count: count} ->
+            %{date: Date.to_iso8601(date), count: count}
+          end)
+
         conn |> json(%{heatmap: entries})
     end
   end

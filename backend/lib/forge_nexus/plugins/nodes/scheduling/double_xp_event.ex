@@ -19,7 +19,9 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.DoubleXpEvent do
       |> DateTime.to_iso8601()
 
     # Store multiplier in flow_global_store so XP-granting flows can check it
-    Logger.info("[PluginFlow] scheduling/double_xp_event: multiplier=#{multiplier}, stat=#{stat_key}, ends=#{ends_at}")
+    Logger.info(
+      "[PluginFlow] scheduling/double_xp_event: multiplier=#{multiplier}, stat=#{stat_key}, ends=#{ends_at}"
+    )
 
     flow_global = Map.get(ctx, :flow_global_store, %{})
     xp_event = %{multiplier: multiplier, stat_key: stat_key, ends_at: ends_at}
@@ -47,14 +49,20 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.DoubleXpEvent do
       []
       |> then(fn e ->
         case Map.get(config, "duration_hours") do
-          nil -> ["duration_hours is required" | e]
-          val when is_number(val) and val > 0 -> e
+          nil ->
+            ["duration_hours is required" | e]
+
+          val when is_number(val) and val > 0 ->
+            e
+
           val when is_binary(val) ->
             case Float.parse(val) do
               {n, _} when n > 0 -> e
               _ -> ["duration_hours must be a positive number" | e]
             end
-          _ -> ["duration_hours must be a positive number" | e]
+
+          _ ->
+            ["duration_hours must be a positive number" | e]
         end
       end)
 
@@ -74,9 +82,24 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.DoubleXpEvent do
         %{name: "ends_at", type: "string"}
       ],
       config_fields: [
-        %{name: "multiplier", type: "number", default: 2.0, description: "XP multiplier (e.g. 2.0 for double XP)"},
-        %{name: "duration_hours", type: "number", default: 24, description: "Duration of the event in hours"},
-        %{name: "stat_key", type: "string", default: "xp", description: "Stat key to apply multiplier to"}
+        %{
+          name: "multiplier",
+          type: "number",
+          default: 2.0,
+          description: "XP multiplier (e.g. 2.0 for double XP)"
+        },
+        %{
+          name: "duration_hours",
+          type: "number",
+          default: 24,
+          description: "Duration of the event in hours"
+        },
+        %{
+          name: "stat_key",
+          type: "string",
+          default: "xp",
+          description: "Stat key to apply multiplier to"
+        }
       ]
     }
   end

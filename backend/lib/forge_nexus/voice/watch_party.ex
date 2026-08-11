@@ -36,12 +36,23 @@ defmodule ForgeNexus.Voice.WatchParty do
     trimmed = String.trim(url)
 
     cond do
-      yt = match_youtube(trimmed) -> {:ok, %{type: :youtube, id: yt, url: trimmed, label: "YouTube"}}
-      tv = match_twitch_video(trimmed) -> {:ok, %{type: :twitch_video, id: tv, url: trimmed, label: "Twitch VOD"}}
-      tc = match_twitch_clip(trimmed) -> {:ok, %{type: :twitch_clip, id: tc, url: trimmed, label: "Twitch Clip"}}
-      tch = match_twitch_channel(trimmed) -> {:ok, %{type: :twitch_channel, id: tch, url: trimmed, label: "Twitch Live"}}
-      vm = match_vimeo(trimmed) -> {:ok, %{type: :vimeo, id: vm, url: trimmed, label: "Vimeo"}}
-      true -> {:error, :unsupported_url}
+      yt = match_youtube(trimmed) ->
+        {:ok, %{type: :youtube, id: yt, url: trimmed, label: "YouTube"}}
+
+      tv = match_twitch_video(trimmed) ->
+        {:ok, %{type: :twitch_video, id: tv, url: trimmed, label: "Twitch VOD"}}
+
+      tc = match_twitch_clip(trimmed) ->
+        {:ok, %{type: :twitch_clip, id: tc, url: trimmed, label: "Twitch Clip"}}
+
+      tch = match_twitch_channel(trimmed) ->
+        {:ok, %{type: :twitch_channel, id: tch, url: trimmed, label: "Twitch Live"}}
+
+      vm = match_vimeo(trimmed) ->
+        {:ok, %{type: :vimeo, id: vm, url: trimmed, label: "Vimeo"}}
+
+      true ->
+        {:error, :unsupported_url}
     end
   end
 

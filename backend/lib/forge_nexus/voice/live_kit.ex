@@ -134,7 +134,9 @@ defmodule ForgeNexus.Voice.LiveKit do
 
   defp maybe_put_metadata(claims, nil), do: claims
   defp maybe_put_metadata(claims, ""), do: claims
-  defp maybe_put_metadata(claims, meta) when is_binary(meta), do: Map.put(claims, "metadata", meta)
+
+  defp maybe_put_metadata(claims, meta) when is_binary(meta),
+    do: Map.put(claims, "metadata", meta)
 
   # --- JWT signing (HS256 via JOSE) ---
 

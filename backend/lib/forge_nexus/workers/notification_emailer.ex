@@ -56,10 +56,22 @@ defmodule ForgeNexus.Workers.NotificationEmailer do
   defp parse_time(time_str) do
     case String.split(time_str || "00:00", ":") do
       [h, m] ->
-        hour = case Integer.parse(h) do {n, _} -> n; :error -> 0 end
-        minute = case Integer.parse(m) do {n, _} -> n; :error -> 0 end
+        hour =
+          case Integer.parse(h) do
+            {n, _} -> n
+            :error -> 0
+          end
+
+        minute =
+          case Integer.parse(m) do
+            {n, _} -> n
+            :error -> 0
+          end
+
         {hour, minute}
-      _ -> {0, 0}
+
+      _ ->
+        {0, 0}
     end
   end
 
@@ -116,7 +128,13 @@ defmodule ForgeNexus.Workers.NotificationEmailer do
 
   # Helper to enqueue from anywhere in the app
   def enqueue_reply_notification(user_id, actor_name, thread_title, thread_slug) do
-    %{type: "reply", user_id: user_id, actor_name: actor_name, thread_title: thread_title, thread_slug: thread_slug}
+    %{
+      type: "reply",
+      user_id: user_id,
+      actor_name: actor_name,
+      thread_title: thread_title,
+      thread_slug: thread_slug
+    }
     |> __MODULE__.new()
     |> Oban.insert()
   end

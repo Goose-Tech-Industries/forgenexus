@@ -6,7 +6,10 @@ defmodule ForgeNexus.Repo.Migrations.CreatePolls do
       add :id, :binary_id, primary_key: true
       add :question, :string, null: false
       add :thread_id, references(:threads, type: :binary_id, on_delete: :delete_all), null: false
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
+
       add :is_multiple_choice, :boolean, default: false
       add :max_choices, :integer, default: 1
       add :is_anonymous, :boolean, default: false
@@ -35,7 +38,10 @@ defmodule ForgeNexus.Repo.Migrations.CreatePolls do
     create_if_not_exists table(:poll_votes, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :poll_id, references(:polls, type: :binary_id, on_delete: :delete_all), null: false
-      add :option_id, references(:poll_options, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :option_id, references(:poll_options, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
 
       timestamps()

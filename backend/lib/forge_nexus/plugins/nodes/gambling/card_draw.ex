@@ -63,7 +63,13 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.CardDraw do
         %{name: "remaining", type: "number"}
       ],
       config_fields: [
-        %{name: "deck_type", type: "select", options: ~w(standard custom), default: "standard", description: "Type of deck to draw from"},
+        %{
+          name: "deck_type",
+          type: "select",
+          options: ~w(standard custom),
+          default: "standard",
+          description: "Type of deck to draw from"
+        },
         %{name: "count", type: "number", default: 1, description: "Number of cards to draw"}
       ]
     }

@@ -10,7 +10,8 @@ defmodule ForgeNexus.Search do
   defp base_url, do: Application.get_env(:forge_nexus, :meilisearch_url, "http://localhost:7700")
   defp api_key, do: Application.get_env(:forge_nexus, :meilisearch_key, "forge_nexus_dev_key")
 
-  defp headers, do: [{"Authorization", "Bearer #{api_key()}"}, {"Content-Type", "application/json"}]
+  defp headers,
+    do: [{"Authorization", "Bearer #{api_key()}"}, {"Content-Type", "application/json"}]
 
   # === Index Management ===
 
@@ -76,6 +77,7 @@ defmodule ForgeNexus.Search do
       inserted_at: to_unix(thread.inserted_at),
       last_post_at: to_unix(thread.last_post_at)
     }
+
     post_json("/indexes/#{@index_threads}/documents", [doc])
   end
 
@@ -88,11 +90,13 @@ defmodule ForgeNexus.Search do
       position: post.position,
       inserted_at: to_unix(post.inserted_at)
     }
+
     post_json("/indexes/#{@index_posts}/documents", [doc])
   end
 
   defp to_unix(nil), do: nil
   defp to_unix(%DateTime{} = dt), do: DateTime.to_unix(dt)
+
   defp to_unix(%NaiveDateTime{} = ndt),
     do: ndt |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
 
@@ -120,9 +124,12 @@ defmodule ForgeNexus.Search do
     case post_json("/indexes/#{index}/search", body) do
       {:ok, %{"hits" => hits, "estimatedTotalHits" => total}} ->
         {:ok, %{hits: hits, total: total}}
+
       {:ok, %{"hits" => hits}} ->
         {:ok, %{hits: hits, total: length(hits)}}
-      error -> error
+
+      error ->
+        error
     end
   end
 
@@ -136,8 +143,11 @@ defmodule ForgeNexus.Search do
 
   def search_by_author(query, username, opts \\ []) do
     alias ForgeNexus.Accounts
+
     case Accounts.get_user_by_username(username) do
-      nil -> {:ok, %{hits: [], total: 0}}
+      nil ->
+        {:ok, %{hits: [], total: 0}}
+
       user ->
         filter = "user_id = \"#{user.id}\""
         search_posts(query, Keyword.put(opts, :filter, filter))
@@ -159,16 +169,24 @@ defmodule ForgeNexus.Search do
     |> Repo.all()
     |> Enum.chunk_every(100)
     |> Enum.each(fn batch ->
-      docs = Enum.map(batch, fn t ->
-        %{
-          id: t.id, title: t.title, slug: t.slug, tags: t.tags || [],
-          forum_id: t.forum_id, user_id: t.user_id,
-          is_pinned: t.is_pinned, is_locked: t.is_locked,
-          reply_count: t.reply_count, view_count: t.view_count,
-          inserted_at: t.inserted_at && DateTime.to_unix(t.inserted_at),
-          last_post_at: t.last_post_at && DateTime.to_unix(t.last_post_at)
-        }
-      end)
+      docs =
+        Enum.map(batch, fn t ->
+          %{
+            id: t.id,
+            title: t.title,
+            slug: t.slug,
+            tags: t.tags || [],
+            forum_id: t.forum_id,
+            user_id: t.user_id,
+            is_pinned: t.is_pinned,
+            is_locked: t.is_locked,
+            reply_count: t.reply_count,
+            view_count: t.view_count,
+            inserted_at: t.inserted_at && DateTime.to_unix(t.inserted_at),
+            last_post_at: t.last_post_at && DateTime.to_unix(t.last_post_at)
+          }
+        end)
+
       post_json("/indexes/#{@index_threads}/documents", docs)
     end)
 
@@ -178,13 +196,18 @@ defmodule ForgeNexus.Search do
     |> Repo.all()
     |> Enum.chunk_every(100)
     |> Enum.each(fn batch ->
-      docs = Enum.map(batch, fn p ->
-        %{
-          id: p.id, body: p.body, thread_id: p.thread_id,
-          user_id: p.user_id, position: p.position,
-          inserted_at: p.inserted_at && DateTime.to_unix(p.inserted_at)
-        }
-      end)
+      docs =
+        Enum.map(batch, fn p ->
+          %{
+            id: p.id,
+            body: p.body,
+            thread_id: p.thread_id,
+            user_id: p.user_id,
+            position: p.position,
+            inserted_at: p.inserted_at && DateTime.to_unix(p.inserted_at)
+          }
+        end)
+
       post_json("/indexes/#{@index_posts}/documents", docs)
     end)
 

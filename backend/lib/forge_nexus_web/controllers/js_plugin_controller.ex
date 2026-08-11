@@ -10,6 +10,7 @@ defmodule ForgeNexusWeb.JsPluginController do
       limit: parse_int(params, "limit", 25),
       offset: parse_int(params, "offset", 0)
     ]
+
     plugins = JsPlugins.list_js_plugins(opts)
     conn |> json(%{plugins: Enum.map(plugins, &plugin_json/1)})
   end
@@ -21,6 +22,7 @@ defmodule ForgeNexusWeb.JsPluginController do
 
   def create_plugin(conn, %{"plugin" => plugin_params}) do
     user = Guardian.Plug.current_resource(conn)
+
     slug =
       (Map.get(plugin_params, "name") || "")
       |> String.downcase()
@@ -43,6 +45,7 @@ defmodule ForgeNexusWeb.JsPluginController do
       {:ok, plugin} ->
         plugin = JsPlugins.get_js_plugin!(plugin.id)
         conn |> put_status(:created) |> json(%{plugin: plugin_detail_json(plugin)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -63,6 +66,7 @@ defmodule ForgeNexusWeb.JsPluginController do
           |> String.replace(~r/[^a-z0-9\s-]/, "")
           |> String.replace(~r/\s+/, "-")
           |> String.trim("-")
+
         Map.put(attrs, :slug, slug)
       else
         attrs
@@ -72,6 +76,7 @@ defmodule ForgeNexusWeb.JsPluginController do
       {:ok, plugin} ->
         plugin = JsPlugins.get_js_plugin!(plugin.id)
         conn |> json(%{plugin: plugin_detail_json(plugin)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -79,8 +84,11 @@ defmodule ForgeNexusWeb.JsPluginController do
 
   def delete_plugin(conn, %{"id" => id}) do
     case JsPlugins.delete_js_plugin(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete plugin"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete plugin"})
     end
   end
 
@@ -89,8 +97,10 @@ defmodule ForgeNexusWeb.JsPluginController do
       {:ok, plugin} ->
         plugin = ForgeNexus.Repo.preload(plugin, [:created_by])
         conn |> json(%{plugin: plugin_json(plugin)})
+
       {:error, errors} when is_list(errors) ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: Enum.join(errors, "; ")})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -101,6 +111,7 @@ defmodule ForgeNexusWeb.JsPluginController do
       {:ok, plugin} ->
         plugin = ForgeNexus.Repo.preload(plugin, [:created_by])
         conn |> json(%{plugin: plugin_json(plugin)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -108,9 +119,11 @@ defmodule ForgeNexusWeb.JsPluginController do
 
   def execute_plugin(conn, %{"id" => id}) do
     user = Guardian.Plug.current_resource(conn)
+
     case Executor.execute_plugin(id, %{"type" => "manual"}, user.id) do
       {:ok, output} ->
         conn |> json(%{status: "completed", output: output})
+
       {:error, reason} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: reason})
     end
@@ -123,6 +136,7 @@ defmodule ForgeNexusWeb.JsPluginController do
       limit: parse_int(params, "limit", 25),
       offset: parse_int(params, "offset", 0)
     ]
+
     executions = JsPlugins.list_js_plugin_executions(opts)
     conn |> json(%{executions: Enum.map(executions, &execution_json/1)})
   end
@@ -173,7 +187,9 @@ defmodule ForgeNexusWeb.JsPluginController do
   end
 
   defp user_mini_json(nil), do: nil
-  defp user_mini_json(user), do: %{id: user.id, username: user.username, slug: user.slug, avatar_url: user.avatar_url}
+
+  defp user_mini_json(user),
+    do: %{id: user.id, username: user.username, slug: user.slug, avatar_url: user.avatar_url}
 
   defp parse_int(params, key, default) do
     case Map.get(params, key) do
@@ -186,6 +202,7 @@ defmodule ForgeNexusWeb.JsPluginController do
   defp changeset_errors(%Ecto.Changeset{} = changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, _opts} -> msg end)
   end
+
   defp changeset_errors(error), do: inspect(error)
 
   defp safe_to_integer(val, default) when is_binary(val) do
@@ -194,7 +211,7 @@ defmodule ForgeNexusWeb.JsPluginController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

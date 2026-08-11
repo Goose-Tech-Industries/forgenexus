@@ -32,10 +32,12 @@ defmodule ForgeNexusWeb.Plugs.VerifyCookie do
             |> Guardian.Plug.put_current_claims(claims)
             |> Guardian.Plug.put_current_token(token)
 
-          _ -> conn
+          _ ->
+            conn
         end
 
-      _ -> conn
+      _ ->
+        conn
     end
   end
 end

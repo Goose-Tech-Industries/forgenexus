@@ -41,16 +41,24 @@ defmodule ForgeNexusWeb.SlashCommandController do
         conn |> put_status(:forbidden) |> json(%{error: "This command is currently disabled."})
 
       {:error, :insufficient_permission} ->
-        conn |> put_status(:forbidden) |> json(%{error: "You do not have permission to use this command."})
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "You do not have permission to use this command."})
 
       {:error, {:cooldown, seconds}} ->
-        conn |> put_status(:too_many_requests) |> json(%{error: "Command on cooldown. Try again in #{seconds}s.", cooldown: seconds})
+        conn
+        |> put_status(:too_many_requests)
+        |> json(%{error: "Command on cooldown. Try again in #{seconds}s.", cooldown: seconds})
 
       {:error, :no_flow_linked} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Command has no action configured."})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Command has no action configured."})
 
       {:error, {:flow_failed, reason}} ->
-        conn |> put_status(:internal_server_error) |> json(%{error: "Command failed: #{inspect(reason)}"})
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{error: "Command failed: #{inspect(reason)}"})
 
       {:error, reason} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
@@ -61,9 +69,7 @@ defmodule ForgeNexusWeb.SlashCommandController do
 
   def admin_list(conn, _params) do
     commands =
-      ForgeNexus.Repo.all(
-        from(c in SlashCommand, order_by: [asc: c.category, asc: c.name])
-      )
+      ForgeNexus.Repo.all(from(c in SlashCommand, order_by: [asc: c.category, asc: c.name]))
 
     conn
     |> json(%{
@@ -90,6 +96,7 @@ defmodule ForgeNexusWeb.SlashCommandController do
     case SlashCommands.create_command(attrs) do
       {:ok, command} ->
         conn |> put_status(:created) |> json(%{ok: true, command: command_json(command)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -101,7 +108,16 @@ defmodule ForgeNexusWeb.SlashCommandController do
 
     attrs =
       command_params
-      |> Map.take(["name", "description", "category", "flow_id", "cooldown_seconds", "permission_level", "response_type", "enabled"])
+      |> Map.take([
+        "name",
+        "description",
+        "category",
+        "flow_id",
+        "cooldown_seconds",
+        "permission_level",
+        "response_type",
+        "enabled"
+      ])
       |> Enum.reject(fn {_k, v} -> is_nil(v) end)
       |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
       |> Map.new()
@@ -109,6 +125,7 @@ defmodule ForgeNexusWeb.SlashCommandController do
     case SlashCommands.update_command(command, attrs) do
       {:ok, command} ->
         conn |> json(%{ok: true, command: command_json(command)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -120,8 +137,10 @@ defmodule ForgeNexusWeb.SlashCommandController do
     case SlashCommands.delete_command(command) do
       {:ok, _} ->
         conn |> json(%{ok: true})
+
       {:error, :cannot_delete_built_in} ->
         conn |> put_status(:forbidden) |> json(%{error: "Cannot delete built-in commands."})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: changeset_errors(changeset)})
     end
@@ -131,13 +150,19 @@ defmodule ForgeNexusWeb.SlashCommandController do
 
   defp command_json(c) do
     %{
-      id: c.id, name: c.name, description: c.description,
-      category: c.category, enabled: c.enabled,
+      id: c.id,
+      name: c.name,
+      description: c.description,
+      category: c.category,
+      enabled: c.enabled,
       cooldown_seconds: c.cooldown_seconds,
       permission_level: c.permission_level,
-      usage_count: c.usage_count, is_built_in: c.is_built_in,
-      response_type: c.response_type, flow_id: c.flow_id,
-      inserted_at: c.inserted_at, updated_at: c.updated_at
+      usage_count: c.usage_count,
+      is_built_in: c.is_built_in,
+      response_type: c.response_type,
+      flow_id: c.flow_id,
+      inserted_at: c.inserted_at,
+      updated_at: c.updated_at
     }
   end
 

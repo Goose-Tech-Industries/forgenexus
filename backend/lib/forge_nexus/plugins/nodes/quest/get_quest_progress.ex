@@ -40,7 +40,13 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.GetQuestProgress do
         %{name: "count", type: "number"}
       ],
       config_fields: [
-        %{name: "status_filter", type: "select", options: ~w(all active completed), default: "all", description: "Filter quests by status"}
+        %{
+          name: "status_filter",
+          type: "select",
+          options: ~w(all active completed),
+          default: "all",
+          description: "Filter quests by status"
+        }
       ]
     }
   end

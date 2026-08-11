@@ -14,9 +14,12 @@ defmodule ForgeNexusWeb.AdminSubscriptionTierController do
     case Subscriptions.create_tier(tier_params) do
       {:ok, tier} ->
         user = Guardian.Plug.current_resource(conn)
+
         ForgeNexus.Admin.log_admin_action(user.id, %{
-          action: "tier_created", category: "subscriptions",
-          target_type: "subscription_tier", target_id: tier.id,
+          action: "tier_created",
+          category: "subscriptions",
+          target_type: "subscription_tier",
+          target_id: tier.id,
           description: "Created subscription tier: #{tier.name}"
         })
 
@@ -41,9 +44,12 @@ defmodule ForgeNexusWeb.AdminSubscriptionTierController do
         case Subscriptions.update_tier(tier, tier_params) do
           {:ok, updated} ->
             user = Guardian.Plug.current_resource(conn)
+
             ForgeNexus.Admin.log_admin_action(user.id, %{
-              action: "tier_updated", category: "subscriptions",
-              target_type: "subscription_tier", target_id: updated.id,
+              action: "tier_updated",
+              category: "subscriptions",
+              target_type: "subscription_tier",
+              target_id: updated.id,
               description: "Updated subscription tier: #{updated.name}"
             })
 
@@ -62,9 +68,12 @@ defmodule ForgeNexusWeb.AdminSubscriptionTierController do
     case Subscriptions.delete_tier(id) do
       {:ok, tier} ->
         user = Guardian.Plug.current_resource(conn)
+
         ForgeNexus.Admin.log_admin_action(user.id, %{
-          action: "tier_deleted", category: "subscriptions",
-          target_type: "subscription_tier", target_id: tier.id,
+          action: "tier_deleted",
+          category: "subscriptions",
+          target_type: "subscription_tier",
+          target_id: tier.id,
           description: "Deleted subscription tier: #{tier.name}"
         })
 

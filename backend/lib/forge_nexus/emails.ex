@@ -87,7 +87,9 @@ defmodule ForgeNexus.Emails do
     <p><strong>If this wasn't you</strong>, your account may be compromised. Reset your password immediately at #{base_url()}/auth/forgot-password and contact support.</p>
     <p>All active sessions have been signed out as a precaution.</p>
     """)
-    |> text_body("Your ForgeNexus password was changed. If this wasn't you, reset at #{base_url()}/auth/forgot-password. All sessions have been signed out.")
+    |> text_body(
+      "Your ForgeNexus password was changed. If this wasn't you, reset at #{base_url()}/auth/forgot-password. All sessions have been signed out."
+    )
   end
 
   @doc "Tripwire sent to the OLD email when the user's email is changed."
@@ -102,16 +104,23 @@ defmodule ForgeNexus.Emails do
     <p><strong>If this wasn't you</strong>, your account may be compromised. Contact support immediately — this address will no longer receive account emails.</p>
     <p>All active sessions have been signed out as a precaution.</p>
     """)
-    |> text_body("Your ForgeNexus email was changed from #{old_email} to #{new_email}. If this wasn't you, contact support.")
+    |> text_body(
+      "Your ForgeNexus email was changed from #{old_email} to #{new_email}. If this wasn't you, contact support."
+    )
   end
 
   @doc "Sent when a user is banned. Explains the reason and appeal path."
   def ban_notice_email(user, ban_type, reason, expires_at_iso) do
     duration_line =
       cond do
-        ban_type == "permanent" -> "This is a <strong>permanent</strong> ban."
-        is_binary(expires_at_iso) -> "This ban expires on <strong>#{expires_at_iso}</strong> (UTC)."
-        true -> "Duration not specified."
+        ban_type == "permanent" ->
+          "This is a <strong>permanent</strong> ban."
+
+        is_binary(expires_at_iso) ->
+          "This ban expires on <strong>#{expires_at_iso}</strong> (UTC)."
+
+        true ->
+          "Duration not specified."
       end
 
     new()
@@ -194,7 +203,10 @@ defmodule ForgeNexus.Emails do
   end
 
   defp safe_text(nil), do: ""
-  defp safe_text(s) when is_binary(s), do: Phoenix.HTML.html_escape(s) |> Phoenix.HTML.safe_to_string()
+
+  defp safe_text(s) when is_binary(s),
+    do: Phoenix.HTML.html_escape(s) |> Phoenix.HTML.safe_to_string()
+
   defp safe_text(other), do: to_string(other)
 
   defp base_url do

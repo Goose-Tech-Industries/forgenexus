@@ -81,7 +81,8 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.PostToSocial do
       type: "integration/post_to_social",
       category: "integration",
       label: "Post to Social",
-      description: "Posts a message to an external platform via webhook (Discord, Twitter, or generic).",
+      description:
+        "Posts a message to an external platform via webhook (Discord, Twitter, or generic).",
       inputs: [
         %{name: "message", type: "string", required: true}
       ],
@@ -89,7 +90,13 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.PostToSocial do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "platform", type: "select", options: ~w(discord twitter generic_webhook), default: "generic_webhook", description: "Target platform"},
+        %{
+          name: "platform",
+          type: "select",
+          options: ~w(discord twitter generic_webhook),
+          default: "generic_webhook",
+          description: "Target platform"
+        },
         %{name: "webhook_url", type: "string", default: "", description: "Webhook URL to post to"}
       ]
     }

@@ -28,7 +28,14 @@ defmodule ForgeNexus.Plugins.FlowExecution do
 
   def changeset(execution, attrs) do
     execution
-    |> cast(attrs, [:flow_id, :status, :trigger_type, :trigger_data, :started_at, :triggered_by_id])
+    |> cast(attrs, [
+      :flow_id,
+      :status,
+      :trigger_type,
+      :trigger_data,
+      :started_at,
+      :triggered_by_id
+    ])
     |> validate_required([:flow_id, :trigger_type, :started_at])
     |> validate_inclusion(:status, @statuses)
     |> foreign_key_constraint(:flow_id)
@@ -36,7 +43,16 @@ defmodule ForgeNexus.Plugins.FlowExecution do
 
   def complete_changeset(execution, attrs) do
     execution
-    |> cast(attrs, [:status, :result, :node_trace, :finished_at, :duration_ms, :nodes_executed, :db_operations, :http_requests])
+    |> cast(attrs, [
+      :status,
+      :result,
+      :node_trace,
+      :finished_at,
+      :duration_ms,
+      :nodes_executed,
+      :db_operations,
+      :http_requests
+    ])
     |> validate_inclusion(:status, @statuses)
   end
 end

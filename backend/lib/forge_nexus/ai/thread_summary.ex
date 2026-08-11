@@ -20,7 +20,15 @@ defmodule ForgeNexus.AI.ThreadSummary do
 
   def changeset(thread_summary, attrs) do
     thread_summary
-    |> cast(attrs, [:summary, :key_points, :participant_count, :post_count_at_generation, :last_generated_at, :thread_id, :provider_id])
+    |> cast(attrs, [
+      :summary,
+      :key_points,
+      :participant_count,
+      :post_count_at_generation,
+      :last_generated_at,
+      :thread_id,
+      :provider_id
+    ])
     |> validate_required([:summary, :thread_id])
     |> foreign_key_constraint(:thread_id)
     |> foreign_key_constraint(:provider_id)

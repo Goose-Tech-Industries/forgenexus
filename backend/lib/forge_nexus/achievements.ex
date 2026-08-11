@@ -20,7 +20,8 @@ defmodule ForgeNexus.Achievements do
 
   def get_achievement(id), do: Repo.get(Achievement, id)
 
-  def create_achievement(attrs), do: %Achievement{} |> Achievement.changeset(attrs) |> Repo.insert()
+  def create_achievement(attrs),
+    do: %Achievement{} |> Achievement.changeset(attrs) |> Repo.insert()
 
   def update_achievement(%Achievement{} = achievement, attrs) do
     achievement |> Achievement.changeset(attrs) |> Repo.update()
@@ -44,7 +45,11 @@ defmodule ForgeNexus.Achievements do
 
   @doc "Admin-only: count how many users have unlocked a given achievement."
   def unlock_count(achievement_id) do
-    Repo.one(from ua in UserAchievement, where: ua.achievement_id == ^achievement_id, select: count(ua.id))
+    Repo.one(
+      from ua in UserAchievement,
+        where: ua.achievement_id == ^achievement_id,
+        select: count(ua.id)
+    )
   end
 
   @doc "Admin-only: manually revoke a user's unlock of an achievement."
@@ -60,7 +65,11 @@ defmodule ForgeNexus.Achievements do
     evaluate_criteria(user_id, achievement.criteria)
   end
 
-  defp evaluate_criteria(user_id, %{"type" => "stat_threshold", "stat_key" => key, "threshold" => threshold}) do
+  defp evaluate_criteria(user_id, %{
+         "type" => "stat_threshold",
+         "stat_key" => key,
+         "threshold" => threshold
+       }) do
     UserStats.check_stat(user_id, key, threshold)
   end
 
@@ -76,13 +85,20 @@ defmodule ForgeNexus.Achievements do
     else
       achievement = get_achievement!(achievement_id)
       now = DateTime.utc_now() |> DateTime.truncate(:second)
+
       Repo.transaction(fn ->
         %UserAchievement{}
-        |> UserAchievement.changeset(%{user_id: user_id, achievement_id: achievement_id, unlocked_at: now})
+        |> UserAchievement.changeset(%{
+          user_id: user_id,
+          achievement_id: achievement_id,
+          unlocked_at: now
+        })
         |> Repo.insert!()
 
         if achievement.points > 0 do
-          ForgeNexus.Economy.award_points(user_id, "achievement_unlocked", amount: achievement.points)
+          ForgeNexus.Economy.award_points(user_id, "achievement_unlocked",
+            amount: achievement.points
+          )
         end
 
         achievement
@@ -91,7 +107,10 @@ defmodule ForgeNexus.Achievements do
   end
 
   defp already_unlocked?(user_id, achievement_id) do
-    Repo.exists?(from ua in UserAchievement, where: ua.user_id == ^user_id and ua.achievement_id == ^achievement_id)
+    Repo.exists?(
+      from ua in UserAchievement,
+        where: ua.user_id == ^user_id and ua.achievement_id == ^achievement_id
+    )
   end
 
   def get_user_achievements(user_id) do
@@ -104,7 +123,12 @@ defmodule ForgeNexus.Achievements do
 
   def check_all_achievements(user_id) do
     achievements = list_achievements()
-    unlocked_ids = Repo.all(from ua in UserAchievement, where: ua.user_id == ^user_id, select: ua.achievement_id) |> MapSet.new()
+
+    unlocked_ids =
+      Repo.all(
+        from ua in UserAchievement, where: ua.user_id == ^user_id, select: ua.achievement_id
+      )
+      |> MapSet.new()
 
     Enum.reduce(achievements, [], fn achievement, acc ->
       if MapSet.member?(unlocked_ids, achievement.id) do
@@ -180,7 +204,9 @@ defmodule ForgeNexus.Achievements do
     |> Repo.insert()
   end
 
-  def create_milestones(%{stat_type: stat_type, milestones: milestones, reward_points_per: reward} = params) do
+  def create_milestones(
+        %{stat_type: stat_type, milestones: milestones, reward_points_per: reward} = params
+      ) do
     community_id = Map.get(params, :community_id)
 
     results =
@@ -189,7 +215,11 @@ defmodule ForgeNexus.Achievements do
           name: "#{String.capitalize(stat_type)} #{threshold}",
           slug: "#{stat_type}-#{threshold}-#{community_id || "global"}",
           description: "Reach #{threshold} #{stat_type}",
-          criteria: %{"type" => "stat_threshold", "stat_key" => stat_type, "threshold" => threshold},
+          criteria: %{
+            "type" => "stat_threshold",
+            "stat_key" => stat_type,
+            "threshold" => threshold
+          },
           points: reward,
           is_active: true
         }
@@ -210,10 +240,15 @@ defmodule ForgeNexus.Achievements do
         Map.get(a.criteria, "stat_key") == stat_type
       end)
 
-    unlocked_ids = Repo.all(from ua in UserAchievement, where: ua.user_id == ^user_id, select: ua.achievement_id) |> MapSet.new()
+    unlocked_ids =
+      Repo.all(
+        from ua in UserAchievement, where: ua.user_id == ^user_id, select: ua.achievement_id
+      )
+      |> MapSet.new()
 
     Enum.reduce(achievements, [], fn achievement, acc ->
-      if not MapSet.member?(unlocked_ids, achievement.id) and evaluate_criteria(user_id, achievement.criteria) do
+      if not MapSet.member?(unlocked_ids, achievement.id) and
+           evaluate_criteria(user_id, achievement.criteria) do
         {:ok, _} = unlock_achievement(user_id, achievement.id)
         [achievement | acc]
       else

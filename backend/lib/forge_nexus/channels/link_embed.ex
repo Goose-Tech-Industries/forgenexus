@@ -21,7 +21,12 @@ defmodule ForgeNexus.Channels.LinkEmbed do
     uri = URI.parse(url)
 
     if safe_host?(uri.host) do
-      case :httpc.request(:get, {String.to_charlist(url), [{~c"user-agent", ~c"ForgeNexus/1.0 LinkPreview"}]}, [{:timeout, 5_000}, {:connect_timeout, 3_000}], [{:body_format, :binary}]) do
+      case :httpc.request(
+             :get,
+             {String.to_charlist(url), [{~c"user-agent", ~c"ForgeNexus/1.0 LinkPreview"}]},
+             [{:timeout, 5_000}, {:connect_timeout, 3_000}],
+             [{:body_format, :binary}]
+           ) do
         {:ok, {{_, 200, _}, _headers, body}} ->
           parse_html_meta(body, url)
 
@@ -34,13 +39,14 @@ defmodule ForgeNexus.Channels.LinkEmbed do
   end
 
   defp safe_host?(nil), do: false
+
   defp safe_host?(host) do
     not String.starts_with?(host, "10.") and
-    not String.starts_with?(host, "192.168.") and
-    not String.starts_with?(host, "172.") and
-    host != "localhost" and
-    host != "127.0.0.1" and
-    host != "0.0.0.0"
+      not String.starts_with?(host, "192.168.") and
+      not String.starts_with?(host, "172.") and
+      host != "localhost" and
+      host != "127.0.0.1" and
+      host != "0.0.0.0"
   end
 
   defp parse_html_meta(html, url) when is_binary(html) do
@@ -60,10 +66,18 @@ defmodule ForgeNexus.Channels.LinkEmbed do
   end
 
   defp extract_meta(html, property) do
-    case Regex.run(~r/<meta[^>]*property="#{Regex.escape(property)}"[^>]*content="([^"]*)"[^>]*>/is, html) do
-      [_, content] -> HtmlEntities.decode(content)
+    case Regex.run(
+           ~r/<meta[^>]*property="#{Regex.escape(property)}"[^>]*content="([^"]*)"[^>]*>/is,
+           html
+         ) do
+      [_, content] ->
+        HtmlEntities.decode(content)
+
       nil ->
-        case Regex.run(~r/<meta[^>]*content="([^"]*)"[^>]*property="#{Regex.escape(property)}"[^>]*>/is, html) do
+        case Regex.run(
+               ~r/<meta[^>]*content="([^"]*)"[^>]*property="#{Regex.escape(property)}"[^>]*>/is,
+               html
+             ) do
           [_, content] -> HtmlEntities.decode(content)
           nil -> nil
         end

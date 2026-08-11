@@ -22,7 +22,10 @@ defmodule ForgeNexusWeb.Plugs.FeatureGate do
     else
       conn
       |> put_status(:forbidden)
-      |> Phoenix.Controller.json(%{error: "Feature '#{feature}' is not enabled for this community", upgrade_url: "/upgrade"})
+      |> Phoenix.Controller.json(%{
+        error: "Feature '#{feature}' is not enabled for this community",
+        upgrade_url: "/upgrade"
+      })
       |> halt()
     end
   end

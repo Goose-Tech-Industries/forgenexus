@@ -23,7 +23,9 @@ defmodule ForgeNexus.Voice.CreatorDashboard do
   defp earnings(creator_id, since) do
     tip_earnings =
       from(t in "money_tips",
-        where: t.recipient_id == type(^creator_id, :binary_id) and t.status == "completed" and t.inserted_at >= ^since,
+        where:
+          t.recipient_id == type(^creator_id, :binary_id) and t.status == "completed" and
+            t.inserted_at >= ^since,
         select: %{
           total_cents: coalesce(sum(t.creator_amount_cents), 0),
           count: count(t.id),
@@ -49,8 +51,10 @@ defmodule ForgeNexus.Voice.CreatorDashboard do
   defp activity(creator_id, since) do
     redemptions =
       from(r in "redemptions",
-        join: rd in "room_redeemables", on: rd.id == r.redeemable_id,
-        join: vr in "voice_rooms", on: vr.id == r.room_id,
+        join: rd in "room_redeemables",
+        on: rd.id == r.redeemable_id,
+        join: vr in "voice_rooms",
+        on: vr.id == r.room_id,
         where: vr.created_by_id == type(^creator_id, :binary_id) and r.inserted_at >= ^since,
         select: count(r.id)
       )
@@ -61,7 +65,13 @@ defmodule ForgeNexus.Voice.CreatorDashboard do
         where: cl.host_user_id == type(^creator_id, :binary_id) and cl.inserted_at >= ^since,
         select: %{
           count: count(cl.id),
-          total_minutes: coalesce(sum(fragment("EXTRACT(EPOCH FROM (? - ?))::integer / 60", cl.ended_at, cl.started_at)), 0),
+          total_minutes:
+            coalesce(
+              sum(
+                fragment("EXTRACT(EPOCH FROM (? - ?))::integer / 60", cl.ended_at, cl.started_at)
+              ),
+              0
+            ),
           peak_viewers: coalesce(max(cl.peak_participants), 0)
         }
       )
@@ -75,7 +85,9 @@ defmodule ForgeNexus.Voice.CreatorDashboard do
 
   defp top_supporters(creator_id, since) do
     from(t in "money_tips",
-      where: t.recipient_id == type(^creator_id, :binary_id) and t.status == "completed" and t.inserted_at >= ^since and t.is_anonymous == false,
+      where:
+        t.recipient_id == type(^creator_id, :binary_id) and t.status == "completed" and
+          t.inserted_at >= ^since and t.is_anonymous == false,
       group_by: t.sender_id,
       order_by: [desc: sum(t.amount_cents)],
       limit: 10,
@@ -108,8 +120,10 @@ defmodule ForgeNexus.Voice.CreatorDashboard do
 
   defp recent_redemptions(creator_id, limit) do
     from(r in "redemptions",
-      join: rd in "room_redeemables", on: rd.id == r.redeemable_id,
-      join: vr in "voice_rooms", on: vr.id == r.room_id,
+      join: rd in "room_redeemables",
+      on: rd.id == r.redeemable_id,
+      join: vr in "voice_rooms",
+      on: vr.id == r.room_id,
       where: vr.created_by_id == type(^creator_id, :binary_id),
       order_by: [desc: r.inserted_at],
       limit: ^limit,

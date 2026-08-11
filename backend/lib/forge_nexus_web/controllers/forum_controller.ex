@@ -26,7 +26,8 @@ defmodule ForgeNexusWeb.ForumController do
     user = ForgeNexus.Guardian.Plug.current_resource(conn)
     include_hidden = ForgeNexus.Moderation.is_staff?(user)
 
-    threads = Forums.list_threads(forum.id, limit: limit, offset: offset, include_hidden: include_hidden)
+    threads =
+      Forums.list_threads(forum.id, limit: limit, offset: offset, include_hidden: include_hidden)
 
     conn
     |> json(%{
@@ -35,7 +36,6 @@ defmodule ForgeNexusWeb.ForumController do
       page: page
     })
   end
-
 
   defp category_json(category) do
     %{
@@ -78,7 +78,11 @@ defmodule ForgeNexusWeb.ForumController do
 
     base =
       if Ecto.assoc_loaded?(forum.parent) and forum.parent do
-        Map.put(base, :parent, %{id: forum.parent.id, name: forum.parent.name, slug: forum.parent.slug})
+        Map.put(base, :parent, %{
+          id: forum.parent.id,
+          name: forum.parent.name,
+          slug: forum.parent.slug
+        })
       else
         base
       end

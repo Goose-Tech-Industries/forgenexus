@@ -28,16 +28,22 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.GachaPull do
 
     pull_count =
       case pity_record do
-        nil -> 1
+        nil ->
+          1
+
         %FlowGlobalStore{value: val} ->
           case val do
-            n when is_integer(n) -> n + 1
+            n when is_integer(n) ->
+              n + 1
+
             n when is_binary(n) ->
               case Integer.parse(n) do
                 {v, _} -> v + 1
                 :error -> 1
               end
-            _ -> 1
+
+            _ ->
+              1
           end
       end
 
@@ -135,7 +141,10 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.GachaPull do
       []
       |> then(fn e ->
         rates = parse_json(Map.get(config, "rates", "{}"))
-        if map_size(rates) > 0, do: e, else: ["rates must be a non-empty map of rarity => weight" | e]
+
+        if map_size(rates) > 0,
+          do: e,
+          else: ["rates must be a non-empty map of rarity => weight" | e]
       end)
 
     if errors == [], do: :ok, else: {:error, errors}
@@ -157,8 +166,19 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.GachaPull do
         %{name: "is_pity", type: "boolean"}
       ],
       config_fields: [
-        %{name: "rates", type: "json", default: "{}", description: "JSON map of rarity => weight (e.g. {\"common\":70,\"rare\":25,\"epic\":4,\"legendary\":1})"},
-        %{name: "pity_threshold", type: "number", default: 100, description: "Number of pulls before guaranteed rare drop"}
+        %{
+          name: "rates",
+          type: "json",
+          default: "{}",
+          description:
+            "JSON map of rarity => weight (e.g. {\"common\":70,\"rare\":25,\"epic\":4,\"legendary\":1})"
+        },
+        %{
+          name: "pity_threshold",
+          type: "number",
+          default: 100,
+          description: "Number of pulls before guaranteed rare drop"
+        }
       ]
     }
   end

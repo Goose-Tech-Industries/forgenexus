@@ -35,14 +35,29 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.ItemDurability do
       type: "inventory/item_durability",
       category: "inventory",
       label: "Item Durability",
-      description: "Applies wear to an item and branches based on whether it is intact or broken.",
+      description:
+        "Applies wear to an item and branches based on whether it is intact or broken.",
       inputs: [
         %{name: "inventory_id", type: "string", required: true},
         %{name: "wear_amount", type: "number", required: false}
       ],
       outputs: [
-        %{name: "intact", type: "branch", fields: [%{name: "durability", type: "number"}, %{name: "max_durability", type: "number"}]},
-        %{name: "broken", type: "branch", fields: [%{name: "durability", type: "number"}, %{name: "max_durability", type: "number"}]}
+        %{
+          name: "intact",
+          type: "branch",
+          fields: [
+            %{name: "durability", type: "number"},
+            %{name: "max_durability", type: "number"}
+          ]
+        },
+        %{
+          name: "broken",
+          type: "branch",
+          fields: [
+            %{name: "durability", type: "number"},
+            %{name: "max_durability", type: "number"}
+          ]
+        }
       ],
       config_fields: []
     }

@@ -37,7 +37,9 @@ defmodule ForgeNexus.Plugins.Nodes.Approval.AutoApproveOnTimeout do
       end
 
     ctx2 = Sandbox.increment_db_ops(ctx2)
-    {:ok, %{was_auto_approved: was_auto_approved, hours_elapsed: Float.round(hours_elapsed, 2)}, ctx2}
+
+    {:ok, %{was_auto_approved: was_auto_approved, hours_elapsed: Float.round(hours_elapsed, 2)},
+     ctx2}
   end
 
   defp to_number(v) when is_number(v), do: v
@@ -77,14 +79,20 @@ defmodule ForgeNexus.Plugins.Nodes.Approval.AutoApproveOnTimeout do
       type: "approval/auto_approve_on_timeout",
       category: "approval",
       label: "Auto-Approve on Timeout",
-      description: "Checks if an approval request has exceeded its timeout and auto-approves if so.",
+      description:
+        "Checks if an approval request has exceeded its timeout and auto-approves if so.",
       inputs: [%{name: "approval_id", type: "string", required: true}],
       outputs: [
         %{name: "was_auto_approved", type: "boolean"},
         %{name: "hours_elapsed", type: "number"}
       ],
       config_fields: [
-        %{name: "timeout_hours", type: "number", default: 48, description: "Hours before auto-approval kicks in"}
+        %{
+          name: "timeout_hours",
+          type: "number",
+          default: 48,
+          description: "Hours before auto-approval kicks in"
+        }
       ]
     }
   end

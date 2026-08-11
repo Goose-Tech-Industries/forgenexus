@@ -98,7 +98,14 @@ defmodule ForgeNexus.PresenceTracker do
 
   @impl true
   def init(:ok) do
-    :ets.new(@table, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
+    :ets.new(@table, [
+      :set,
+      :public,
+      :named_table,
+      read_concurrency: true,
+      write_concurrency: true
+    ])
+
     schedule_prune()
     {:ok, %{}}
   end

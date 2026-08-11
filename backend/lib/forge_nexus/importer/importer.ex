@@ -70,7 +70,8 @@ defmodule ForgeNexus.Importer do
         {:error, "Missing 'source' field"}
 
       source not in @supported_sources ->
-        {:error, "Unsupported source: #{source}. Supported: #{Enum.join(@supported_sources, ", ")}"}
+        {:error,
+         "Unsupported source: #{source}. Supported: #{Enum.join(@supported_sources, ", ")}"}
 
       is_nil(data) || !is_map(data) ->
         {:error, "Missing or invalid 'data' field — expected parsed JSON object"}
@@ -143,7 +144,9 @@ defmodule ForgeNexus.Importer do
       user_id_map =
         if import_users? do
           case adapter.import_users(data, progress_fn) do
-            {:ok, map} -> map
+            {:ok, map} ->
+              map
+
             {:error, reason} ->
               Progress.add_error(import_id, "User import failed: #{inspect(reason)}")
               %{}
@@ -168,7 +171,9 @@ defmodule ForgeNexus.Importer do
       thread_id_map =
         if import_posts? do
           case adapter.import_threads(data, all_ids, progress_fn) do
-            {:ok, map} -> map
+            {:ok, map} ->
+              map
+
             {:error, reason} ->
               Progress.add_error(import_id, "Thread import failed: #{inspect(reason)}")
               %{}
@@ -183,7 +188,9 @@ defmodule ForgeNexus.Importer do
       post_id_map =
         if import_posts? do
           case adapter.import_posts(data, all_ids, progress_fn) do
-            {:ok, map} -> map
+            {:ok, map} ->
+              map
+
             {:error, reason} ->
               Progress.add_error(import_id, "Post import failed: #{inspect(reason)}")
               %{}
@@ -207,7 +214,6 @@ defmodule ForgeNexus.Importer do
       }
 
       Progress.complete(import_id, stats)
-
     rescue
       e ->
         Progress.fail(import_id, Exception.message(e))

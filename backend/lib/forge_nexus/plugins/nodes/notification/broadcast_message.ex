@@ -72,8 +72,19 @@ defmodule ForgeNexus.Plugins.Nodes.Notification.BroadcastMessage do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "target", type: "select", options: ~w(all group online), default: "all", description: "Broadcast target audience"},
-        %{name: "group_id", type: "string", default: "", description: "Group ID (required when target is group)"}
+        %{
+          name: "target",
+          type: "select",
+          options: ~w(all group online),
+          default: "all",
+          description: "Broadcast target audience"
+        },
+        %{
+          name: "group_id",
+          type: "string",
+          default: "",
+          description: "Group ID (required when target is group)"
+        }
       ]
     }
   end

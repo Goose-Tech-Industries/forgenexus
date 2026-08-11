@@ -88,9 +88,20 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.RotateFeatured do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "forum_slug", type: "string", default: "", description: "Forum to select featured threads from"},
+        %{
+          name: "forum_slug",
+          type: "string",
+          default: "",
+          description: "Forum to select featured threads from"
+        },
         %{name: "count", type: "number", default: 5, description: "Number of threads to feature"},
-        %{name: "criteria", type: "select", options: ~w(newest most_replies most_views random), default: "newest", description: "Selection criteria for featured threads"}
+        %{
+          name: "criteria",
+          type: "select",
+          options: ~w(newest most_replies most_views random),
+          default: "newest",
+          description: "Selection criteria for featured threads"
+        }
       ]
     }
   end

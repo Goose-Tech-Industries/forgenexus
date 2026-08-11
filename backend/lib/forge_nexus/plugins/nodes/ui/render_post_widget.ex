@@ -56,7 +56,13 @@ defmodule ForgeNexus.Plugins.Nodes.UI.RenderPostWidget do
       outputs: [%{name: "widget_id", type: "string"}],
       config_fields: [
         %{name: "template", type: "json", default: %{}, description: "Widget template data"},
-        %{name: "placement", type: "select", options: ~w(post_footer post_header), default: "post_footer", description: "Where to display the widget"}
+        %{
+          name: "placement",
+          type: "select",
+          options: ~w(post_footer post_header),
+          default: "post_footer",
+          description: "Where to display the widget"
+        }
       ]
     }
   end

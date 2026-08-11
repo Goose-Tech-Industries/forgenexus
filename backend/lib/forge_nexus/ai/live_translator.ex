@@ -43,7 +43,8 @@ defmodule ForgeNexus.AI.LiveTranslator do
 
           {:ok, translated}
 
-        error -> error
+        error ->
+          error
       end
     end
   end
@@ -59,13 +60,23 @@ defmodule ForgeNexus.AI.LiveTranslator do
       model = Settings.get("voice_translation_model") || "claude-haiku-4-5-20251001"
       lang_name = language_name(target_lang)
 
-      prompt = "Translate the following text to #{lang_name}. Return ONLY the translation, nothing else.\n\n#{text}"
+      prompt =
+        "Translate the following text to #{lang_name}. Return ONLY the translation, nothing else.\n\n#{text}"
 
       body = %{model: model, max_tokens: 512, messages: [%{role: "user", content: prompt}]}
-      headers = [{"x-api-key", api_key}, {"anthropic-version", "2023-06-01"}, {"content-type", "application/json"}]
+
+      headers = [
+        {"x-api-key", api_key},
+        {"anthropic-version", "2023-06-01"},
+        {"content-type", "application/json"}
+      ]
 
       try do
-        case Req.post("https://api.anthropic.com/v1/messages", headers: headers, json: body, receive_timeout: 15_000) do
+        case Req.post("https://api.anthropic.com/v1/messages",
+               headers: headers,
+               json: body,
+               receive_timeout: 15_000
+             ) do
           {:ok, %{status: 200, body: %{"content" => [%{"text" => translated} | _]}}} ->
             {:ok, String.trim(translated)}
 

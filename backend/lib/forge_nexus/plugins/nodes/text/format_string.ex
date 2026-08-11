@@ -28,7 +28,12 @@ defmodule ForgeNexus.Plugins.Nodes.Text.FormatString do
       inputs: [%{name: "data", type: "map", required: true}],
       outputs: [%{name: "result", type: "string"}],
       config_fields: [
-        %{name: "template", type: "text", default: "", description: "Template string with {{var}} placeholders"}
+        %{
+          name: "template",
+          type: "text",
+          default: "",
+          description: "Template string with {{var}} placeholders"
+        }
       ]
     }
   end

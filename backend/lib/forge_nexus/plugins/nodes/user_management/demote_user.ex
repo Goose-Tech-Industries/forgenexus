@@ -49,7 +49,12 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.DemoteUser do
         %{name: "new_group", type: "string"}
       ],
       config_fields: [
-        %{name: "target_group_id", type: "string", default: "", description: "Group ID to demote the user to"}
+        %{
+          name: "target_group_id",
+          type: "string",
+          default: "",
+          description: "Group ID to demote the user to"
+        }
       ]
     }
   end

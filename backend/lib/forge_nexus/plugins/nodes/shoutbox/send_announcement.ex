@@ -57,7 +57,12 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.SendAnnouncement do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "announcement_text", type: "string", default: "", description: "The announcement message to send and pin"}
+        %{
+          name: "announcement_text",
+          type: "string",
+          default: "",
+          description: "The announcement message to send and pin"
+        }
       ]
     }
   end

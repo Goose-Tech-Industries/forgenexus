@@ -64,7 +64,12 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.Random do
       outputs: [%{name: "selected", type: "string"}],
       config_fields: [
         %{name: "branches", type: "json", default: [], description: "List of branch port names"},
-        %{name: "weights", type: "json", default: [], description: "Optional weights for each branch"}
+        %{
+          name: "weights",
+          type: "json",
+          default: [],
+          description: "Optional weights for each branch"
+        }
       ]
     }
   end

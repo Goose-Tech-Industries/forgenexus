@@ -7,7 +7,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateHouseInvitations do
     # outstanding tokenized invites the founder can hand to each creator.
     create table(:house_invitations, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :inviter_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :email, :string, null: false
       add :token_hash, :string, null: false

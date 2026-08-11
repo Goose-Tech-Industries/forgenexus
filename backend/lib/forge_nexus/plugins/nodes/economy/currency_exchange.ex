@@ -99,7 +99,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.CurrencyExchange do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "from_currency", type: "string", default: "", description: "Source currency slug"},
+        %{
+          name: "from_currency",
+          type: "string",
+          default: "",
+          description: "Source currency slug"
+        },
         %{name: "to_currency", type: "string", default: "", description: "Target currency slug"},
         %{name: "rate", type: "number", default: 1.0, description: "Exchange rate (from -> to)"}
       ]

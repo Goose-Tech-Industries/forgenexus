@@ -37,52 +37,57 @@ defmodule ForgeNexusWeb.StatsController do
     post_growth = Forums.monthly_post_growth(12)
 
     # Merge monthly growth data
-    months = (Enum.map(member_growth, & &1.month) ++ Enum.map(thread_growth, & &1.month) ++ Enum.map(post_growth, & &1.month))
-             |> Enum.uniq()
-             |> Enum.sort()
+    months =
+      (Enum.map(member_growth, & &1.month) ++
+         Enum.map(thread_growth, & &1.month) ++ Enum.map(post_growth, & &1.month))
+      |> Enum.uniq()
+      |> Enum.sort()
 
     member_map = Map.new(member_growth, fn g -> {g.month, g.count} end)
     thread_map = Map.new(thread_growth, fn g -> {g.month, g.count} end)
     post_map = Map.new(post_growth, fn g -> {g.month, g.count} end)
 
-    monthly_data = Enum.map(months, fn month ->
-      %{
-        month: month,
-        members: Map.get(member_map, month, 0),
-        threads: Map.get(thread_map, month, 0),
-        posts: Map.get(post_map, month, 0)
-      }
-    end)
-
-    most_active = Accounts.most_active_users(10)
-    |> Enum.map(fn user ->
-      %{
-        id: user.id,
-        username: user.username,
-        slug: user.slug,
-        avatar_url: user.avatar_url,
-        post_count: user.post_count,
-        username_color: resolve_color(user),
-        username_effect: resolve_effect(user)
-      }
-    end)
-
-    most_popular = Forums.most_popular_threads(10)
-    |> Enum.map(fn thread ->
-      %{
-        id: thread.id,
-        title: thread.title,
-        slug: thread.slug,
-        view_count: thread.view_count,
-        reply_count: thread.reply_count,
-        forum_name: thread.forum.name,
-        forum_slug: thread.forum.slug,
-        user: %{
-          username: thread.user.username,
-          slug: thread.user.slug
+    monthly_data =
+      Enum.map(months, fn month ->
+        %{
+          month: month,
+          members: Map.get(member_map, month, 0),
+          threads: Map.get(thread_map, month, 0),
+          posts: Map.get(post_map, month, 0)
         }
-      }
-    end)
+      end)
+
+    most_active =
+      Accounts.most_active_users(10)
+      |> Enum.map(fn user ->
+        %{
+          id: user.id,
+          username: user.username,
+          slug: user.slug,
+          avatar_url: user.avatar_url,
+          post_count: user.post_count,
+          username_color: resolve_color(user),
+          username_effect: resolve_effect(user)
+        }
+      end)
+
+    most_popular =
+      Forums.most_popular_threads(10)
+      |> Enum.map(fn thread ->
+        %{
+          id: thread.id,
+          title: thread.title,
+          slug: thread.slug,
+          view_count: thread.view_count,
+          reply_count: thread.reply_count,
+          forum_name: thread.forum.name,
+          forum_slug: thread.forum.slug,
+          user: %{
+            username: thread.user.username,
+            slug: thread.user.slug
+          }
+        }
+      end)
 
     conn
     |> json(%{
@@ -114,9 +119,15 @@ defmodule ForgeNexusWeb.StatsController do
 
   defp resolve_effect(user) do
     cond do
-      user.username_effect && user.username_effect != "none" -> user.username_effect
-      user.primary_group && user.primary_group.username_effect && user.primary_group.username_effect != "none" -> user.primary_group.username_effect
-      true -> "none"
+      user.username_effect && user.username_effect != "none" ->
+        user.username_effect
+
+      user.primary_group && user.primary_group.username_effect &&
+          user.primary_group.username_effect != "none" ->
+        user.primary_group.username_effect
+
+      true ->
+        "none"
     end
   rescue
     _ -> "none"
@@ -124,31 +135,43 @@ defmodule ForgeNexusWeb.StatsController do
 
   # GET /api/featured-threads — public, recent active threads for portal
   def featured_threads(conn, params) do
-    limit = case Map.get(params, "limit") do
-      nil -> 5
-      val -> case Integer.parse(to_string(val)) do
-        {n, _} -> min(n, 20)
-        :error -> 5
+    limit =
+      case Map.get(params, "limit") do
+        nil ->
+          5
+
+        val ->
+          case Integer.parse(to_string(val)) do
+            {n, _} -> min(n, 20)
+            :error -> 5
+          end
       end
-    end
 
     threads = Forums.recent_threads(limit)
-    conn |> json(%{threads: Enum.map(threads, fn t ->
-      %{
-        id: t.id,
-        title: t.title,
-        slug: t.slug,
-        reply_count: t.reply_count,
-        view_count: t.view_count,
-        inserted_at: t.inserted_at,
-        last_post_at: t.last_post_at,
-        author: if(Ecto.assoc_loaded?(t.user), do: %{
-          username: t.user.username,
-          slug: t.user.slug,
-          avatar_url: t.user.avatar_url
-        })
-      }
-    end)})
+
+    conn
+    |> json(%{
+      threads:
+        Enum.map(threads, fn t ->
+          %{
+            id: t.id,
+            title: t.title,
+            slug: t.slug,
+            reply_count: t.reply_count,
+            view_count: t.view_count,
+            inserted_at: t.inserted_at,
+            last_post_at: t.last_post_at,
+            author:
+              if(Ecto.assoc_loaded?(t.user),
+                do: %{
+                  username: t.user.username,
+                  slug: t.user.slug,
+                  avatar_url: t.user.avatar_url
+                }
+              )
+          }
+        end)
+    })
   end
 
   # GET /api/users/online — public, online users with group colors
@@ -202,7 +225,9 @@ defmodule ForgeNexusWeb.StatsController do
 
   defp newest_member_json do
     case Accounts.newest_member() do
-      nil -> nil
+      nil ->
+        nil
+
       user ->
         %{
           id: user.id,
@@ -250,25 +275,41 @@ defmodule ForgeNexusWeb.StatsController do
     # Pick best group: primary_group if set, else highest-position group from memberships
     best_group =
       cond do
-        user.primary_group -> user.primary_group
+        user.primary_group ->
+          user.primary_group
+
         is_list(user.groups) and user.groups != [] ->
           Enum.max_by(user.groups, fn g -> g.position || 0 end, fn -> nil end)
-        true -> nil
+
+        true ->
+          nil
       end
 
     resolved_color =
       cond do
-        user.username_color && user.username_color != "" -> user.username_color
-        best_group && best_group.username_color && best_group.username_color != "" -> best_group.username_color
-        best_group && best_group.color && best_group.color != "" -> best_group.color
-        true -> nil
+        user.username_color && user.username_color != "" ->
+          user.username_color
+
+        best_group && best_group.username_color && best_group.username_color != "" ->
+          best_group.username_color
+
+        best_group && best_group.color && best_group.color != "" ->
+          best_group.color
+
+        true ->
+          nil
       end
 
     resolved_effect =
       cond do
-        user.username_effect && user.username_effect != "none" -> user.username_effect
-        best_group && best_group.username_effect && best_group.username_effect != "none" -> best_group.username_effect
-        true -> "none"
+        user.username_effect && user.username_effect != "none" ->
+          user.username_effect
+
+        best_group && best_group.username_effect && best_group.username_effect != "none" ->
+          best_group.username_effect
+
+        true ->
+          "none"
       end
 
     %{
@@ -280,11 +321,15 @@ defmodule ForgeNexusWeb.StatsController do
       username_effect: resolved_effect,
       is_online: user.is_online,
       last_seen_at: user.last_seen_at,
-      group: if(user.primary_group, do: %{
-        name: user.primary_group.name,
-        color: user.primary_group.color,
-        icon: user.primary_group.icon
-      }, else: nil)
+      group:
+        if(user.primary_group,
+          do: %{
+            name: user.primary_group.name,
+            color: user.primary_group.color,
+            icon: user.primary_group.icon
+          },
+          else: nil
+        )
     }
   end
 end

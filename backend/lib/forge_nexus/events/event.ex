@@ -28,9 +28,23 @@ defmodule ForgeNexus.Events.Event do
 
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:title, :description, :location, :event_type, :starts_at, :ends_at,
-                     :is_all_day, :is_recurring, :recurrence_rule, :color, :max_attendees,
-                     :forum_id, :created_by_id, :is_published, :is_cancelled])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :location,
+      :event_type,
+      :starts_at,
+      :ends_at,
+      :is_all_day,
+      :is_recurring,
+      :recurrence_rule,
+      :color,
+      :max_attendees,
+      :forum_id,
+      :created_by_id,
+      :is_published,
+      :is_cancelled
+    ])
     |> validate_required([:title, :starts_at, :created_by_id])
     |> validate_inclusion(:event_type, ~w(community contest tournament stream meetup custom))
   end

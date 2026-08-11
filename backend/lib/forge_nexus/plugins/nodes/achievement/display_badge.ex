@@ -48,7 +48,13 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.DisplayBadge do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "position", type: "select", options: ~w(primary secondary hidden), default: "primary", description: "Where to display the badge on the profile"}
+        %{
+          name: "position",
+          type: "select",
+          options: ~w(primary secondary hidden),
+          default: "primary",
+          description: "Where to display the badge on the profile"
+        }
       ]
     }
   end

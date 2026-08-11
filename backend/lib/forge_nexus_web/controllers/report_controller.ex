@@ -74,7 +74,7 @@ defmodule ForgeNexusWeb.ReportController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

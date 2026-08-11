@@ -4,7 +4,22 @@ defmodule ForgeNexus.Accounts do
   """
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Accounts.{User, UserGroup, UserGroupMembership, Rank, UserFollow, UserBlock, OAuthAccount, PromotionRule, UserPreference, LoginSession, AvatarFrame, LoginEvent, AuthToken}
+
+  alias ForgeNexus.Accounts.{
+    User,
+    UserGroup,
+    UserGroupMembership,
+    Rank,
+    UserFollow,
+    UserBlock,
+    OAuthAccount,
+    PromotionRule,
+    UserPreference,
+    LoginSession,
+    AvatarFrame,
+    LoginEvent,
+    AuthToken
+  }
 
   # --- Users ---
 
@@ -52,8 +67,11 @@ defmodule ForgeNexus.Accounts do
       password ->
         case ForgeNexus.PasswordSecurity.check(password) do
           {:pwned, count} ->
-            Ecto.Changeset.add_error(changeset, :password,
-              "has appeared in #{count} known data breaches — choose a different password")
+            Ecto.Changeset.add_error(
+              changeset,
+              :password,
+              "has appeared in #{count} known data breaches — choose a different password"
+            )
 
           :ok ->
             changeset
@@ -76,14 +94,19 @@ defmodule ForgeNexus.Accounts do
   # queueing into the outbound email job.
   defp create_auth_token(%User{} = user, type, email) when is_map_key(@token_ttls, type) do
     plaintext = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
-    expires_at = DateTime.utc_now() |> DateTime.add(@token_ttls[type], :second) |> DateTime.truncate(:second)
+
+    expires_at =
+      DateTime.utc_now() |> DateTime.add(@token_ttls[type], :second) |> DateTime.truncate(:second)
+
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     result =
       Repo.transaction(fn ->
         # Invalidate any prior unused token of the same type for this user —
         # new request supersedes old. Prevents token hoarding / race conditions.
-        from(t in AuthToken, where: t.user_id == ^user.id and t.type == ^type and is_nil(t.used_at))
+        from(t in AuthToken,
+          where: t.user_id == ^user.id and t.type == ^type and is_nil(t.used_at)
+        )
         |> Repo.update_all(set: [used_at: now])
 
         case %AuthToken{}
@@ -106,7 +129,8 @@ defmodule ForgeNexus.Accounts do
     end
   end
 
-  defp consume_auth_token(plaintext, type, on_valid) when is_binary(plaintext) and is_function(on_valid, 2) do
+  defp consume_auth_token(plaintext, type, on_valid)
+       when is_binary(plaintext) and is_function(on_valid, 2) do
     hash = AuthToken.hash(plaintext)
 
     Repo.transaction(fn ->
@@ -142,7 +166,8 @@ defmodule ForgeNexus.Accounts do
 
   # Email verification
 
-  def create_email_verify_token(%User{} = user), do: create_auth_token(user, "email_verify", user.email)
+  def create_email_verify_token(%User{} = user),
+    do: create_auth_token(user, "email_verify", user.email)
 
   def consume_email_verify_token(token) do
     consume_auth_token(token, "email_verify", fn user, _at ->
@@ -153,12 +178,15 @@ defmodule ForgeNexus.Accounts do
 
   # Password reset
 
-  def create_password_reset_token(%User{} = user), do: create_auth_token(user, "password_reset", user.email)
+  def create_password_reset_token(%User{} = user),
+    do: create_auth_token(user, "password_reset", user.email)
 
   def consume_password_reset_token(token, new_password) when is_binary(new_password) do
     consume_auth_token(token, "password_reset", fn user, _at ->
       with %Ecto.Changeset{valid?: true} = cs <-
-             user |> User.password_changeset(%{password: new_password}) |> apply_password_security_check(),
+             user
+             |> User.password_changeset(%{password: new_password})
+             |> apply_password_security_check(),
            {:ok, updated} <- Repo.update(cs) do
         revoke_all_sessions(updated.id)
 
@@ -330,7 +358,10 @@ defmodule ForgeNexus.Accounts do
   defp maybe_filter_ip(q, ip), do: where(q, [e], e.ip_address == ^ip)
 
   defp maybe_filter_success(q, nil), do: q
-  defp maybe_filter_success(q, success) when is_boolean(success), do: where(q, [e], e.success == ^success)
+
+  defp maybe_filter_success(q, success) when is_boolean(success),
+    do: where(q, [e], e.success == ^success)
+
   defp maybe_filter_success(q, _), do: q
 
   defp maybe_filter_since(q, nil), do: q
@@ -353,7 +384,10 @@ defmodule ForgeNexus.Accounts do
 
   def update_last_seen(user) do
     user
-    |> Ecto.Changeset.change(last_seen_at: DateTime.utc_now() |> DateTime.truncate(:second), is_online: true)
+    |> Ecto.Changeset.change(
+      last_seen_at: DateTime.utc_now() |> DateTime.truncate(:second),
+      is_online: true
+    )
     |> Repo.update()
   end
 
@@ -451,7 +485,9 @@ defmodule ForgeNexus.Accounts do
   end
 
   def new_members_this_month do
-    start_of_month = Date.utc_today() |> Date.beginning_of_month() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+    start_of_month =
+      Date.utc_today() |> Date.beginning_of_month() |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+
     Repo.one(from u in User, where: u.inserted_at >= ^start_of_month, select: count(u.id)) || 0
   end
 
@@ -467,7 +503,9 @@ defmodule ForgeNexus.Accounts do
   # --- Follows ---
 
   def is_following?(follower_id, followed_id) do
-    Repo.exists?(from f in UserFollow, where: f.follower_id == ^follower_id and f.followed_id == ^followed_id)
+    Repo.exists?(
+      from f in UserFollow, where: f.follower_id == ^follower_id and f.followed_id == ^followed_id
+    )
   end
 
   def toggle_follow(follower_id, followed_id) do
@@ -497,7 +535,8 @@ defmodule ForgeNexus.Accounts do
   def list_followers(user_id) do
     from(f in UserFollow,
       where: f.followed_id == ^user_id,
-      join: u in User, on: u.id == f.follower_id,
+      join: u in User,
+      on: u.id == f.follower_id,
       order_by: [desc: f.inserted_at],
       select: u
     )
@@ -507,7 +546,8 @@ defmodule ForgeNexus.Accounts do
   def list_following(user_id) do
     from(f in UserFollow,
       where: f.follower_id == ^user_id,
-      join: u in User, on: u.id == f.followed_id,
+      join: u in User,
+      on: u.id == f.followed_id,
       order_by: [desc: f.inserted_at],
       select: u
     )
@@ -554,8 +594,15 @@ defmodule ForgeNexus.Accounts do
   def list_blocked_users(user_id) do
     from(b in UserBlock,
       where: b.user_id == ^user_id,
-      join: u in User, on: u.id == b.blocked_user_id,
-      select: %{id: u.id, username: u.username, slug: u.slug, avatar_url: u.avatar_url, blocked_at: b.inserted_at}
+      join: u in User,
+      on: u.id == b.blocked_user_id,
+      select: %{
+        id: u.id,
+        username: u.username,
+        slug: u.slug,
+        avatar_url: u.avatar_url,
+        blocked_at: b.inserted_at
+      }
     )
     |> Repo.all()
   end
@@ -573,10 +620,13 @@ defmodule ForgeNexus.Accounts do
     attrs = %{
       user_id: user_id,
       provider: provider,
-      provider_uid: to_string(user_info[:id] || user_info["id"] || user_info[:uid] || user_info["uid"]),
+      provider_uid:
+        to_string(user_info[:id] || user_info["id"] || user_info[:uid] || user_info["uid"]),
       provider_email: user_info[:email] || user_info["email"],
       provider_name: user_info[:name] || user_info["name"],
-      provider_avatar: user_info[:avatar_url] || user_info["avatar_url"] || user_info[:avatar] || user_info["avatar"],
+      provider_avatar:
+        user_info[:avatar_url] || user_info["avatar_url"] || user_info[:avatar] ||
+          user_info["avatar"],
       access_token: user_info[:access_token] || user_info["access_token"],
       refresh_token: user_info[:refresh_token] || user_info["refresh_token"]
     }
@@ -593,7 +643,9 @@ defmodule ForgeNexus.Accounts do
 
       account ->
         user = Repo.get(User, user_id)
-        oauth_count = Repo.one(from o in OAuthAccount, where: o.user_id == ^user_id, select: count(o.id)) || 0
+
+        oauth_count =
+          Repo.one(from o in OAuthAccount, where: o.user_id == ^user_id, select: count(o.id)) || 0
 
         if is_nil(user.password_hash) and oauth_count <= 1 do
           {:error, :last_auth_method}
@@ -626,11 +678,15 @@ defmodule ForgeNexus.Accounts do
   failures roll back cleanly.
   """
   def find_or_create_oauth_user(provider, user_info) do
-    provider_uid = to_string(user_info[:id] || user_info["id"] || user_info[:uid] || user_info["uid"] || "")
+    provider_uid =
+      to_string(user_info[:id] || user_info["id"] || user_info[:uid] || user_info["uid"] || "")
+
     email = normalize_email(user_info[:email] || user_info["email"])
     name = user_info[:name] || user_info["name"]
     username_hint = user_info[:username] || user_info["username"] || name || email
-    avatar = user_info[:avatar] || user_info["avatar"] || user_info[:picture] || user_info["picture"]
+
+    avatar =
+      user_info[:avatar] || user_info["avatar"] || user_info[:picture] || user_info["picture"]
 
     Repo.transaction(fn ->
       if provider_uid == "" do
@@ -724,7 +780,8 @@ defmodule ForgeNexus.Accounts do
             _ -> nil
           end
 
-        _ -> nil
+        _ ->
+          nil
       end
 
     device_name = LoginSession.parse_device_name(user_agent)
@@ -836,7 +893,16 @@ defmodule ForgeNexus.Accounts do
       Map.merge(acc, %{
         evaluated: acc.evaluated + length(candidates),
         promoted: acc.promoted + promoted,
-        per_rule: acc.per_rule ++ [%{rule_id: rule.id, rule_name: rule.name, candidates: length(candidates), promoted: promoted}]
+        per_rule:
+          acc.per_rule ++
+            [
+              %{
+                rule_id: rule.id,
+                rule_name: rule.name,
+                candidates: length(candidates),
+                promoted: promoted
+              }
+            ]
       })
     end)
   end
@@ -857,14 +923,25 @@ defmodule ForgeNexus.Accounts do
   defp user_matches_criteria?(user, criteria) when is_map(criteria) do
     Enum.all?(criteria, fn {key, value} ->
       case to_string(key) do
-        "post_count" -> is_integer(value) and user.post_count >= value
-        "thread_count" -> is_integer(value) and user.thread_count >= value
-        "reputation" -> is_integer(value) and user.reputation >= value
-        "trust_level" -> is_integer(value) and user.trust_level >= value
+        "post_count" ->
+          is_integer(value) and user.post_count >= value
+
+        "thread_count" ->
+          is_integer(value) and user.thread_count >= value
+
+        "reputation" ->
+          is_integer(value) and user.reputation >= value
+
+        "trust_level" ->
+          is_integer(value) and user.trust_level >= value
+
         "days_since_join" ->
           is_integer(value) and
-            NaiveDateTime.diff(NaiveDateTime.utc_now(), user.inserted_at, :second) >= value * 86_400
-        _ -> true
+            NaiveDateTime.diff(NaiveDateTime.utc_now(), user.inserted_at, :second) >=
+              value * 86_400
+
+        _ ->
+          true
       end
     end)
   end
@@ -919,11 +996,46 @@ defmodule ForgeNexus.Accounts do
     alias ForgeNexus.Permissions.Roles
 
     defaults = [
-      %{slug: "guest", name: "Guest", description: "Unauthenticated visitors", position: 0, is_default: false, is_staff: false},
-      %{slug: "member", name: "Member", description: "Default role for registered users", position: 10, is_default: true, is_staff: false},
-      %{slug: "trusted", name: "Trusted Member", description: "Established members with extended privileges", position: 20, is_default: false, is_staff: false},
-      %{slug: "moderator", name: "Moderator", description: "Community moderators", position: 30, is_default: false, is_staff: true},
-      %{slug: "admin", name: "Administrator", description: "Full administrative access", position: 40, is_default: false, is_staff: true}
+      %{
+        slug: "guest",
+        name: "Guest",
+        description: "Unauthenticated visitors",
+        position: 0,
+        is_default: false,
+        is_staff: false
+      },
+      %{
+        slug: "member",
+        name: "Member",
+        description: "Default role for registered users",
+        position: 10,
+        is_default: true,
+        is_staff: false
+      },
+      %{
+        slug: "trusted",
+        name: "Trusted Member",
+        description: "Established members with extended privileges",
+        position: 20,
+        is_default: false,
+        is_staff: false
+      },
+      %{
+        slug: "moderator",
+        name: "Moderator",
+        description: "Community moderators",
+        position: 30,
+        is_default: false,
+        is_staff: true
+      },
+      %{
+        slug: "admin",
+        name: "Administrator",
+        description: "Full administrative access",
+        position: 40,
+        is_default: false,
+        is_staff: true
+      }
     ]
 
     Enum.reduce(defaults, %{created: [], skipped: []}, fn attrs, acc ->
@@ -989,7 +1101,10 @@ defmodule ForgeNexus.Accounts do
 
   def get_available_frames_for_user(%User{} = user) do
     AvatarFrame
-    |> where([f], f.is_active == true and (is_nil(f.min_posts) or f.min_posts <= ^user.post_count))
+    |> where(
+      [f],
+      f.is_active == true and (is_nil(f.min_posts) or f.min_posts <= ^user.post_count)
+    )
     |> order_by(:position)
     |> Repo.all()
   end

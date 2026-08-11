@@ -43,7 +43,8 @@ defmodule ForgeNexusWeb.ShoutboxChannel do
       id: user.id,
       username: user.username,
       avatar_url: user.avatar_url,
-      username_color: user.username_color || (group && group.username_color) || (group && group.color),
+      username_color:
+        user.username_color || (group && group.username_color) || (group && group.color),
       username_effect: user.username_effect || (group && group.username_effect) || "none"
     }
   end

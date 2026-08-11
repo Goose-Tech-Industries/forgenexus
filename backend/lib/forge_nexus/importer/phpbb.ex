@@ -49,7 +49,9 @@ defmodule ForgeNexus.Importer.PhpBB do
                   user
                   |> Ecto.Changeset.change(inserted_at: DateTime.truncate(dt, :second))
                   |> Repo.update()
-                _ -> :ok
+
+                _ ->
+                  :ok
               end
             end
 
@@ -87,10 +89,13 @@ defmodule ForgeNexus.Importer.PhpBB do
         }
 
         case %Category{} |> Category.changeset(attrs) |> Repo.insert() do
-          {:ok, category} -> Map.put(acc, cat_data["source_id"], category.id)
+          {:ok, category} ->
+            Map.put(acc, cat_data["source_id"], category.id)
+
           {:error, _changeset} ->
             # Try with a modified slug to handle duplicates
             attrs_with_slug = Map.put(attrs, :slug, Slug.slugify(cat_data["name"]) <> "-imported")
+
             case %Category{} |> Category.changeset(attrs_with_slug) |> Repo.insert() do
               {:ok, category} -> Map.put(acc, cat_data["source_id"], category.id)
               {:error, _} -> acc
@@ -127,9 +132,13 @@ defmodule ForgeNexus.Importer.PhpBB do
           }
 
           case %Forum{} |> Forum.changeset(attrs) |> Repo.insert() do
-            {:ok, forum} -> Map.put(acc, forum_data["source_id"], forum.id)
+            {:ok, forum} ->
+              Map.put(acc, forum_data["source_id"], forum.id)
+
             {:error, _changeset} ->
-              attrs_with_slug = Map.put(attrs, :slug, Slug.slugify(forum_data["name"]) <> "-imported")
+              attrs_with_slug =
+                Map.put(attrs, :slug, Slug.slugify(forum_data["name"]) <> "-imported")
+
               case %Forum{} |> Forum.changeset(attrs_with_slug) |> Repo.insert() do
                 {:ok, forum} -> Map.put(acc, forum_data["source_id"], forum.id)
                 {:error, _} -> acc
@@ -180,13 +189,16 @@ defmodule ForgeNexus.Importer.PhpBB do
                       last_post_at: DateTime.truncate(dt, :second)
                     )
                     |> Repo.update()
-                  _ -> :ok
+
+                  _ ->
+                    :ok
                 end
               end
 
               Map.put(acc, thread_data["source_id"], thread.id)
 
-            {:error, _changeset} -> acc
+            {:error, _changeset} ->
+              acc
           end
         end
       end)
@@ -232,13 +244,16 @@ defmodule ForgeNexus.Importer.PhpBB do
                     post
                     |> Ecto.Changeset.change(inserted_at: DateTime.truncate(dt, :second))
                     |> Repo.update()
-                  _ -> :ok
+
+                  _ ->
+                    :ok
                 end
               end
 
               Map.put(acc, post_data["source_id"], post.id)
 
-            {:error, _changeset} -> acc
+            {:error, _changeset} ->
+              acc
           end
         end
       end)
@@ -279,6 +294,7 @@ defmodule ForgeNexus.Importer.PhpBB do
 
       user_data["username"] ->
         slug = Slug.slugify(user_data["username"])
+
         case Repo.one(from u in User, where: u.slug == ^slug, select: u.id) do
           nil -> :not_found
           id -> {:ok, id}

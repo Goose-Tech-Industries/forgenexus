@@ -39,9 +39,22 @@ defmodule ForgeNexus.Voice.Redeemable do
 
   def changeset(redeemable, attrs) do
     redeemable
-    |> cast(attrs, [:room_id, :created_by_id, :name, :description, :emoji, :cost, :type,
-                     :config, :cooldown_seconds, :max_per_stream, :max_per_user_per_stream,
-                     :is_enabled, :requires_text, :position])
+    |> cast(attrs, [
+      :room_id,
+      :created_by_id,
+      :name,
+      :description,
+      :emoji,
+      :cost,
+      :type,
+      :config,
+      :cooldown_seconds,
+      :max_per_stream,
+      :max_per_user_per_stream,
+      :is_enabled,
+      :requires_text,
+      :position
+    ])
     |> validate_required([:name, :cost, :type])
     |> validate_inclusion(:type, @types)
     |> validate_number(:cost, greater_than: 0)

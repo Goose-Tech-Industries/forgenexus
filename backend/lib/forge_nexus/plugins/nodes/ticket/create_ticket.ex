@@ -63,7 +63,13 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.CreateTicket do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "priority", type: "select", options: ~w(low normal high urgent), default: "normal", description: "Ticket priority level"},
+        %{
+          name: "priority",
+          type: "select",
+          options: ~w(low normal high urgent),
+          default: "normal",
+          description: "Ticket priority level"
+        },
         %{name: "category", type: "string", default: "", description: "Ticket category"}
       ]
     }

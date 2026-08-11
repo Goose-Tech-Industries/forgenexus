@@ -116,12 +116,17 @@ defmodule ForgeNexus.Plugins.SlashCommands do
 
   def check_cooldown(%SlashCommand{} = command, user) do
     key = "slash:#{command.name}:#{user.id}"
+
     case ForgeNexus.Cache.get(key) do
-      {:ok, nil} -> :ok
+      {:ok, nil} ->
+        :ok
+
       {:ok, expires_at} ->
         remaining = DateTime.diff(expires_at, DateTime.utc_now())
         if remaining > 0, do: {:error, {:cooldown, remaining}}, else: :ok
-      _ -> :ok
+
+      _ ->
+        :ok
     end
   end
 
@@ -148,13 +153,18 @@ defmodule ForgeNexus.Plugins.SlashCommands do
 
   defp execute_built_in("daily", _args, _args_list, user) do
     key = "daily:#{user.id}"
+
     case ForgeNexus.Cache.get(key) do
       {:ok, nil} ->
         Economy.award_points(user.id, "daily_login", amount: 100, description: "Daily reward")
         ForgeNexus.Cache.put(key, true, ttl_ms: :timer.hours(24))
-        {:ok, %{type: "economy", message: "You claimed your daily reward of 100 points!", points: 100}}
+
+        {:ok,
+         %{type: "economy", message: "You claimed your daily reward of 100 points!", points: 100}}
+
       {:ok, _} ->
-        {:ok, %{type: "economy", message: "You already claimed your daily reward. Come back tomorrow!"}}
+        {:ok,
+         %{type: "economy", message: "You already claimed your daily reward. Come back tomorrow!"}}
     end
   end
 
@@ -171,20 +181,32 @@ defmodule ForgeNexus.Plugins.SlashCommands do
             case ForgeNexus.Repo.get_by(ForgeNexus.Accounts.User, username: target_username) do
               nil ->
                 {:ok, %{type: "error", message: "User not found."}}
+
               target when target.id == user.id ->
                 {:ok, %{type: "error", message: "You cannot pay yourself!"}}
+
               target ->
-                case Economy.deduct_points(user.id, amount, "transfer_out", description: "Paid #{target_username}") do
+                case Economy.deduct_points(user.id, amount, "transfer_out",
+                       description: "Paid #{target_username}"
+                     ) do
                   {:ok, _} ->
-                    Economy.award_points(target.id, "transfer_in", amount: amount, description: "Received from #{user.username}")
-                    {:ok, %{type: "economy", message: "Sent #{amount} points to #{target_username}."}}
+                    Economy.award_points(target.id, "transfer_in",
+                      amount: amount,
+                      description: "Received from #{user.username}"
+                    )
+
+                    {:ok,
+                     %{type: "economy", message: "Sent #{amount} points to #{target_username}."}}
+
                   {:error, :insufficient_points} ->
                     {:ok, %{type: "error", message: "Insufficient points."}}
                 end
             end
+
           _ ->
             {:ok, %{type: "error", message: "Invalid amount. Usage: /pay <username> <amount>"}}
         end
+
       _ ->
         {:ok, %{type: "error", message: "Usage: /pay <username> <amount>"}}
     end
@@ -194,7 +216,14 @@ defmodule ForgeNexus.Plugins.SlashCommands do
     {count, sides} = parse_dice(List.first(args_list, "1d6"))
     rolls = for _ <- 1..count, do: :rand.uniform(sides)
     total = Enum.sum(rolls)
-    {:ok, %{type: "fun", message: "Rolled #{count}d#{sides}: [#{Enum.join(rolls, ", ")}] = #{total}", rolls: rolls, total: total}}
+
+    {:ok,
+     %{
+       type: "fun",
+       message: "Rolled #{count}d#{sides}: [#{Enum.join(rolls, ", ")}] = #{total}",
+       rolls: rolls,
+       total: total
+     }}
   end
 
   defp execute_built_in("flip", _args, _args_list, _user) do
@@ -204,30 +233,64 @@ defmodule ForgeNexus.Plugins.SlashCommands do
 
   defp execute_built_in("8ball", _args, _args_list, _user) do
     responses = [
-      "It is certain.", "It is decidedly so.", "Without a doubt.",
-      "Yes, definitely.", "You may rely on it.", "As I see it, yes.",
-      "Most likely.", "Outlook good.", "Yes.", "Signs point to yes.",
-      "Reply hazy, try again.", "Ask again later.", "Better not tell you now.",
-      "Cannot predict now.", "Concentrate and ask again.",
-      "Do not count on it.", "My reply is no.", "My sources say no.",
-      "Outlook not so good.", "Very doubtful."
+      "It is certain.",
+      "It is decidedly so.",
+      "Without a doubt.",
+      "Yes, definitely.",
+      "You may rely on it.",
+      "As I see it, yes.",
+      "Most likely.",
+      "Outlook good.",
+      "Yes.",
+      "Signs point to yes.",
+      "Reply hazy, try again.",
+      "Ask again later.",
+      "Better not tell you now.",
+      "Cannot predict now.",
+      "Concentrate and ask again.",
+      "Do not count on it.",
+      "My reply is no.",
+      "My sources say no.",
+      "Outlook not so good.",
+      "Very doubtful."
     ]
+
     answer = Enum.random(responses)
     {:ok, %{type: "fun", message: answer}}
   end
 
-  defp execute_built_in("poll", args, _args_list, _user), do: {:ok, %{type: "utility", message: "Poll created!", question: args}}
-  defp execute_built_in("remind", args, _args_list, user), do: {:ok, %{type: "utility", message: "Reminder set: #{args}", user_id: user.id}}
+  defp execute_built_in("poll", args, _args_list, _user),
+    do: {:ok, %{type: "utility", message: "Poll created!", question: args}}
+
+  defp execute_built_in("remind", args, _args_list, user),
+    do: {:ok, %{type: "utility", message: "Reminder set: #{args}", user_id: user.id}}
 
   defp execute_built_in("stats", _args, _args_list, user) do
     points = Economy.get_points(user.id)
-    {:ok, %{type: "profile", message: "Stats for #{user.username}", stats: %{points: points, username: user.username, id: user.id}}}
+
+    {:ok,
+     %{
+       type: "profile",
+       message: "Stats for #{user.username}",
+       stats: %{points: points, username: user.username, id: user.id}
+     }}
   end
 
-  defp execute_built_in("inventory", _args, _args_list, user), do: {:ok, %{type: "rpg", message: "Inventory for #{user.username}", user_id: user.id, items: []}}
-  defp execute_built_in("equip", args, _args_list, user), do: {:ok, %{type: "rpg", message: "Equip: #{args}", user_id: user.id}}
-  defp execute_built_in("pet", _args, _args_list, user), do: {:ok, %{type: "rpg", message: "Pet info for #{user.username}", user_id: user.id}}
-  defp execute_built_in("quest", _args, _args_list, user), do: {:ok, %{type: "rpg", message: "Active quests for #{user.username}", user_id: user.id, quests: []}}
+  defp execute_built_in("inventory", _args, _args_list, user),
+    do:
+      {:ok,
+       %{type: "rpg", message: "Inventory for #{user.username}", user_id: user.id, items: []}}
+
+  defp execute_built_in("equip", args, _args_list, user),
+    do: {:ok, %{type: "rpg", message: "Equip: #{args}", user_id: user.id}}
+
+  defp execute_built_in("pet", _args, _args_list, user),
+    do: {:ok, %{type: "rpg", message: "Pet info for #{user.username}", user_id: user.id}}
+
+  defp execute_built_in("quest", _args, _args_list, user),
+    do:
+      {:ok,
+       %{type: "rpg", message: "Active quests for #{user.username}", user_id: user.id, quests: []}}
 
   defp execute_built_in("rank", _args, _args_list, user) do
     points = Economy.get_points(user.id)
@@ -238,35 +301,78 @@ defmodule ForgeNexus.Plugins.SlashCommands do
     case args_list do
       [target_username | _] ->
         case ForgeNexus.Repo.get_by(ForgeNexus.Accounts.User, username: target_username) do
-          nil -> {:ok, %{type: "error", message: "User not found."}}
-          target when target.id == user.id -> {:ok, %{type: "error", message: "You cannot rep yourself!"}}
-          target -> {:ok, %{type: "social", message: "You gave +1 rep to #{target.username}.", target_id: target.id}}
+          nil ->
+            {:ok, %{type: "error", message: "User not found."}}
+
+          target when target.id == user.id ->
+            {:ok, %{type: "error", message: "You cannot rep yourself!"}}
+
+          target ->
+            {:ok,
+             %{
+               type: "social",
+               message: "You gave +1 rep to #{target.username}.",
+               target_id: target.id
+             }}
         end
-      _ -> {:ok, %{type: "error", message: "Usage: /rep <username>"}}
+
+      _ ->
+        {:ok, %{type: "error", message: "Usage: /rep <username>"}}
     end
   end
 
   defp execute_built_in("profile", _args, args_list, user) do
     target = List.first(args_list)
-    profile_user = if target, do: ForgeNexus.Repo.get_by(ForgeNexus.Accounts.User, username: target), else: user
+
+    profile_user =
+      if target,
+        do: ForgeNexus.Repo.get_by(ForgeNexus.Accounts.User, username: target),
+        else: user
+
     case profile_user do
-      nil -> {:ok, %{type: "error", message: "User not found."}}
-      u -> {:ok, %{type: "profile", message: "Profile: #{u.username}", user: %{id: u.id, username: u.username}}}
+      nil ->
+        {:ok, %{type: "error", message: "User not found."}}
+
+      u ->
+        {:ok,
+         %{
+           type: "profile",
+           message: "Profile: #{u.username}",
+           user: %{id: u.id, username: u.username}
+         }}
     end
   end
 
   defp execute_built_in("help", _args, _args_list, _user) do
     commands = list_commands()
     grouped = Enum.group_by(commands, & &1.category)
-    categories = Enum.map(grouped, fn {cat, cmds} ->
-      %{category: cat, commands: Enum.map(cmds, fn c -> %{name: c.name, description: c.description} end)}
-    end)
+
+    categories =
+      Enum.map(grouped, fn {cat, cmds} ->
+        %{
+          category: cat,
+          commands: Enum.map(cmds, fn c -> %{name: c.name, description: c.description} end)
+        }
+      end)
+
     {:ok, %{type: "utility", message: "Available commands", categories: categories}}
   end
 
-  defp execute_built_in("ticket", args, _args_list, user), do: {:ok, %{type: "utility", message: "Support ticket created.", subject: args, user_id: user.id}}
-  defp execute_built_in("suggest", args, _args_list, user), do: {:ok, %{type: "utility", message: "Suggestion submitted!", suggestion: args, user_id: user.id}}
-  defp execute_built_in("streak", _args, _args_list, user), do: {:ok, %{type: "profile", message: "Streaks for #{user.username}", user_id: user.id, streaks: %{}}}
+  defp execute_built_in("ticket", args, _args_list, user),
+    do:
+      {:ok,
+       %{type: "utility", message: "Support ticket created.", subject: args, user_id: user.id}}
+
+  defp execute_built_in("suggest", args, _args_list, user),
+    do:
+      {:ok,
+       %{type: "utility", message: "Suggestion submitted!", suggestion: args, user_id: user.id}}
+
+  defp execute_built_in("streak", _args, _args_list, user),
+    do:
+      {:ok,
+       %{type: "profile", message: "Streaks for #{user.username}", user_id: user.id, streaks: %{}}}
+
   defp execute_built_in(name, _args, _args_list, _user), do: {:error, {:unhandled_built_in, name}}
 
   # -- Dice parser -----------------------------------------------------------
@@ -277,11 +383,14 @@ defmodule ForgeNexus.Plugins.SlashCommands do
         count = safe_int(count_str, 1) |> min(100) |> max(1)
         sides = safe_int(sides_str, 6) |> min(1000) |> max(2)
         {count, sides}
-      _ -> {1, 6}
+
+      _ ->
+        {1, 6}
     end
   end
 
   defp safe_int("", default), do: default
+
   defp safe_int(str, default) do
     case Integer.parse(str) do
       {n, _} -> n
@@ -317,6 +426,7 @@ defmodule ForgeNexus.Plugins.SlashCommands do
 
     Enum.each(built_ins, fn cmd_attrs ->
       attrs = Map.merge(cmd_attrs, %{is_built_in: true, enabled: true})
+
       case get_command_by_name(cmd_attrs.name) do
         nil -> create_command(attrs)
         existing -> update_command(existing, attrs)

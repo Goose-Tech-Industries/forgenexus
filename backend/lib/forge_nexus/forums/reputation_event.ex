@@ -20,7 +20,10 @@ defmodule ForgeNexus.Forums.ReputationEvent do
     event
     |> cast(attrs, [:user_id, :event_type, :points, :source_type, :source_id])
     |> validate_required([:user_id, :event_type, :points])
-    |> validate_inclusion(:event_type, ~w(post_liked achievement_earned thread_created best_answer user_given user_taken post_created manual))
+    |> validate_inclusion(
+      :event_type,
+      ~w(post_liked achievement_earned thread_created best_answer user_given user_taken post_created manual)
+    )
     |> foreign_key_constraint(:user_id)
   end
 end

@@ -25,8 +25,18 @@ defmodule ForgeNexus.Social.Icebreaker do
 
   def changeset(challenge, attrs) do
     challenge
-    |> cast(attrs, [:community_id, :sender_id, :recipient_id, :type, :question,
-                     :options, :sender_answer, :recipient_answer, :points_reward, :status])
+    |> cast(attrs, [
+      :community_id,
+      :sender_id,
+      :recipient_id,
+      :type,
+      :question,
+      :options,
+      :sender_answer,
+      :recipient_answer,
+      :points_reward,
+      :status
+    ])
     |> validate_required([:sender_id, :recipient_id, :type, :question])
     |> validate_inclusion(:type, @types)
     |> validate_inclusion(:status, ~w(pending answered expired))
@@ -44,9 +54,15 @@ defmodule ForgeNexus.Social.Icebreaker do
         "Would you rather fight 100 duck-sized horses or 1 horse-sized duck?"
       ],
       "this_or_that" => [
-        "Cats or dogs?", "Morning or night?", "Beach or mountains?",
-        "Coffee or tea?", "Books or movies?", "Summer or winter?",
-        "Pizza or tacos?", "Marvel or DC?", "Console or PC?"
+        "Cats or dogs?",
+        "Morning or night?",
+        "Beach or mountains?",
+        "Coffee or tea?",
+        "Books or movies?",
+        "Summer or winter?",
+        "Pizza or tacos?",
+        "Marvel or DC?",
+        "Console or PC?"
       ],
       "hot_take" => [
         "The last movie you watched was actually good",

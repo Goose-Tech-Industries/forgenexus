@@ -54,7 +54,13 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetNameEffect do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "effect", type: "select", options: ~w(none glow bold italic rainbow sparkle), default: "none", description: "Name text effect"}
+        %{
+          name: "effect",
+          type: "select",
+          options: ~w(none glow bold italic rainbow sparkle),
+          default: "none",
+          description: "Name text effect"
+        }
       ]
     }
   end

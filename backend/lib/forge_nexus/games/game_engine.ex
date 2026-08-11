@@ -43,17 +43,21 @@ defmodule ForgeNexus.Games.GameEngine do
       if player_count >= game.max_players do
         {:error, :game_full}
       else
-        Repo.insert_all("party_game_players", [
-          %{
-            id: Ecto.UUID.generate(),
-            game_id: game_id,
-            user_id: user_id,
-            score: 0,
-            is_active: true,
-            inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-            updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-          }
-        ], on_conflict: :nothing)
+        Repo.insert_all(
+          "party_game_players",
+          [
+            %{
+              id: Ecto.UUID.generate(),
+              game_id: game_id,
+              user_id: user_id,
+              score: 0,
+              is_active: true,
+              inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+              updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+            }
+          ],
+          on_conflict: :nothing
+        )
 
         broadcast_game_event(game, "player_joined", %{user_id: user_id})
         {:ok, game}
@@ -123,7 +127,10 @@ defmodule ForgeNexus.Games.GameEngine do
 
     if new_round > game.total_rounds do
       game
-      |> PartyGame.changeset(%{status: "game_over", state: Map.put(game.state, "results", results)})
+      |> PartyGame.changeset(%{
+        status: "game_over",
+        state: Map.put(game.state, "results", results)
+      })
       |> Repo.update()
 
       final_scores = get_scores(game.id)
@@ -168,7 +175,9 @@ defmodule ForgeNexus.Games.GameEngine do
     case scores do
       [first | _] ->
         ForgeNexus.Economy.award_points(first.user_id, "game_winner",
-          amount: total_pool, description: "Won #{game.game_type} game")
+          amount: total_pool,
+          description: "Won #{game.game_type} game"
+        )
 
       _ ->
         :ok
@@ -254,10 +263,14 @@ defmodule ForgeNexus.Games.GameEngine do
   defp all_answered?(_, _), do: false
 
   defp calculate_round_results("trivia", state) do
-    correct = state["questions"] |> Enum.at(state["current_question"] || 0, %{}) |> Map.get("answer")
-    changes = Enum.reduce(state["answers"] || %{}, %{}, fn {uid, ans}, acc ->
-      if ans == correct, do: Map.put(acc, uid, 10), else: acc
-    end)
+    correct =
+      state["questions"] |> Enum.at(state["current_question"] || 0, %{}) |> Map.get("answer")
+
+    changes =
+      Enum.reduce(state["answers"] || %{}, %{}, fn {uid, ans}, acc ->
+        if ans == correct, do: Map.put(acc, uid, 10), else: acc
+      end)
+
     %{score_changes: changes, correct_answer: correct}
   end
 
@@ -315,11 +328,31 @@ defmodule ForgeNexus.Games.GameEngine do
 
   defp default_trivia do
     [
-      %{"question" => "What year was the first iPhone released?", "options" => ["2005", "2006", "2007", "2008"], "answer" => "2007"},
-      %{"question" => "What is the capital of Australia?", "options" => ["Sydney", "Melbourne", "Canberra", "Brisbane"], "answer" => "Canberra"},
-      %{"question" => "How many sides does a hexagon have?", "options" => ["5", "6", "7", "8"], "answer" => "6"},
-      %{"question" => "What element has the chemical symbol 'Au'?", "options" => ["Silver", "Gold", "Aluminum", "Argon"], "answer" => "Gold"},
-      %{"question" => "Who painted the Mona Lisa?", "options" => ["Michelangelo", "Da Vinci", "Raphael", "Donatello"], "answer" => "Da Vinci"}
+      %{
+        "question" => "What year was the first iPhone released?",
+        "options" => ["2005", "2006", "2007", "2008"],
+        "answer" => "2007"
+      },
+      %{
+        "question" => "What is the capital of Australia?",
+        "options" => ["Sydney", "Melbourne", "Canberra", "Brisbane"],
+        "answer" => "Canberra"
+      },
+      %{
+        "question" => "How many sides does a hexagon have?",
+        "options" => ["5", "6", "7", "8"],
+        "answer" => "6"
+      },
+      %{
+        "question" => "What element has the chemical symbol 'Au'?",
+        "options" => ["Silver", "Gold", "Aluminum", "Argon"],
+        "answer" => "Gold"
+      },
+      %{
+        "question" => "Who painted the Mona Lisa?",
+        "options" => ["Michelangelo", "Da Vinci", "Raphael", "Donatello"],
+        "answer" => "Da Vinci"
+      }
     ]
   end
 end

@@ -26,17 +26,23 @@ defmodule ForgeNexus.AI.ClipAutoHighlight do
   defp analyze_and_clip(recording, max_clips) do
     segments = segment_transcript(recording.transcript)
     scored = Enum.map(segments, &score_segment/1)
-    top = scored |> Enum.sort_by(& &1.score, :desc) |> Enum.take(max_clips) |> Enum.filter(& &1.score > 0)
+
+    top =
+      scored
+      |> Enum.sort_by(& &1.score, :desc)
+      |> Enum.take(max_clips)
+      |> Enum.filter(&(&1.score > 0))
 
     clips =
       Enum.map(top, fn seg ->
-        {:ok, clip} = Voice.create_clip(%{
-          recording_id: recording.id,
-          title: generate_clip_title(seg),
-          start_ms: seg.start_ms,
-          end_ms: seg.end_ms,
-          created_by_id: recording.host_user_id
-        })
+        {:ok, clip} =
+          Voice.create_clip(%{
+            recording_id: recording.id,
+            title: generate_clip_title(seg),
+            start_ms: seg.start_ms,
+            end_ms: seg.end_ms,
+            created_by_id: recording.host_user_id
+          })
 
         clip
       end)
@@ -61,7 +67,12 @@ defmodule ForgeNexus.AI.ClipAutoHighlight do
         words_per_ms = total_words / (@max_highlight_duration_ms * 10)
         start_word = idx * div(chunk_size, 2)
         start_ms = round(start_word / max(words_per_ms, 0.001))
-        end_ms = min(start_ms + @max_highlight_duration_ms, round(total_words / max(words_per_ms, 0.001)))
+
+        end_ms =
+          min(
+            start_ms + @max_highlight_duration_ms,
+            round(total_words / max(words_per_ms, 0.001))
+          )
 
         %{
           text: text,
@@ -81,11 +92,15 @@ defmodule ForgeNexus.AI.ClipAutoHighlight do
       |> Enum.count(fn kw -> String.contains?(text, kw) end)
       |> Kernel.*(3)
 
-    exclamation_score = (String.graphemes(text) |> Enum.count(& &1 == "!")) * 2
-    caps_ratio = String.graphemes(segment.text) |> then(fn chars ->
-      uppers = Enum.count(chars, fn c -> c == String.upcase(c) and c != String.downcase(c) end)
-      if length(chars) > 0, do: uppers / length(chars), else: 0
-    end)
+    exclamation_score = (String.graphemes(text) |> Enum.count(&(&1 == "!"))) * 2
+
+    caps_ratio =
+      String.graphemes(segment.text)
+      |> then(fn chars ->
+        uppers = Enum.count(chars, fn c -> c == String.upcase(c) and c != String.downcase(c) end)
+        if length(chars) > 0, do: uppers / length(chars), else: 0
+      end)
+
     caps_score = if caps_ratio > 0.3, do: 5, else: 0
 
     Map.put(segment, :score, keyword_score + exclamation_score + caps_score)

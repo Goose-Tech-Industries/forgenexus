@@ -26,52 +26,54 @@ defmodule ForgeNexus.Uploads do
       if not verify_magic_bytes(upload.path, upload.content_type) do
         {:error, :invalid_type}
       else
-      file_stat = File.stat!(upload.path)
-      if file_stat.size > Attachment.max_size() do
-        {:error, :too_large}
-      else
-        # Generate unique filename
-        ext = Path.extname(upload.filename)
-        unique_name = "#{UUID.uuid4()}#{ext}"
-        date_path = Date.utc_today() |> Date.to_iso8601() |> String.replace("-", "/")
-        relative_path = "#{date_path}/#{unique_name}"
+        file_stat = File.stat!(upload.path)
 
-        # Ensure directory exists
-        dir = Path.join([@upload_dir, date_path])
-        File.mkdir_p!(dir)
+        if file_stat.size > Attachment.max_size() do
+          {:error, :too_large}
+        else
+          # Generate unique filename
+          ext = Path.extname(upload.filename)
+          unique_name = "#{UUID.uuid4()}#{ext}"
+          date_path = Date.utc_today() |> Date.to_iso8601() |> String.replace("-", "/")
+          relative_path = "#{date_path}/#{unique_name}"
 
-        # Copy file
-        dest = Path.join(@upload_dir, relative_path)
-        File.cp!(upload.path, dest)
+          # Ensure directory exists
+          dir = Path.join([@upload_dir, date_path])
+          File.mkdir_p!(dir)
 
-        # Create attachment record
-        url = "/uploads/#{relative_path}"
+          # Copy file
+          dest = Path.join(@upload_dir, relative_path)
+          File.cp!(upload.path, dest)
 
-        result =
-          %Attachment{}
-          |> Attachment.changeset(%{
-            filename: upload.filename,
-            content_type: upload.content_type,
-            size: file_stat.size,
-            url: url,
-            attachable_type: attachable_type,
-            attachable_id: attachable_id,
-            user_id: user_id
-          })
-          |> Repo.insert()
+          # Create attachment record
+          url = "/uploads/#{relative_path}"
 
-        # Enqueue async image optimization (resize, thumbnail, WebP, strip EXIF)
-        case result do
-          {:ok, attachment} ->
-            if String.starts_with?(attachment.content_type, "image/") do
-              ForgeNexus.Workers.ImageOptimizer.enqueue(attachment.id)
-            end
-            {:ok, attachment}
+          result =
+            %Attachment{}
+            |> Attachment.changeset(%{
+              filename: upload.filename,
+              content_type: upload.content_type,
+              size: file_stat.size,
+              url: url,
+              attachable_type: attachable_type,
+              attachable_id: attachable_id,
+              user_id: user_id
+            })
+            |> Repo.insert()
 
-          error ->
-            error
+          # Enqueue async image optimization (resize, thumbnail, WebP, strip EXIF)
+          case result do
+            {:ok, attachment} ->
+              if String.starts_with?(attachment.content_type, "image/") do
+                ForgeNexus.Workers.ImageOptimizer.enqueue(attachment.id)
+              end
+
+              {:ok, attachment}
+
+            error ->
+              error
+          end
         end
-      end
       end
     end
   end
@@ -89,13 +91,15 @@ defmodule ForgeNexus.Uploads do
               byte_size(data) >= byte_size(sig) and binary_part(data, 0, byte_size(sig)) == sig
             end)
 
-          _ -> false
+          _ ->
+            false
         end
     end
   end
 
   @image_types ~w(image/jpeg image/png image/gif image/webp)
-  @inline_max_size 5_000_000 # 5MB for inline uploads
+  # 5MB for inline uploads
+  @inline_max_size 5_000_000
 
   def upload_inline(%Plug.Upload{} = upload, user_id) do
     if upload.content_type not in @image_types do
@@ -105,6 +109,7 @@ defmodule ForgeNexus.Uploads do
         {:error, :invalid_type}
       else
         file_stat = File.stat!(upload.path)
+
         if file_stat.size > @inline_max_size do
           {:error, :too_large}
         else
@@ -151,14 +156,17 @@ defmodule ForgeNexus.Uploads do
     from(a in Attachment,
       where: a.attachable_type == ^attachable_type and a.attachable_id == ^attachable_id,
       order_by: [asc: :inserted_at]
-    ) |> Repo.all()
+    )
+    |> Repo.all()
   end
 
   def get_attachment!(id), do: Repo.get!(Attachment, id)
 
   def delete_attachment(id, user_id) do
     case Repo.get_by(Attachment, id: id, user_id: user_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       attachment ->
         # Delete file — validate path is within upload directory to prevent traversal
         file_path = Path.join("priv/static", attachment.url) |> Path.expand()
@@ -174,9 +182,11 @@ defmodule ForgeNexus.Uploads do
 
   def user_upload_count_today(user_id) do
     today_start = Date.utc_today() |> DateTime.new!(~T[00:00:00])
+
     from(a in Attachment,
       where: a.user_id == ^user_id and a.inserted_at >= ^today_start,
       select: count(a.id)
-    ) |> Repo.one() || 0
+    )
+    |> Repo.one() || 0
   end
 end

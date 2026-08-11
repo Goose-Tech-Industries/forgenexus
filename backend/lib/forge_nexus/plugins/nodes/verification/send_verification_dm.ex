@@ -40,7 +40,12 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.SendVerificationDm do
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "message_template", type: "text", default: "Welcome! Please verify your account.", description: "Message template to send to the user"}
+        %{
+          name: "message_template",
+          type: "text",
+          default: "Welcome! Please verify your account.",
+          description: "Message template to send to the user"
+        }
       ]
     }
   end

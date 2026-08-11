@@ -51,7 +51,9 @@ defmodule ForgeNexus.Cache do
       end
 
     case :ets.whereis(@table) do
-      :undefined -> {:error, :cache_not_started}
+      :undefined ->
+        {:error, :cache_not_started}
+
       _ ->
         :ets.insert(@table, {key, value, expires_at})
         {:ok, true}
@@ -72,7 +74,14 @@ defmodule ForgeNexus.Cache do
 
   @impl true
   def init(_) do
-    :ets.new(@table, [:named_table, :public, :set, read_concurrency: true, write_concurrency: true])
+    :ets.new(@table, [
+      :named_table,
+      :public,
+      :set,
+      read_concurrency: true,
+      write_concurrency: true
+    ])
+
     schedule_sweep()
     {:ok, %{}}
   end

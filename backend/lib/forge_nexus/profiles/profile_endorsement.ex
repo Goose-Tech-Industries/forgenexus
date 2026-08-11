@@ -23,8 +23,8 @@ defmodule ForgeNexus.Profiles.ProfileEndorsement do
     |> validate_required([:profile_user_id, :sender_id, :emoji])
     |> validate_inclusion(:emoji, @allowed_emoji)
     |> unique_constraint([:profile_user_id, :sender_id, :emoji],
-         name: :profile_endorsements_profile_user_id_sender_id_emoji_index
-       )
+      name: :profile_endorsements_profile_user_id_sender_id_emoji_index
+    )
   end
 
   def allowed_emoji, do: @allowed_emoji

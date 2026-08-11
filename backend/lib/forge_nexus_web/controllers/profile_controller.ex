@@ -15,13 +15,14 @@ defmodule ForgeNexusWeb.ProfileController do
         pref = Accounts.get_preferences(profile_user.id)
 
         # Check profile visibility
-        can_view = cond do
-          viewer && viewer.id == profile_user.id -> true
-          pref.profile_visibility == "public" -> true
-          pref.profile_visibility == "members" -> !is_nil(viewer)
-          pref.profile_visibility == "private" -> false
-          true -> true
-        end
+        can_view =
+          cond do
+            viewer && viewer.id == profile_user.id -> true
+            pref.profile_visibility == "public" -> true
+            pref.profile_visibility == "members" -> !is_nil(viewer)
+            pref.profile_visibility == "private" -> false
+            true -> true
+          end
 
         if can_view do
           # Record visit if authenticated
@@ -31,31 +32,47 @@ defmodule ForgeNexusWeb.ProfileController do
           guestbook = Profiles.list_guestbook_entries(profile_user.id, limit: 10)
           recent_visitors = Profiles.recent_visitors(profile_user.id, 10)
 
-          is_following = if viewer, do: Accounts.is_following?(viewer.id, profile_user.id), else: false
+          is_following =
+            if viewer, do: Accounts.is_following?(viewer.id, profile_user.id), else: false
+
           follower_count = Accounts.follower_count(profile_user.id)
           following_count = Accounts.following_count(profile_user.id)
 
           endorsement_counts = Profiles.endorsement_counts(profile_user.id)
-          my_endorsements = if viewer, do: Profiles.my_endorsements(profile_user.id, viewer.id), else: []
-          pinned_thread = if profile_user.pinned_thread_id, do: ForgeNexus.Repo.get(ForgeNexus.Forums.Thread, profile_user.pinned_thread_id)
+
+          my_endorsements =
+            if viewer, do: Profiles.my_endorsements(profile_user.id, viewer.id), else: []
+
+          pinned_thread =
+            if profile_user.pinned_thread_id,
+              do: ForgeNexus.Repo.get(ForgeNexus.Forums.Thread, profile_user.pinned_thread_id)
 
           conn
           |> json(%{
-            profile: Map.merge(profile_json(profile_user), %{
-              follower_count: follower_count,
-              following_count: following_count
-            }),
+            profile:
+              Map.merge(profile_json(profile_user), %{
+                follower_count: follower_count,
+                following_count: following_count
+              }),
             is_following: is_following,
             top_friends: Enum.map(top_friends, &top_friend_json/1),
             guestbook: Enum.map(guestbook, &guestbook_json/1),
             recent_visitors: Enum.map(recent_visitors, &visitor_json/1),
             endorsements: %{counts: endorsement_counts, mine: my_endorsements},
-            pinned_thread: pinned_thread && %{
-              id: pinned_thread.id, title: pinned_thread.title, slug: pinned_thread.slug,
-              reply_count: pinned_thread.reply_count, view_count: pinned_thread.view_count,
-              inserted_at: pinned_thread.inserted_at
-            },
-            privacy: %{profile_visibility: pref.profile_visibility, show_activity: pref.show_activity}
+            pinned_thread:
+              pinned_thread &&
+                %{
+                  id: pinned_thread.id,
+                  title: pinned_thread.title,
+                  slug: pinned_thread.slug,
+                  reply_count: pinned_thread.reply_count,
+                  view_count: pinned_thread.view_count,
+                  inserted_at: pinned_thread.inserted_at
+                },
+            privacy: %{
+              profile_visibility: pref.profile_visibility,
+              show_activity: pref.show_activity
+            }
           })
         else
           conn
@@ -73,34 +90,48 @@ defmodule ForgeNexusWeb.ProfileController do
 
     cond do
       user.id == target_user_id ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "You cannot give reputation to yourself"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "You cannot give reputation to yourself"})
 
       amount == 0 ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Amount cannot be zero"})
 
       abs(amount) > 10 ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Amount must be between -10 and 10"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Amount must be between -10 and 10"})
 
       true ->
         event_type = if amount > 0, do: "user_given", else: "user_taken"
 
-        case ForgeNexus.Forums.log_reputation_event(target_user_id, event_type, amount, "user", user.id) do
+        case ForgeNexus.Forums.log_reputation_event(
+               target_user_id,
+               event_type,
+               amount,
+               "user",
+               user.id
+             ) do
           {:ok, event} ->
             # Update user's total reputation
             import Ecto.Query
+
             ForgeNexus.Repo.update_all(
               from(u in ForgeNexus.Accounts.User, where: u.id == ^target_user_id),
               inc: [reputation: amount]
             )
 
-            conn |> json(%{
+            conn
+            |> json(%{
               success: true,
               event: %{id: event.id, points: event.points, event_type: event.event_type},
               message: if(amount > 0, do: "Reputation given!", else: "Reputation taken.")
             })
 
           {:error, _changeset} ->
-            conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to give reputation"})
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Failed to give reputation"})
         end
     end
   end
@@ -114,20 +145,23 @@ defmodule ForgeNexusWeb.ProfileController do
         breakdown = ForgeNexus.Forums.get_reputation_breakdown(profile_user.id)
         history = ForgeNexus.Forums.get_reputation_history(profile_user.id, limit: 20)
 
-        conn |> json(%{
-          breakdown: Enum.map(breakdown, fn b ->
-            %{event_type: b.event_type, total_points: b.total_points, count: b.count}
-          end),
-          history: Enum.map(history, fn e ->
-            %{
-              id: e.id,
-              event_type: e.event_type,
-              points: e.points,
-              source_type: e.source_type,
-              source_id: e.source_id,
-              inserted_at: e.inserted_at
-            }
-          end),
+        conn
+        |> json(%{
+          breakdown:
+            Enum.map(breakdown, fn b ->
+              %{event_type: b.event_type, total_points: b.total_points, count: b.count}
+            end),
+          history:
+            Enum.map(history, fn e ->
+              %{
+                id: e.id,
+                event_type: e.event_type,
+                points: e.points,
+                source_type: e.source_type,
+                source_id: e.source_id,
+                inserted_at: e.inserted_at
+              }
+            end),
           total: profile_user.reputation
         })
     end
@@ -200,7 +234,8 @@ defmodule ForgeNexusWeb.ProfileController do
 
         entries = Profiles.list_guestbook_entries(profile_user.id, limit: limit, offset: offset)
 
-        conn |> json(%{
+        conn
+        |> json(%{
           guestbook: Enum.map(entries, &guestbook_json/1),
           page: page
         })
@@ -219,11 +254,11 @@ defmodule ForgeNexusWeb.ProfileController do
         body_html = BBCode.to_html(body_bbcode)
 
         case Profiles.create_guestbook_entry(%{
-          profile_user_id: profile_user.id,
-          author_id: author.id,
-          body_bbcode: body_bbcode,
-          body_html: body_html
-        }) do
+               profile_user_id: profile_user.id,
+               author_id: author.id,
+               body_bbcode: body_bbcode,
+               body_html: body_html
+             }) do
           {:ok, entry} ->
             entry = ForgeNexus.Repo.preload(entry, :author)
             conn |> put_status(:created) |> json(%{entry: guestbook_json(entry)})
@@ -258,7 +293,9 @@ defmodule ForgeNexusWeb.ProfileController do
         conn |> json(%{top_friends: Enum.map(friends, &top_friend_json/1)})
 
       {:error, _} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update top friends"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Failed to update top friends"})
     end
   end
 
@@ -289,10 +326,14 @@ defmodule ForgeNexusWeb.ProfileController do
             conn |> json(%{summary: summary})
 
           {:error, :feature_disabled} ->
-            conn |> put_status(:service_unavailable) |> json(%{error: "AI profile summaries are disabled on this server"})
+            conn
+            |> put_status(:service_unavailable)
+            |> json(%{error: "AI profile summaries are disabled on this server"})
 
           {:error, reason} ->
-            conn |> put_status(:bad_gateway) |> json(%{error: "AI summary failed", detail: inspect(reason)})
+            conn
+            |> put_status(:bad_gateway)
+            |> json(%{error: "AI summary failed", detail: inspect(reason)})
         end
     end
   end
@@ -317,7 +358,8 @@ defmodule ForgeNexusWeb.ProfileController do
     end
   end
 
-  def pin_thread(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing thread_id"})
+  def pin_thread(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing thread_id"})
 
   # DELETE /profile/pin-thread
   def unpin_thread(conn, _params) do
@@ -363,8 +405,11 @@ defmodule ForgeNexusWeb.ProfileController do
         case %ForgeNexus.Profiles.ProfileWidget{}
              |> ForgeNexus.Profiles.ProfileWidget.changeset(attrs)
              |> ForgeNexus.Repo.insert() do
-          {:ok, w} -> conn |> put_status(:created) |> json(%{widget: widget_json(w)})
-          {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{errors: changeset_errors(cs)})
+          {:ok, w} ->
+            conn |> put_status(:created) |> json(%{widget: widget_json(w)})
+
+          {:error, cs} ->
+            conn |> put_status(:unprocessable_entity) |> json(%{errors: changeset_errors(cs)})
         end
     end
   end
@@ -378,13 +423,18 @@ defmodule ForgeNexusWeb.ProfileController do
       user ->
         case ForgeNexus.Repo.get(ForgeNexus.Profiles.ProfileWidget, id) do
           %ForgeNexus.Profiles.ProfileWidget{user_id: uid} = w when uid == user.id ->
-            attrs = (params["widget"] || params) |> Map.take(["title", "config", "position", "is_visible", "type"])
+            attrs =
+              (params["widget"] || params)
+              |> Map.take(["title", "config", "position", "is_visible", "type"])
 
             case w
                  |> ForgeNexus.Profiles.ProfileWidget.changeset(attrs)
                  |> ForgeNexus.Repo.update() do
-              {:ok, w2} -> conn |> json(%{widget: widget_json(w2)})
-              {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{errors: changeset_errors(cs)})
+              {:ok, w2} ->
+                conn |> json(%{widget: widget_json(w2)})
+
+              {:error, cs} ->
+                conn |> put_status(:unprocessable_entity) |> json(%{errors: changeset_errors(cs)})
             end
 
           %ForgeNexus.Profiles.ProfileWidget{} ->
@@ -472,7 +522,8 @@ defmodule ForgeNexusWeb.ProfileController do
       inserted_at: user.inserted_at,
       profile_views: user.profile_views,
       # Customization
-      username_color: user.username_color || (group && group.username_color) || (group && group.color),
+      username_color:
+        user.username_color || (group && group.username_color) || (group && group.color),
       username_effect: user.username_effect || (group && group.username_effect) || "none",
       custom_title: user.custom_title,
       display_title: ForgeNexus.Accounts.display_title(user),
@@ -496,7 +547,8 @@ defmodule ForgeNexusWeb.ProfileController do
       signature_html: user.signature_html,
       # Theme
       theme_id: user.theme_id,
-      theme: theme && %{id: theme.id, name: theme.name, slug: theme.slug, variables: theme.variables},
+      theme:
+        theme && %{id: theme.id, name: theme.name, slug: theme.slug, variables: theme.variables},
       color_override_accent: user.color_override_accent,
       color_override_bg_primary: user.color_override_bg_primary,
       color_override_bg_secondary: user.color_override_bg_secondary,
@@ -597,7 +649,7 @@ defmodule ForgeNexusWeb.ProfileController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

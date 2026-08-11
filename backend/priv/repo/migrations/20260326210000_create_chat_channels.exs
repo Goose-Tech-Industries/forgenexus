@@ -25,7 +25,9 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatChannels do
       add :icon, :string
       add :color, :string
       add :position, :integer, default: 0
-      add :category_id, references(:chat_channel_categories, type: :binary_id, on_delete: :nilify_all)
+
+      add :category_id,
+          references(:chat_channel_categories, type: :binary_id, on_delete: :nilify_all)
 
       # Permissions
       add :is_private, :boolean, default: false
@@ -49,7 +51,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatChannels do
     create table(:chat_messages, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :body, :text, null: false
-      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
 
       # Features
@@ -78,10 +83,16 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatChannels do
     # Per-user channel state
     create table(:chat_channel_members, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :last_read_at, :utc_datetime
-      add :last_read_message_id, references(:chat_messages, type: :binary_id, on_delete: :nilify_all)
+
+      add :last_read_message_id,
+          references(:chat_messages, type: :binary_id, on_delete: :nilify_all)
+
       add :notification_level, :string, default: "all"
       add :is_muted, :boolean, default: false
       timestamps()
@@ -94,7 +105,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatChannels do
     create table(:chat_message_reactions, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :emoji, :string, null: false
-      add :message_id, references(:chat_messages, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :message_id, references(:chat_messages, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       timestamps()
     end

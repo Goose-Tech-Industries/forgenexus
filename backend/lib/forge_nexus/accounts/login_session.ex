@@ -21,7 +21,15 @@ defmodule ForgeNexus.Accounts.LoginSession do
 
   def changeset(session, attrs) do
     session
-    |> cast(attrs, [:token_jti, :ip_address, :user_agent, :device_name, :last_active_at, :user_id, :refresh_token])
+    |> cast(attrs, [
+      :token_jti,
+      :ip_address,
+      :user_agent,
+      :device_name,
+      :last_active_at,
+      :user_id,
+      :refresh_token
+    ])
     |> validate_required([:token_jti, :user_id])
     |> unique_constraint(:token_jti)
     |> foreign_key_constraint(:user_id)
@@ -40,5 +48,6 @@ defmodule ForgeNexus.Accounts.LoginSession do
       true -> "Unknown Device"
     end
   end
+
   def parse_device_name(_), do: "Unknown Device"
 end

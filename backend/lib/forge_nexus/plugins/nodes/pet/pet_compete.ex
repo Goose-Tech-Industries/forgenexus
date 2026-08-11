@@ -22,10 +22,18 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetCompete do
 
         score =
           case competition_type do
-            "beauty" -> (pet.happiness || 0) + (pet.health || 0)
-            "strength" -> (pet.level || 0) * 10 + (pet.experience || 0)
-            "speed" -> (pet.energy || 0) + (pet.level || 0) * 5
-            _ -> (pet.level || 0) * 10 + (pet.experience || 0) + (pet.happiness || 0) + (pet.health || 0)
+            "beauty" ->
+              (pet.happiness || 0) + (pet.health || 0)
+
+            "strength" ->
+              (pet.level || 0) * 10 + (pet.experience || 0)
+
+            "speed" ->
+              (pet.energy || 0) + (pet.level || 0) * 5
+
+            _ ->
+              (pet.level || 0) * 10 + (pet.experience || 0) + (pet.happiness || 0) +
+                (pet.health || 0)
           end
 
         {:ok,
@@ -63,7 +71,13 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetCompete do
         %{name: "total_entries", type: "number"}
       ],
       config_fields: [
-        %{name: "competition_type", type: "select", options: ~w(beauty strength speed overall), default: "overall", description: "Type of competition to enter"}
+        %{
+          name: "competition_type",
+          type: "select",
+          options: ~w(beauty strength speed overall),
+          default: "overall",
+          description: "Type of competition to enter"
+        }
       ]
     }
   end

@@ -11,7 +11,8 @@ defmodule ForgeNexus.AntiSpam do
 
     case check_stopforumspam(ip, email, username) do
       {:ok, data} -> data
-      {:error, _} -> results # Fail open — don't block registration if service is down
+      # Fail open — don't block registration if service is down
+      {:error, _} -> results
     end
   end
 
@@ -20,23 +21,28 @@ defmodule ForgeNexus.AntiSpam do
   end
 
   defp check_stopforumspam(ip, email, username) do
-    params = URI.encode_query(%{
-      ip: ip,
-      email: email,
-      username: username,
-      json: "1"
-    })
+    params =
+      URI.encode_query(%{
+        ip: ip,
+        email: email,
+        username: username,
+        json: "1"
+      })
 
     case Req.get("#{@stopforumspam_url}?#{params}", receive_timeout: 5_000) do
       {:ok, %{status: 200, body: body}} when is_map(body) ->
         score = calculate_score(body)
-        {:ok, %{
-          ip: if(get_in(body, ["ip", "appears"]) == 1, do: :spam, else: :clean),
-          email: if(get_in(body, ["email", "appears"]) == 1, do: :spam, else: :clean),
-          username: if(get_in(body, ["username", "appears"]) == 1, do: :spam, else: :clean),
-          score: score
-        }}
-      _ -> {:error, :service_unavailable}
+
+        {:ok,
+         %{
+           ip: if(get_in(body, ["ip", "appears"]) == 1, do: :spam, else: :clean),
+           email: if(get_in(body, ["email", "appears"]) == 1, do: :spam, else: :clean),
+           username: if(get_in(body, ["username", "appears"]) == 1, do: :spam, else: :clean),
+           score: score
+         }}
+
+      _ ->
+        {:error, :service_unavailable}
     end
   rescue
     _ -> {:error, :service_unavailable}

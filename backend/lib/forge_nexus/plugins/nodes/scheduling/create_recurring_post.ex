@@ -17,7 +17,9 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.CreateRecurringPost do
 
     # Create a cron trigger configuration stored in flow_global_store
     # The scheduled trigger node will pick this up and create posts on schedule
-    Logger.info("[PluginFlow] scheduling/create_recurring_post: forum=#{forum_slug}, day=#{day_of_week}, time=#{time}")
+    Logger.info(
+      "[PluginFlow] scheduling/create_recurring_post: forum=#{forum_slug}, day=#{day_of_week}, time=#{time}"
+    )
 
     cron_config = %{
       forum_slug: forum_slug,
@@ -70,17 +72,34 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.CreateRecurringPost do
       type: "scheduling/create_recurring_post",
       category: "scheduling",
       label: "Create Recurring Post",
-      description: "Configures a recurring thread to be posted on a schedule (e.g. weekly discussion).",
+      description:
+        "Configures a recurring thread to be posted on a schedule (e.g. weekly discussion).",
       inputs: [],
       outputs: [
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
         %{name: "forum_slug", type: "string", default: "", description: "Forum slug to post in"},
-        %{name: "title_template", type: "string", default: "", description: "Thread title template (supports {{date}})"},
+        %{
+          name: "title_template",
+          type: "string",
+          default: "",
+          description: "Thread title template (supports {{date}})"
+        },
         %{name: "body_template", type: "text", default: "", description: "Thread body template"},
-        %{name: "day_of_week", type: "select", options: ~w(monday tuesday wednesday thursday friday saturday sunday), default: "monday", description: "Day of week to post"},
-        %{name: "time", type: "string", default: "09:00", description: "Time to post (HH:MM, 24h format)"}
+        %{
+          name: "day_of_week",
+          type: "select",
+          options: ~w(monday tuesday wednesday thursday friday saturday sunday),
+          default: "monday",
+          description: "Day of week to post"
+        },
+        %{
+          name: "time",
+          type: "string",
+          default: "09:00",
+          description: "Time to post (HH:MM, 24h format)"
+        }
       ]
     }
   end

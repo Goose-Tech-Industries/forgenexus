@@ -79,7 +79,12 @@ defmodule ForgeNexus.Plugins.Nodes.Content.CreateThreadNode do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "prefix", type: "string", default: "", description: "Thread prefix (e.g. [Discussion], [Guide])"},
+        %{
+          name: "prefix",
+          type: "string",
+          default: "",
+          description: "Thread prefix (e.g. [Discussion], [Guide])"
+        },
         %{name: "tags", type: "string", default: "", description: "Comma-separated tags to apply"}
       ]
     }

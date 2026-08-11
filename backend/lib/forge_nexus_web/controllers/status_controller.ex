@@ -21,7 +21,13 @@ defmodule ForgeNexusWeb.StatusController do
         updated_user =
           cond do
             Map.has_key?(params, "custom_text") ->
-              {:ok, u} = Accounts.set_custom_status(updated_user, params["custom_text"], params["custom_emoji"])
+              {:ok, u} =
+                Accounts.set_custom_status(
+                  updated_user,
+                  params["custom_text"],
+                  params["custom_emoji"]
+                )
+
               u
 
             Map.has_key?(params, "clear_custom") ->

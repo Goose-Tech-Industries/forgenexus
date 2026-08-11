@@ -16,13 +16,17 @@ defmodule ForgeNexus.Plugins.Nodes.Action.AwardPoints do
 
     points =
       cond do
-        is_number(points) -> trunc(points)
+        is_number(points) ->
+          trunc(points)
+
         is_binary(points) ->
           case Integer.parse(points) do
             {n, _} -> n
             :error -> 0
           end
-        true -> 0
+
+        true ->
+          0
       end
 
     {count, _} =

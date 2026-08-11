@@ -29,11 +29,13 @@ defmodule ForgeNexus.Permissions.Registry do
     {:create_poll, true, "Create Polls", "Attach polls to threads", :posting},
     {:use_reactions, true, "Use Reactions", "React to posts with emoji", :posting},
     {:rate_post, true, "Rate Posts", "Give post ratings / karma", :posting},
-    {:view_private_threads, false, "View Private Threads", "Read private threads you are invited to", :posting},
+    {:view_private_threads, false, "View Private Threads",
+     "Read private threads you are invited to", :posting},
 
     # --- Moderation ---
     {:edit_any_post, false, "Edit Any Post", "Edit posts authored by other users", :moderation},
-    {:delete_any_post, false, "Delete Any Post", "Remove posts authored by other users", :moderation},
+    {:delete_any_post, false, "Delete Any Post", "Remove posts authored by other users",
+     :moderation},
     {:lock_thread, false, "Lock Threads", "Prevent further replies in a thread", :moderation},
     {:pin_thread, false, "Pin Threads", "Sticky a thread to the top of a forum", :moderation},
     {:move_thread, false, "Move Threads", "Relocate threads between forums", :moderation},
@@ -44,15 +46,18 @@ defmodule ForgeNexus.Permissions.Registry do
     {:view_ip, false, "View IP Addresses", "See IP addresses in logs / profiles", :moderation},
 
     # --- Administration ---
-    {:manage_forums, false, "Manage Forums", "Create, edit and delete forum categories", :administration},
+    {:manage_forums, false, "Manage Forums", "Create, edit and delete forum categories",
+     :administration},
     {:manage_users, false, "Manage Users", "Edit users, groups and permissions", :administration},
     {:manage_webhooks, false, "Manage Webhooks", "Configure outbound webhooks", :administration},
     {:manage_settings, false, "Manage Settings", "Change site configuration", :administration},
     {:access_admin, false, "Access Admin Panel", "Open the admin control panel", :administration},
-    {:impersonate_user, false, "Impersonate Users", "Log in as another user for support", :administration},
+    {:impersonate_user, false, "Impersonate Users", "Log in as another user for support",
+     :administration},
 
     # --- Profile ---
-    {:customize_profile, true, "Customize Profile", "Edit avatar, bio and profile fields", :profile},
+    {:customize_profile, true, "Customize Profile", "Edit avatar, bio and profile fields",
+     :profile},
     {:use_signature, true, "Use Signature", "Display a signature below posts", :profile},
     {:change_username, false, "Change Username", "Rename your own account", :profile},
 
@@ -62,7 +67,8 @@ defmodule ForgeNexus.Permissions.Registry do
 
     # --- Creator ---
     {:monetize_content, false, "Monetize Content", "Gate content behind paid tiers", :creator},
-    {:create_subscription_tier, false, "Create Subscription Tiers", "Define paid subscription tiers", :creator}
+    {:create_subscription_tier, false, "Create Subscription Tiers",
+     "Define paid subscription tiers", :creator}
   ]
 
   @doc "All permission keys as atoms, in registration order."
@@ -97,8 +103,11 @@ defmodule ForgeNexus.Permissions.Registry do
   """
   def describe(key) when is_atom(key) do
     case Enum.find(@permissions, fn {k, _, _, _, _} -> k == key end) do
-      nil -> :error
-      {_k, _d, label, description, category} -> %{label: label, description: description, category: category}
+      nil ->
+        :error
+
+      {_k, _d, label, description, category} ->
+        %{label: label, description: description, category: category}
     end
   end
 

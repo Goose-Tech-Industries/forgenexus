@@ -7,32 +7,38 @@ defmodule ForgeNexusWeb.BookmarkController do
     user = Guardian.Plug.current_resource(conn)
     bookmarks = Channels.list_bookmarks(user.id)
 
-    conn |> json(%{
-      bookmarks: Enum.map(bookmarks, fn b ->
-        msg = b.message
-        user_data = msg.user
-        group = user_data && user_data.primary_group
+    conn
+    |> json(%{
+      bookmarks:
+        Enum.map(bookmarks, fn b ->
+          msg = b.message
+          user_data = msg.user
+          group = user_data && user_data.primary_group
 
-        %{
-          id: b.id,
-          note: b.note,
-          bookmarked_at: b.inserted_at,
-          message: %{
-            id: msg.id,
-            body: msg.body,
-            channel_id: msg.channel_id,
-            channel_name: msg.channel && msg.channel.name,
-            channel_slug: msg.channel && msg.channel.slug,
-            user: user_data && %{
-              id: user_data.id,
-              username: user_data.username,
-              avatar_url: user_data.avatar_url,
-              username_color: user_data.username_color || (group && group.username_color) || (group && group.color)
-            },
-            inserted_at: msg.inserted_at
+          %{
+            id: b.id,
+            note: b.note,
+            bookmarked_at: b.inserted_at,
+            message: %{
+              id: msg.id,
+              body: msg.body,
+              channel_id: msg.channel_id,
+              channel_name: msg.channel && msg.channel.name,
+              channel_slug: msg.channel && msg.channel.slug,
+              user:
+                user_data &&
+                  %{
+                    id: user_data.id,
+                    username: user_data.username,
+                    avatar_url: user_data.avatar_url,
+                    username_color:
+                      user_data.username_color || (group && group.username_color) ||
+                        (group && group.color)
+                  },
+              inserted_at: msg.inserted_at
+            }
           }
-        }
-      end)
+        end)
     })
   end
 

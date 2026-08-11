@@ -22,7 +22,17 @@ defmodule ForgeNexus.Subscriptions.UserSubscription do
 
   def changeset(subscription, attrs) do
     subscription
-    |> cast(attrs, [:user_id, :tier_id, :status, :started_at, :expires_at, :cancelled_at, :paused_until, :payment_method, :external_id])
+    |> cast(attrs, [
+      :user_id,
+      :tier_id,
+      :status,
+      :started_at,
+      :expires_at,
+      :cancelled_at,
+      :paused_until,
+      :payment_method,
+      :external_id
+    ])
     |> validate_required([:user_id, :tier_id, :status])
     |> validate_inclusion(:status, ["active", "cancelled", "expired", "trial", "paused"])
     |> foreign_key_constraint(:user_id)

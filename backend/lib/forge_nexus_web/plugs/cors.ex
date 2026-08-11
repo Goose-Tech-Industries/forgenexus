@@ -46,7 +46,10 @@ defmodule ForgeNexusWeb.Plugs.CORS do
     |> put_resp_header("access-control-allow-origin", origin || "*")
     |> put_resp_header("access-control-allow-credentials", "true")
     |> put_resp_header("access-control-allow-methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-    |> put_resp_header("access-control-allow-headers", "content-type, authorization, accept, x-fn-ratelimit-bypass")
+    |> put_resp_header(
+      "access-control-allow-headers",
+      "content-type, authorization, accept, x-fn-ratelimit-bypass"
+    )
     |> put_resp_header("access-control-max-age", "86400")
   end
 end

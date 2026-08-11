@@ -21,9 +21,21 @@ defmodule ForgeNexusWeb.EconomyController do
 
   defp do_history(conn, user) do
     txs = Economy.transaction_history(user.id)
-    conn |> json(%{transactions: Enum.map(txs, fn t ->
-      %{id: t.id, amount: t.amount, balance_after: t.balance_after, reason: t.reason, description: t.description, inserted_at: t.inserted_at}
-    end)})
+
+    conn
+    |> json(%{
+      transactions:
+        Enum.map(txs, fn t ->
+          %{
+            id: t.id,
+            amount: t.amount,
+            balance_after: t.balance_after,
+            reason: t.reason,
+            description: t.description,
+            inserted_at: t.inserted_at
+          }
+        end)
+    })
   end
 
   def leaderboard(conn, _params) do
@@ -46,10 +58,16 @@ defmodule ForgeNexusWeb.EconomyController do
     amount = if is_binary(amount), do: safe_to_integer(amount, 0), else: amount
 
     if is_integer(amount) and amount > 0 do
-      Economy.award_points(user_id, "admin_grant", amount: amount, description: params["description"] || "Admin grant")
+      Economy.award_points(user_id, "admin_grant",
+        amount: amount,
+        description: params["description"] || "Admin grant"
+      )
+
       conn |> json(%{ok: true})
     else
-      conn |> put_status(:unprocessable_entity) |> json(%{error: "Amount must be a positive integer"})
+      conn
+      |> put_status(:unprocessable_entity)
+      |> json(%{error: "Amount must be a positive integer"})
     end
   end
 
@@ -70,9 +88,13 @@ defmodule ForgeNexusWeb.EconomyController do
 
       true ->
         Economy.deduct_points(user.id, amount, "tip_sent",
-          description: "Tip to user #{to_id}" <> if(message, do: ": #{message}", else: ""))
+          description: "Tip to user #{to_id}" <> if(message, do: ": #{message}", else: "")
+        )
+
         Economy.award_points(to_id, "tip_received",
-          amount: amount, description: "Tip from #{user.username}" <> if(message, do: ": #{message}", else: ""))
+          amount: amount,
+          description: "Tip from #{user.username}" <> if(message, do: ": #{message}", else: "")
+        )
 
         ForgeNexusWeb.Endpoint.broadcast("user:#{to_id}", "tip_received", %{
           from_id: user.id,
@@ -91,7 +113,7 @@ defmodule ForgeNexusWeb.EconomyController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

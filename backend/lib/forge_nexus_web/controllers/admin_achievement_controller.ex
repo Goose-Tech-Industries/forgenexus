@@ -23,7 +23,8 @@ defmodule ForgeNexusWeb.AdminAchievementController do
       a ->
         conn
         |> json(%{
-          achievement: a |> achievement_json() |> Map.put(:unlock_count, Achievements.unlock_count(a.id))
+          achievement:
+            a |> achievement_json() |> Map.put(:unlock_count, Achievements.unlock_count(a.id))
         })
     end
   end
@@ -57,24 +58,37 @@ defmodule ForgeNexusWeb.AdminAchievementController do
 
   def delete(conn, %{"id" => id}) do
     case Achievements.delete_achievement(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Achievement not found"})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Achievement not found"})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
   def grant(conn, %{"id" => achievement_id, "user_id" => user_id}) do
     case Achievements.unlock_achievement(user_id, achievement_id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :already_unlocked} -> conn |> put_status(:conflict) |> json(%{error: "User already has this achievement"})
-      {:error, reason} -> conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :already_unlocked} ->
+        conn |> put_status(:conflict) |> json(%{error: "User already has this achievement"})
+
+      {:error, reason} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
     end
   end
 
   def revoke(conn, %{"id" => achievement_id, "user_id" => user_id}) do
     case Achievements.revoke_user_achievement(user_id, achievement_id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "User does not have this achievement"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "User does not have this achievement"})
     end
   end
 
@@ -91,10 +105,17 @@ defmodule ForgeNexusWeb.AdminAchievementController do
 
           user_id ->
             case do_bulk_action(action, user_id, achievement_id) do
-              {:ok, _} -> %{target: target, user_id: user_id, status: "ok"}
-              {:error, :already_unlocked} -> %{target: target, user_id: user_id, status: "skipped", reason: "already_unlocked"}
-              {:error, :not_found} -> %{target: target, user_id: user_id, status: "skipped", reason: "not_unlocked"}
-              {:error, reason} -> %{target: target, user_id: user_id, status: "error", reason: inspect(reason)}
+              {:ok, _} ->
+                %{target: target, user_id: user_id, status: "ok"}
+
+              {:error, :already_unlocked} ->
+                %{target: target, user_id: user_id, status: "skipped", reason: "already_unlocked"}
+
+              {:error, :not_found} ->
+                %{target: target, user_id: user_id, status: "skipped", reason: "not_unlocked"}
+
+              {:error, reason} ->
+                %{target: target, user_id: user_id, status: "error", reason: inspect(reason)}
             end
         end
       end)
@@ -111,7 +132,9 @@ defmodule ForgeNexusWeb.AdminAchievementController do
   end
 
   def bulk(conn, _params) do
-    conn |> put_status(:bad_request) |> json(%{error: "Invalid bulk request. Expected action (grant/revoke) and targets array."})
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Invalid bulk request. Expected action (grant/revoke) and targets array."})
   end
 
   defp do_bulk_action("grant", user_id, achievement_id),

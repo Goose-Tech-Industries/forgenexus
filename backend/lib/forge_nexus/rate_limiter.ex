@@ -31,10 +31,11 @@ defmodule ForgeNexus.RateLimiter do
 
     key = {user_id, action}
 
-    entries = case :ets.lookup(@table, key) do
-      [{^key, timestamps}] -> timestamps
-      [] -> []
-    end
+    entries =
+      case :ets.lookup(@table, key) do
+        [{^key, timestamps}] -> timestamps
+        [] -> []
+      end
 
     # Count entries within the window
     recent = Enum.filter(entries, fn ts -> ts > cutoff end)
@@ -56,10 +57,11 @@ defmodule ForgeNexus.RateLimiter do
 
     key = {user_id, action}
 
-    existing = case :ets.lookup(@table, key) do
-      [{^key, timestamps}] -> timestamps
-      [] -> []
-    end
+    existing =
+      case :ets.lookup(@table, key) do
+        [{^key, timestamps}] -> timestamps
+        [] -> []
+      end
 
     # Prune old entries and add new one
     updated = [now | Enum.filter(existing, fn ts -> ts > cutoff end)]
@@ -88,6 +90,7 @@ defmodule ForgeNexus.RateLimiter do
     |> :ets.tab2list()
     |> Enum.each(fn {key, timestamps} ->
       pruned = Enum.filter(timestamps, fn ts -> ts > cutoff end)
+
       if pruned == [] do
         :ets.delete(@table, key)
       else

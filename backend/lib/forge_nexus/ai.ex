@@ -3,7 +3,19 @@ defmodule ForgeNexus.AI do
 
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.AI.{Provider, FeatureSetting, UsageLog, ModerationAnalysis, ThreadSummary, TagSuggestion, PostSentiment, CommunitySentiment, PostTranslation}
+
+  alias ForgeNexus.AI.{
+    Provider,
+    FeatureSetting,
+    UsageLog,
+    ModerationAnalysis,
+    ThreadSummary,
+    TagSuggestion,
+    PostSentiment,
+    CommunitySentiment,
+    PostTranslation
+  }
+
   alias ForgeNexus.Settings
 
   # --- Feature check ---
@@ -43,7 +55,9 @@ defmodule ForgeNexus.AI do
           nil -> get_default_provider()
           provider -> {:ok, provider}
         end
-      _ -> get_default_provider()
+
+      _ ->
+        get_default_provider()
     end
   end
 
@@ -66,6 +80,7 @@ defmodule ForgeNexus.AI do
         %FeatureSetting{}
         |> FeatureSetting.changeset(Map.put(attrs, :feature, to_string(feature)))
         |> Repo.insert()
+
       setting ->
         setting |> FeatureSetting.changeset(attrs) |> Repo.update()
     end
@@ -113,10 +128,16 @@ defmodule ForgeNexus.AI do
 
   def record_mod_decision(analysis_id, mod_id, decision) do
     case Repo.get(ModerationAnalysis, analysis_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       analysis ->
         analysis
-        |> ModerationAnalysis.changeset(%{mod_id: mod_id, mod_decision: decision, was_accepted: decision == analysis.suggested_action})
+        |> ModerationAnalysis.changeset(%{
+          mod_id: mod_id,
+          mod_decision: decision,
+          was_accepted: decision == analysis.suggested_action
+        })
         |> Repo.update()
     end
   end
@@ -148,6 +169,7 @@ defmodule ForgeNexus.AI do
         %ThreadSummary{}
         |> ThreadSummary.changeset(Map.put(attrs, :thread_id, thread_id))
         |> Repo.insert()
+
       summary ->
         summary |> ThreadSummary.changeset(attrs) |> Repo.update()
     end
@@ -173,6 +195,7 @@ defmodule ForgeNexus.AI do
         %PostSentiment{}
         |> PostSentiment.changeset(Map.merge(attrs, %{post_id: post_id}))
         |> Repo.insert()
+
       sentiment ->
         sentiment |> PostSentiment.changeset(attrs) |> Repo.update()
     end
@@ -186,7 +209,11 @@ defmodule ForgeNexus.AI do
       group_by: ps.thread_id,
       having: avg(ps.sentiment) < ^threshold,
       having: count(ps.id) >= 3,
-      select: %{thread_id: ps.thread_id, avg_sentiment: avg(ps.sentiment), post_count: count(ps.id)},
+      select: %{
+        thread_id: ps.thread_id,
+        avg_sentiment: avg(ps.sentiment),
+        post_count: count(ps.id)
+      },
       order_by: [asc: avg(ps.sentiment)],
       limit: ^limit
     )
@@ -195,6 +222,7 @@ defmodule ForgeNexus.AI do
 
   def daily_sentiment(days \\ 30) do
     since = Date.utc_today() |> Date.add(-days)
+
     from(cs in CommunitySentiment, where: cs.date >= ^since, order_by: cs.date)
     |> Repo.all()
   end

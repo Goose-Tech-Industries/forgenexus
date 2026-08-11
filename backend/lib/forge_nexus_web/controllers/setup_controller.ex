@@ -37,14 +37,19 @@ defmodule ForgeNexusWeb.SetupController do
     else
       cond do
         upload.content_type not in @allowed_logo_types ->
-          conn |> put_status(:unprocessable_entity) |> json(%{error: "Invalid file type. Allowed: JPG, PNG, GIF, WebP, SVG"})
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: "Invalid file type. Allowed: JPG, PNG, GIF, WebP, SVG"})
 
         File.stat!(upload.path).size > @max_logo_size ->
           conn |> put_status(:unprocessable_entity) |> json(%{error: "File too large (max 2MB)"})
 
         true ->
           ext = Path.extname(upload.filename)
-          filename = "site-logo-#{:crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)}#{ext}"
+
+          filename =
+            "site-logo-#{:crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)}#{ext}"
+
           dir = Path.join(@upload_dir, "branding")
           File.mkdir_p!(dir)
           dest = Path.join(dir, filename)

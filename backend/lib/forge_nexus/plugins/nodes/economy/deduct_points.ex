@@ -66,7 +66,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.DeductPoints do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"},
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        },
         %{name: "reason", type: "string", default: "", description: "Reason for the deduction"}
       ]
     }

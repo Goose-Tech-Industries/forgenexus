@@ -17,17 +17,33 @@ defmodule ForgeNexusWeb.EventController do
   def show(conn, %{"id" => id}) do
     event = Events.get_event!(id)
     counts = Events.rsvp_counts(id)
-    conn |> json(%{event: event_json(event), rsvp_counts: counts, attendees: Enum.map(event.rsvps, fn r ->
-      %{user_id: r.user_id, username: r.user.username, avatar_url: r.user.avatar_url, status: r.status}
-    end)})
+
+    conn
+    |> json(%{
+      event: event_json(event),
+      rsvp_counts: counts,
+      attendees:
+        Enum.map(event.rsvps, fn r ->
+          %{
+            user_id: r.user_id,
+            username: r.user.username,
+            avatar_url: r.user.avatar_url,
+            status: r.status
+          }
+        end)
+    })
   end
 
   def create(conn, params) do
     user = Guardian.Plug.current_resource(conn)
     attrs = Map.put(params, "created_by_id", user.id)
+
     case Events.create_event(attrs) do
-      {:ok, event} -> conn |> put_status(:created) |> json(%{event: event_json(event)})
-      {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
+      {:ok, event} ->
+        conn |> put_status(:created) |> json(%{event: event_json(event)})
+
+      {:error, cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
     end
   end
 
@@ -73,13 +89,24 @@ defmodule ForgeNexusWeb.EventController do
   end
 
   defp event_json(e) do
-    %{id: e.id, title: e.title, description: e.description, location: e.location,
-      event_type: e.event_type, starts_at: e.starts_at, ends_at: e.ends_at,
-      is_all_day: e.is_all_day, is_recurring: e.is_recurring, recurrence_rule: e.recurrence_rule,
-      color: e.color, max_attendees: e.max_attendees, is_published: e.is_published,
+    %{
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      location: e.location,
+      event_type: e.event_type,
+      starts_at: e.starts_at,
+      ends_at: e.ends_at,
+      is_all_day: e.is_all_day,
+      is_recurring: e.is_recurring,
+      recurrence_rule: e.recurrence_rule,
+      color: e.color,
+      max_attendees: e.max_attendees,
+      is_published: e.is_published,
       is_cancelled: e.is_cancelled,
       created_by: e.created_by && %{id: e.created_by.id, username: e.created_by.username},
-      inserted_at: e.inserted_at}
+      inserted_at: e.inserted_at
+    }
   end
 
   defp format_errors(cs), do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)
@@ -90,7 +117,7 @@ defmodule ForgeNexusWeb.EventController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

@@ -30,7 +30,10 @@ defmodule ForgeNexus.Social do
         {:error, :not_found}
 
       true ->
-        case Repo.get_by(ForgeNexus.Social.StatusPostLike, status_post_id: post_id, user_id: user_id) do
+        case Repo.get_by(ForgeNexus.Social.StatusPostLike,
+               status_post_id: post_id,
+               user_id: user_id
+             ) do
           nil ->
             %ForgeNexus.Social.StatusPostLike{}
             |> Ecto.Changeset.change(%{status_post_id: post_id, user_id: user_id})
@@ -120,12 +123,13 @@ defmodule ForgeNexus.Social do
     limit = Keyword.get(opts, :limit, 30)
     unread_only = Keyword.get(opts, :unread_only, false)
 
-    query = from(p in Poke,
-      where: p.recipient_id == ^user_id,
-      order_by: [desc: :inserted_at],
-      limit: ^limit,
-      preload: [:sender]
-    )
+    query =
+      from(p in Poke,
+        where: p.recipient_id == ^user_id,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        preload: [:sender]
+      )
 
     query = if unread_only, do: where(query, [p], p.is_read == false), else: query
     Repo.all(query)
@@ -192,7 +196,11 @@ defmodule ForgeNexus.Social do
     end
     |> case do
       {:ok, premium} ->
-        ForgeNexus.Accounts.update_user_fields(user_id, %{is_premium: true, premium_until: expires})
+        ForgeNexus.Accounts.update_user_fields(user_id, %{
+          is_premium: true,
+          premium_until: expires
+        })
+
         {:ok, premium}
 
       error ->
@@ -202,7 +210,9 @@ defmodule ForgeNexus.Social do
 
   def cancel_premium(user_id) do
     case get_premium(user_id) do
-      nil -> {:error, :not_premium}
+      nil ->
+        {:error, :not_premium}
+
       premium ->
         premium |> UserPremium.changeset(%{status: "cancelled"}) |> Repo.update()
         ForgeNexus.Accounts.update_user_fields(user_id, %{is_premium: false})
@@ -217,11 +227,12 @@ defmodule ForgeNexus.Social do
     category = Keyword.get(opts, :category)
     tag = Keyword.get(opts, :tag)
 
-    query = from(c in ForgeNexus.Communities.Community,
-      where: c.is_active == true and c.is_discoverable == true,
-      order_by: [desc: :activity_score, desc: :member_count],
-      limit: ^limit
-    )
+    query =
+      from(c in ForgeNexus.Communities.Community,
+        where: c.is_active == true and c.is_discoverable == true,
+        order_by: [desc: :activity_score, desc: :member_count],
+        limit: ^limit
+      )
 
     query = if category, do: where(query, [c], c.category == ^category), else: query
     query = if tag, do: where(query, [c], ^tag in c.tags), else: query
@@ -234,8 +245,11 @@ defmodule ForgeNexus.Social do
   def suggested_members(community_id, user_id, limit \\ 10) do
     user_categories =
       from(t in "threads",
-        join: f in "forums", on: f.id == t.forum_id,
-        where: t.user_id == type(^user_id, :binary_id) and t.community_id == type(^community_id, :binary_id),
+        join: f in "forums",
+        on: f.id == t.forum_id,
+        where:
+          t.user_id == type(^user_id, :binary_id) and
+            t.community_id == type(^community_id, :binary_id),
         select: f.category_id,
         distinct: true
       )
@@ -243,21 +257,36 @@ defmodule ForgeNexus.Social do
 
     if user_categories == [] do
       from(u in "users",
-        where: u.community_id == type(^community_id, :binary_id) and u.id != type(^user_id, :binary_id),
+        where:
+          u.community_id == type(^community_id, :binary_id) and u.id != type(^user_id, :binary_id),
         order_by: fragment("RANDOM()"),
         limit: ^limit,
-        select: %{id: type(u.id, :binary_id), username: u.username, avatar_url: u.avatar_url, bio: u.bio}
+        select: %{
+          id: type(u.id, :binary_id),
+          username: u.username,
+          avatar_url: u.avatar_url,
+          bio: u.bio
+        }
       )
       |> Repo.all()
     else
       from(u in "users",
-        join: t in "threads", on: t.user_id == u.id,
-        join: f in "forums", on: f.id == t.forum_id,
-        where: u.community_id == type(^community_id, :binary_id) and u.id != type(^user_id, :binary_id) and f.category_id in ^user_categories,
+        join: t in "threads",
+        on: t.user_id == u.id,
+        join: f in "forums",
+        on: f.id == t.forum_id,
+        where:
+          u.community_id == type(^community_id, :binary_id) and u.id != type(^user_id, :binary_id) and
+            f.category_id in ^user_categories,
         group_by: [u.id, u.username, u.avatar_url, u.bio],
         order_by: [desc: count(t.id)],
         limit: ^limit,
-        select: %{id: type(u.id, :binary_id), username: u.username, avatar_url: u.avatar_url, bio: u.bio}
+        select: %{
+          id: type(u.id, :binary_id),
+          username: u.username,
+          avatar_url: u.avatar_url,
+          bio: u.bio
+        }
       )
       |> Repo.all()
     end

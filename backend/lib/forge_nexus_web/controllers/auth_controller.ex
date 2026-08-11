@@ -153,14 +153,17 @@ defmodule ForgeNexusWeb.AuthController do
         conn |> put_status(:not_found) |> json(%{error: "Invalid verification token"})
 
       {:error, :already_used} ->
-        conn |> put_status(:gone) |> json(%{error: "This verification link has already been used"})
+        conn
+        |> put_status(:gone)
+        |> json(%{error: "This verification link has already been used"})
 
       {:error, :expired} ->
         conn |> put_status(:gone) |> json(%{error: "This verification link has expired"})
     end
   end
 
-  def verify_email(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing token"})
+  def verify_email(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing token"})
 
   def forgot_password(conn, %{"email" => email}) when is_binary(email) and byte_size(email) > 0 do
     # Always respond 200 regardless — never leak whether an email exists.
@@ -173,7 +176,8 @@ defmodule ForgeNexusWeb.AuthController do
     conn |> json(%{ok: true})
   end
 
-  def forgot_password(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing email"})
+  def forgot_password(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing email"})
 
   def reset_password(conn, %{"token" => token, "password" => new_password})
       when is_binary(token) and byte_size(token) > 0 and is_binary(new_password) do
@@ -195,7 +199,8 @@ defmodule ForgeNexusWeb.AuthController do
     end
   end
 
-  def reset_password(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing token or password"})
+  def reset_password(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing token or password"})
 
   def request_email_change(conn, %{"new_email" => new_email, "password" => password})
       when is_binary(new_email) and is_binary(password) do
@@ -210,7 +215,9 @@ defmodule ForgeNexusWeb.AuthController do
             conn |> put_status(:unauthorized) |> json(%{error: "Password incorrect"})
 
           String.downcase(new_email) == String.downcase(user.email) ->
-            conn |> put_status(:unprocessable_entity) |> json(%{error: "New email must differ from current email"})
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "New email must differ from current email"})
 
           Accounts.get_user_by_email(new_email) != nil ->
             # Don't leak whether that email is already taken — pretend we queued it.
@@ -226,9 +233,11 @@ defmodule ForgeNexusWeb.AuthController do
     end
   end
 
-  def request_email_change(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing new_email or password"})
+  def request_email_change(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing new_email or password"})
 
-  def confirm_email_change(conn, %{"token" => token}) when is_binary(token) and byte_size(token) > 0 do
+  def confirm_email_change(conn, %{"token" => token})
+      when is_binary(token) and byte_size(token) > 0 do
     case Accounts.consume_email_change_token(token) do
       {:ok, user} ->
         conn |> json(%{ok: true, user: user_json(user)})
@@ -237,7 +246,9 @@ defmodule ForgeNexusWeb.AuthController do
         conn |> put_status(:not_found) |> json(%{error: "Invalid confirmation token"})
 
       {:error, :already_used} ->
-        conn |> put_status(:gone) |> json(%{error: "This confirmation link has already been used"})
+        conn
+        |> put_status(:gone)
+        |> json(%{error: "This confirmation link has already been used"})
 
       {:error, :expired} ->
         conn |> put_status(:gone) |> json(%{error: "This confirmation link has expired"})
@@ -247,7 +258,8 @@ defmodule ForgeNexusWeb.AuthController do
     end
   end
 
-  def confirm_email_change(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing token"})
+  def confirm_email_change(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing token"})
 
   def resend_verification(conn, _params) do
     case Guardian.Plug.current_resource(conn) do

@@ -26,18 +26,19 @@ defmodule ForgeNexus.Workers.ScheduledPostPublisher do
       Phoenix.PubSub.broadcast(
         ForgeNexus.PubSub,
         "forum:#{thread.forum_id}",
-        {:new_thread, %{
-          id: thread.id,
-          title: thread.title,
-          slug: thread.slug,
-          forum_id: thread.forum_id,
-          user: %{
-            id: thread.user.id,
-            username: thread.user.username,
-            slug: thread.user.slug,
-            avatar_url: thread.user.avatar_url
-          }
-        }}
+        {:new_thread,
+         %{
+           id: thread.id,
+           title: thread.title,
+           slug: thread.slug,
+           forum_id: thread.forum_id,
+           user: %{
+             id: thread.user.id,
+             username: thread.user.username,
+             slug: thread.user.slug,
+             avatar_url: thread.user.avatar_url
+           }
+         }}
       )
     end
 

@@ -12,6 +12,7 @@ defmodule ForgeNexusWeb.AdminBBCodeController do
     case Forums.create_custom_bbcode(attrs) do
       {:ok, bbcode} ->
         conn |> put_status(:created) |> json(%{bbcode: bbcode_json(bbcode)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
     end
@@ -19,13 +20,17 @@ defmodule ForgeNexusWeb.AdminBBCodeController do
 
   def update(conn, %{"id" => id} = params) do
     attrs = Map.get(params, "bbcode", params)
+
     case Forums.update_custom_bbcode(id, attrs) do
       {:ok, bbcode} ->
         conn |> json(%{bbcode: bbcode_json(bbcode)})
+
       {:error, :not_found} ->
         conn |> put_status(:not_found) |> json(%{error: "BBCode not found"})
+
       {:error, %Ecto.Changeset{} = changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
+
       {:error, reason} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
     end
@@ -33,9 +38,14 @@ defmodule ForgeNexusWeb.AdminBBCodeController do
 
   def delete(conn, %{"id" => id}) do
     case Forums.delete_custom_bbcode(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "BBCode not found"})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "BBCode not found"})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 

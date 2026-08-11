@@ -29,7 +29,16 @@ defmodule ForgeNexus.Forums.Post do
 
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:body, :body_html, :ip_address, :thread_id, :user_id, :reply_to_id, :position, :is_first_post])
+    |> cast(attrs, [
+      :body,
+      :body_html,
+      :ip_address,
+      :thread_id,
+      :user_id,
+      :reply_to_id,
+      :position,
+      :is_first_post
+    ])
     |> validate_required([:body, :thread_id, :user_id])
     |> validate_length(:body, min: 1, max: 50_000)
     |> foreign_key_constraint(:thread_id)

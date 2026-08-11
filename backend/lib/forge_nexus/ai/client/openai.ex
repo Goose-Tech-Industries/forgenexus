@@ -13,17 +13,19 @@ defmodule ForgeNexus.AI.Client.OpenAI do
     }
 
     case Req.post("https://api.openai.com/v1/chat/completions",
-      json: body,
-      headers: [{"Authorization", "Bearer #{provider.api_key_encrypted}"}],
-      receive_timeout: 60_000
-    ) do
+           json: body,
+           headers: [{"Authorization", "Bearer #{provider.api_key_encrypted}"}],
+           receive_timeout: 60_000
+         ) do
       {:ok, %{status: 200, body: body}} ->
         choice = List.first(body["choices"])
-        {:ok, %{
-          content: choice["message"]["content"],
-          input_tokens: body["usage"]["prompt_tokens"],
-          output_tokens: body["usage"]["completion_tokens"]
-        }}
+
+        {:ok,
+         %{
+           content: choice["message"]["content"],
+           input_tokens: body["usage"]["prompt_tokens"],
+           output_tokens: body["usage"]["completion_tokens"]
+         }}
 
       {:ok, %{status: status, body: body}} ->
         {:error, "OpenAI API error #{status}: #{inspect(body)}"}
@@ -37,10 +39,10 @@ defmodule ForgeNexus.AI.Client.OpenAI do
     model = Keyword.get(opts, :model, "text-embedding-3-small")
 
     case Req.post("https://api.openai.com/v1/embeddings",
-      json: %{model: model, input: text},
-      headers: [{"Authorization", "Bearer #{provider.api_key_encrypted}"}],
-      receive_timeout: 30_000
-    ) do
+           json: %{model: model, input: text},
+           headers: [{"Authorization", "Bearer #{provider.api_key_encrypted}"}],
+           receive_timeout: 30_000
+         ) do
       {:ok, %{status: 200, body: body}} ->
         embedding = body["data"] |> List.first() |> Map.get("embedding")
         {:ok, embedding}

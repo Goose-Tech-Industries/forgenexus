@@ -68,7 +68,12 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.AssignOnboardingChecklist do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "tasks", type: "json", default: [], description: "JSON list of {key, label} task objects"}
+        %{
+          name: "tasks",
+          type: "json",
+          default: [],
+          description: "JSON list of {key, label} task objects"
+        }
       ]
     }
   end

@@ -49,7 +49,12 @@ defmodule ForgeNexus.Plugins.Nodes.Moderation.IpBan do
       ],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "duration_hours", type: "number", default: 0, description: "Ban duration in hours (0 = permanent)"}
+        %{
+          name: "duration_hours",
+          type: "number",
+          default: 0,
+          description: "Ban duration in hours (0 = permanent)"
+        }
       ]
     }
   end

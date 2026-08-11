@@ -19,7 +19,15 @@ defmodule ForgeNexus.Applications.StaffApplication do
 
   def changeset(app, attrs) do
     app
-    |> cast(attrs, [:form_id, :user_id, :answers, :status, :reviewer_id, :review_note, :reviewed_at])
+    |> cast(attrs, [
+      :form_id,
+      :user_id,
+      :answers,
+      :status,
+      :reviewer_id,
+      :review_note,
+      :reviewed_at
+    ])
     |> validate_required([:form_id, :user_id, :answers])
     |> validate_inclusion(:status, ~w(pending under_review accepted denied))
   end

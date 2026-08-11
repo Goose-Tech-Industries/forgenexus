@@ -86,7 +86,11 @@ defmodule ForgeNexusWeb.ChatChannel do
 
   # Emoji reaction on a message
   @impl true
-  def handle_in("reaction", %{"message_id" => message_id, "emoji" => emoji, "action" => action}, socket) do
+  def handle_in(
+        "reaction",
+        %{"message_id" => message_id, "emoji" => emoji, "action" => action},
+        socket
+      ) do
     result =
       case action do
         "add" -> Channels.add_reaction(message_id, socket.assigns.current_user.id, emoji)
@@ -98,10 +102,12 @@ defmodule ForgeNexusWeb.ChatChannel do
       {:ok, _} ->
         # Re-read aggregated reactions and broadcast.
         reactions = Channels.get_reactions(message_id)
+
         broadcast!(socket, "reaction_update", %{
           message_id: message_id,
           reactions: reactions
         })
+
         {:reply, {:ok, %{}}, socket}
 
       {:error, reason} ->
@@ -171,7 +177,11 @@ defmodule ForgeNexusWeb.ChatChannel do
   @impl true
   def handle_in(event, payload, socket) do
     require Logger
-    Logger.warning("[ChatChannel] unhandled or malformed event #{inspect(event)} payload=#{inspect(payload)}")
+
+    Logger.warning(
+      "[ChatChannel] unhandled or malformed event #{inspect(event)} payload=#{inspect(payload)}"
+    )
+
     {:reply, {:error, %{reason: "unknown or malformed event", event: event}}, socket}
   end
 

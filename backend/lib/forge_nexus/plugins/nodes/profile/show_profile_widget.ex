@@ -86,8 +86,20 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.ShowProfileWidget do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "widget_type", type: "select", options: ~w(stats inventory badges pets achievements), default: "stats", description: "Type of widget to display"},
-        %{name: "position", type: "select", options: ~w(sidebar below_avatar below_posts), default: "sidebar", description: "Where to place the widget on the profile"}
+        %{
+          name: "widget_type",
+          type: "select",
+          options: ~w(stats inventory badges pets achievements),
+          default: "stats",
+          description: "Type of widget to display"
+        },
+        %{
+          name: "position",
+          type: "select",
+          options: ~w(sidebar below_avatar below_posts),
+          default: "sidebar",
+          description: "Where to place the widget on the profile"
+        }
       ]
     }
   end

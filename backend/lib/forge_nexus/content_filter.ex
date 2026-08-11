@@ -43,9 +43,10 @@ defmodule ForgeNexus.ContentFilter do
   defp check_banned_words(body) do
     lower_body = String.downcase(body)
 
-    found = Enum.find(@banned_words, fn word ->
-      String.contains?(lower_body, word)
-    end)
+    found =
+      Enum.find(@banned_words, fn word ->
+        String.contains?(lower_body, word)
+      end)
 
     if found do
       {:error, "Your post contains prohibited content"}
@@ -62,8 +63,8 @@ defmodule ForgeNexus.ContentFilter do
       from(p in Post,
         where:
           p.user_id == ^user_id and
-          p.body == ^body_trimmed and
-          p.inserted_at >= ^cutoff,
+            p.body == ^body_trimmed and
+            p.inserted_at >= ^cutoff,
         select: count(p.id)
       )
       |> Repo.one()

@@ -16,22 +16,28 @@ defmodule ForgeNexusWeb.BackupController do
     db_host = db_config[:hostname] || "localhost"
 
     case System.cmd("pg_dump", ["-h", db_host, "-U", db_user, "-Fc", db_name, "-f", path],
-      env: [{"PGPASSWORD", db_config[:password] || ""}],
-      stderr_to_stdout: true
-    ) do
+           env: [{"PGPASSWORD", db_config[:password] || ""}],
+           stderr_to_stdout: true
+         ) do
       {_, 0} ->
         %{size: size} = File.stat!(path)
+
         ForgeNexus.Admin.log_admin_action(admin.id, %{
-          action: "backup_created", category: "maintenance",
+          action: "backup_created",
+          category: "maintenance",
           description: "Database backup: #{filename} (#{div(size, 1024)}KB)"
         })
+
         conn |> json(%{ok: true, filename: filename, size: size})
 
       {output, _} ->
         conn |> put_status(:internal_server_error) |> json(%{error: "Backup failed: #{output}"})
     end
   rescue
-    e -> conn |> put_status(:internal_server_error) |> json(%{error: "Backup failed: #{Exception.message(e)}"})
+    e ->
+      conn
+      |> put_status(:internal_server_error)
+      |> json(%{error: "Backup failed: #{Exception.message(e)}"})
   end
 
   # GET /api/admin/backup/list
@@ -39,14 +45,15 @@ defmodule ForgeNexusWeb.BackupController do
     backup_dir = "priv/backups"
     File.mkdir_p!(backup_dir)
 
-    backups = File.ls!(backup_dir)
-    |> Enum.filter(&String.ends_with?(&1, ".sql"))
-    |> Enum.sort(:desc)
-    |> Enum.map(fn f ->
-      path = Path.join(backup_dir, f)
-      %{size: size} = File.stat!(path)
-      %{filename: f, size: size, created_at: File.stat!(path).mtime}
-    end)
+    backups =
+      File.ls!(backup_dir)
+      |> Enum.filter(&String.ends_with?(&1, ".sql"))
+      |> Enum.sort(:desc)
+      |> Enum.map(fn f ->
+        path = Path.join(backup_dir, f)
+        %{size: size} = File.stat!(path)
+        %{filename: f, size: size, created_at: File.stat!(path).mtime}
+      end)
 
     conn |> json(%{backups: backups})
   end

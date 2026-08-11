@@ -8,7 +8,11 @@ defmodule ForgeNexus.UserStats do
   @xp_factor 1.5
 
   def get_stat(user_id, stat_key) do
-    case Repo.one(from s in UserStat, where: s.user_id == ^user_id and s.stat_key == ^stat_key, select: s.value) do
+    case Repo.one(
+           from s in UserStat,
+             where: s.user_id == ^user_id and s.stat_key == ^stat_key,
+             select: s.value
+         ) do
       nil -> 0.0
       value -> value
     end
@@ -17,7 +21,10 @@ defmodule ForgeNexus.UserStats do
   def set_stat(user_id, stat_key, value) do
     case Repo.one(from s in UserStat, where: s.user_id == ^user_id and s.stat_key == ^stat_key) do
       nil ->
-        %UserStat{} |> UserStat.changeset(%{user_id: user_id, stat_key: stat_key, value: value}) |> Repo.insert()
+        %UserStat{}
+        |> UserStat.changeset(%{user_id: user_id, stat_key: stat_key, value: value})
+        |> Repo.insert()
+
       existing ->
         clamped = clamp_value(value, existing.min_value, existing.max_value)
         existing |> UserStat.changeset(%{value: clamped}) |> Repo.update()

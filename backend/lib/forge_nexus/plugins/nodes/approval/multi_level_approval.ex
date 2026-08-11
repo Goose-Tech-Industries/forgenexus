@@ -40,7 +40,9 @@ defmodule ForgeNexus.Plugins.Nodes.Approval.MultiLevelApproval do
       "created_at" => DateTime.utc_now() |> DateTime.to_iso8601()
     }
 
-    flow_data = Map.put(flow_data, "approvals", Map.put(approvals_map, approval_id, approval_record))
+    flow_data =
+      Map.put(flow_data, "approvals", Map.put(approvals_map, approval_id, approval_record))
+
     ctx = Map.put(ctx, :flow_data, flow_data)
     ctx = Sandbox.increment_db_ops(ctx)
 
@@ -73,7 +75,8 @@ defmodule ForgeNexus.Plugins.Nodes.Approval.MultiLevelApproval do
       type: "approval/multi_level_approval",
       category: "approval",
       label: "Multi-Level Approval",
-      description: "Creates a multi-level approval request that must pass through sequential approver tiers.",
+      description:
+        "Creates a multi-level approval request that must pass through sequential approver tiers.",
       inputs: [
         %{name: "request_id", type: "string", required: true},
         %{name: "request_data", type: "map", required: true}
@@ -84,7 +87,12 @@ defmodule ForgeNexus.Plugins.Nodes.Approval.MultiLevelApproval do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "approver_levels", type: "json", default: [], description: "JSON list of approver user_ids or group_ids (one per level)"}
+        %{
+          name: "approver_levels",
+          type: "json",
+          default: [],
+          description: "JSON list of approver user_ids or group_ids (one per level)"
+        }
       ]
     }
   end

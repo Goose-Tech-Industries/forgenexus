@@ -14,8 +14,10 @@ defmodule ForgeNexus.Moderation.SoftBlockFlow do
 
   def create(attrs) do
     post = Repo.get!(Post, attrs[:post_id] || attrs["post_id"])
-    window = (attrs[:window_hours] || attrs["window_hours"] || @default_window_hours)
-    expires = DateTime.utc_now() |> DateTime.add(window * 3600, :second) |> DateTime.truncate(:second)
+    window = attrs[:window_hours] || attrs["window_hours"] || @default_window_hours
+
+    expires =
+      DateTime.utc_now() |> DateTime.add(window * 3600, :second) |> DateTime.truncate(:second)
 
     sb_attrs = %{
       community_id: post.community_id,
@@ -50,13 +52,16 @@ defmodule ForgeNexus.Moderation.SoftBlockFlow do
 
         {:ok, soft_block}
 
-      error -> error
+      error ->
+        error
     end
   end
 
   def author_edit(soft_block_id, new_body) do
     case Repo.get(SoftBlock, soft_block_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       %SoftBlock{status: "pending"} = sb ->
         now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -69,7 +74,8 @@ defmodule ForgeNexus.Moderation.SoftBlockFlow do
           {:ok, :edited}
         end
 
-      _ -> {:error, :already_resolved}
+      _ ->
+        {:error, :already_resolved}
     end
   end
 
@@ -81,7 +87,8 @@ defmodule ForgeNexus.Moderation.SoftBlockFlow do
         sb |> SoftBlock.changeset(%{status: "expired"}) |> Repo.update()
         {:ok, :deleted}
 
-      _ -> :ok
+      _ ->
+        :ok
     end
   end
 

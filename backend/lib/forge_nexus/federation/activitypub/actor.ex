@@ -26,10 +26,18 @@ defmodule ForgeNexus.Federation.ActivityPub.Actor do
   def changeset(actor, attrs) do
     actor
     |> cast(attrs, [
-      :uri, :type, :inbox_url, :outbox_url, :followers_url,
-      :public_key_pem, :private_key_pem_encrypted,
-      :followers_count, :following_count, :is_local,
-      :local_forum_id, :local_user_id
+      :uri,
+      :type,
+      :inbox_url,
+      :outbox_url,
+      :followers_url,
+      :public_key_pem,
+      :private_key_pem_encrypted,
+      :followers_count,
+      :following_count,
+      :is_local,
+      :local_forum_id,
+      :local_user_id
     ])
     |> validate_required([:uri, :type, :inbox_url])
     |> unique_constraint(:uri)

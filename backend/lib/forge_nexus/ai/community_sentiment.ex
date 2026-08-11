@@ -17,7 +17,13 @@ defmodule ForgeNexus.AI.CommunitySentiment do
 
   def changeset(community_sentiment, attrs) do
     community_sentiment
-    |> cast(attrs, [:date, :avg_sentiment, :total_posts_analyzed, :heated_thread_count, :top_emotions])
+    |> cast(attrs, [
+      :date,
+      :avg_sentiment,
+      :total_posts_analyzed,
+      :heated_thread_count,
+      :top_emotions
+    ])
     |> validate_required([:date, :avg_sentiment])
     |> unique_constraint(:date)
   end

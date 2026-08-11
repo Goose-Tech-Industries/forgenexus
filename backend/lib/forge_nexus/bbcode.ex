@@ -75,7 +75,9 @@ defmodule ForgeNexus.BBCode do
     # URL with text: [url=...]...[/url] — accepts http(s) or root-relative
     |> re_replace(
       ~r/\[url=((?:https?:\/\/|\/)[^\]]+)\](.*?)\[\/url\]/s,
-      fn _, url, content -> ~s(<a href="#{url}" target="_blank" rel="noopener noreferrer">#{content}</a>) end
+      fn _, url, content ->
+        ~s(<a href="#{url}" target="_blank" rel="noopener noreferrer">#{content}</a>)
+      end
     )
     # URL without text: [url]...[/url]
     |> re_replace(
@@ -85,7 +87,9 @@ defmodule ForgeNexus.BBCode do
     # Image: [img]...[/img] — accepts http(s) or root-relative (e.g. /uploads/...)
     |> re_replace(
       ~r/\[img\]((?:https?:\/\/|\/)[^\[]+)\[\/img\]/s,
-      fn _, url -> ~s(<img src="#{url}" alt="User image" style="max-width:100%;height:auto" loading="lazy" />) end
+      fn _, url ->
+        ~s(<img src="#{url}" alt="User image" style="max-width:100%;height:auto" loading="lazy" />)
+      end
     )
     # Quote: [quote]...[/quote]
     |> re_replace(
@@ -182,6 +186,7 @@ defmodule ForgeNexus.BBCode do
         # post text and triggered catastrophic backtracking, hanging every
         # post that passed through the pipeline.
         regex = Regex.compile!("\\[#{tag}\\](.*?)\\[/#{tag}\\]", "s")
+
         Regex.replace(regex, acc, fn _, content ->
           String.replace(bbcode.replacement_html, "{{content}}", content)
         end)

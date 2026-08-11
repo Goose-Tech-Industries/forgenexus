@@ -10,7 +10,8 @@ defmodule ForgeNexusWeb.ContactController do
       when is_binary(name) and is_binary(email) and is_binary(subject) and is_binary(message) do
     # Validate fields
     cond do
-      String.trim(name) == "" or String.trim(email) == "" or String.trim(subject) == "" or String.trim(message) == "" ->
+      String.trim(name) == "" or String.trim(email) == "" or String.trim(subject) == "" or
+          String.trim(message) == "" ->
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{error: "All fields are required"})
@@ -32,7 +33,9 @@ defmodule ForgeNexusWeb.ContactController do
           Mailer.deliver(contact_email)
         rescue
           _ ->
-            Logger.info("Contact form submission: name=#{name}, email=#{email}, subject=#{subject}, message=#{message}")
+            Logger.info(
+              "Contact form submission: name=#{name}, email=#{email}, subject=#{subject}, message=#{message}"
+            )
         end
 
         conn

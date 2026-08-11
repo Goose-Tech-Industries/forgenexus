@@ -9,8 +9,13 @@ defmodule ForgeNexusWeb.AdminPromotionController do
 
   def create(conn, params) do
     case Accounts.create_promotion_rule(params) do
-      {:ok, rule} -> conn |> put_status(:created) |> json(%{rule: rule_json(ForgeNexus.Repo.preload(rule, [:from_group, :to_group]))})
-      {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
+      {:ok, rule} ->
+        conn
+        |> put_status(:created)
+        |> json(%{rule: rule_json(ForgeNexus.Repo.preload(rule, [:from_group, :to_group]))})
+
+      {:error, cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
     end
   end
 
@@ -34,9 +39,15 @@ defmodule ForgeNexusWeb.AdminPromotionController do
   end
 
   defp rule_json(r) do
-    %{id: r.id, name: r.name, criteria: r.criteria, is_active: r.is_active, position: r.position,
+    %{
+      id: r.id,
+      name: r.name,
+      criteria: r.criteria,
+      is_active: r.is_active,
+      position: r.position,
       from_group: r.from_group && %{id: r.from_group.id, name: r.from_group.name},
-      to_group: r.to_group && %{id: r.to_group.id, name: r.to_group.name}}
+      to_group: r.to_group && %{id: r.to_group.id, name: r.to_group.name}
+    }
   end
 
   defp format_errors(cs), do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)

@@ -27,6 +27,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateMoneyTips do
     create index(:money_tips, [:recipient_id, :inserted_at])
     create index(:money_tips, [:sender_id])
     create index(:money_tips, [:room_id])
-    create index(:money_tips, [:stripe_payment_intent_id], unique: true, where: "stripe_payment_intent_id IS NOT NULL")
+
+    create index(:money_tips, [:stripe_payment_intent_id],
+             unique: true,
+             where: "stripe_payment_intent_id IS NOT NULL"
+           )
   end
 end

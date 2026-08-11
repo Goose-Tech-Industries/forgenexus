@@ -30,9 +30,22 @@ defmodule ForgeNexus.Governance.Proposal do
   def changeset(struct, attrs) do
     struct
     |> cast(attrs, [
-      :title, :body, :body_html, :type, :status, :discussion_ends_at,
-      :voting_starts_at, :voting_ends_at, :threshold_type, :min_participation,
-      :is_binding, :yes_count, :no_count, :abstain_count, :result_summary, :author_id
+      :title,
+      :body,
+      :body_html,
+      :type,
+      :status,
+      :discussion_ends_at,
+      :voting_starts_at,
+      :voting_ends_at,
+      :threshold_type,
+      :min_participation,
+      :is_binding,
+      :yes_count,
+      :no_count,
+      :abstain_count,
+      :result_summary,
+      :author_id
     ])
     |> validate_required([:title, :body, :type, :author_id])
   end

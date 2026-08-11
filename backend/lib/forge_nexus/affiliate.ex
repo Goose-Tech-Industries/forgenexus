@@ -38,7 +38,9 @@ defmodule ForgeNexus.Affiliate do
       followers: build_metric(followers, @follower_target),
       days_active: build_metric(days_active, @days_active_target),
       stream_minutes: build_metric(stream_minutes, @stream_minutes_target),
-      all_met: followers >= @follower_target and days_active >= @days_active_target and stream_minutes >= @stream_minutes_target,
+      all_met:
+        followers >= @follower_target and days_active >= @days_active_target and
+          stream_minutes >= @stream_minutes_target,
       subscriptions_enabled: enabled,
       subscriptions_enabled_at: user.subscriptions_enabled_at
     }
@@ -62,7 +64,9 @@ defmodule ForgeNexus.Affiliate do
     case progress(user) do
       %{all_met: true} ->
         user
-        |> Ecto.Changeset.change(subscriptions_enabled_at: DateTime.utc_now() |> DateTime.truncate(:second))
+        |> Ecto.Changeset.change(
+          subscriptions_enabled_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        )
         |> Repo.update()
 
       _ ->
@@ -115,7 +119,11 @@ defmodule ForgeNexus.Affiliate do
   defp stream_minutes_count(user_id) do
     from(cl in "voice_call_logs",
       where: cl.host_user_id == type(^user_id, :binary_id) and not is_nil(cl.ended_at),
-      select: coalesce(sum(fragment("EXTRACT(EPOCH FROM (? - ?))::integer / 60", cl.ended_at, cl.started_at)), 0)
+      select:
+        coalesce(
+          sum(fragment("EXTRACT(EPOCH FROM (? - ?))::integer / 60", cl.ended_at, cl.started_at)),
+          0
+        )
     )
     |> Repo.one()
     |> Kernel.||(0)

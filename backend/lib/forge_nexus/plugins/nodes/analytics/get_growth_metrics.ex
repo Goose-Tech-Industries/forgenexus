@@ -14,12 +14,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetGrowthMetrics do
 
   defp to_int(v) when is_integer(v), do: v
   defp to_int(v) when is_float(v), do: trunc(v)
+
   defp to_int(v) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       _ -> 0
     end
   end
+
   defp to_int(_), do: 0
 
   @impl true
@@ -31,7 +33,8 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetGrowthMetrics do
       type: "analytics/get_growth_metrics",
       category: "analytics",
       label: "Get Growth Metrics",
-      description: "Retrieves community growth metrics (new users, threads, posts, active users) for a period.",
+      description:
+        "Retrieves community growth metrics (new users, threads, posts, active users) for a period.",
       inputs: [],
       outputs: [
         %{name: "new_users", type: "number"},
@@ -39,7 +42,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetGrowthMetrics do
         %{name: "new_posts", type: "number"},
         %{name: "active_users", type: "number"}
       ],
-      config_fields: [%{name: "period_days", type: "number", default: 30, description: "Number of days to look back"}]
+      config_fields: [
+        %{
+          name: "period_days",
+          type: "number",
+          default: 30,
+          description: "Number of days to look back"
+        }
+      ]
     }
   end
 end

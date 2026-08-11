@@ -67,8 +67,18 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.AddInterest do
         %{name: "total_interest", type: "number"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"},
-        %{name: "rate_percent", type: "number", default: 1.0, description: "Interest rate percentage to apply"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        },
+        %{
+          name: "rate_percent",
+          type: "number",
+          default: 1.0,
+          description: "Interest rate percentage to apply"
+        }
       ]
     }
   end

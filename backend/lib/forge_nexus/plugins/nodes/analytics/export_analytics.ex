@@ -10,7 +10,8 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.ExportAnalytics do
     period_days = Map.get(config, "period_days", 30) |> to_int()
     format = Map.get(config, "format", "json")
 
-    metrics = metrics_raw |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+    metrics =
+      metrics_raw |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
 
     rows =
       Enum.map(metrics, fn m ->
@@ -33,18 +34,22 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.ExportAnalytics do
   end
 
   defp aggregate_metric(metric, period_days) do
-    %{current: current} = ForgeNexus.Forums.compare_metric_periods(metric, period_days, "previous_period")
+    %{current: current} =
+      ForgeNexus.Forums.compare_metric_periods(metric, period_days, "previous_period")
+
     current
   end
 
   defp to_int(v) when is_integer(v), do: v
   defp to_int(v) when is_float(v), do: trunc(v)
+
   defp to_int(v) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       _ -> 0
     end
   end
+
   defp to_int(_), do: 0
 
   @impl true
@@ -77,9 +82,25 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.ExportAnalytics do
       inputs: [],
       outputs: [%{name: "data", type: "string"}, %{name: "row_count", type: "number"}],
       config_fields: [
-        %{name: "metrics", type: "string", default: "", description: "Comma-separated metric names to export"},
-        %{name: "period_days", type: "number", default: 30, description: "Number of days of data to export"},
-        %{name: "format", type: "select", options: ~w(json csv), default: "json", description: "Export format"}
+        %{
+          name: "metrics",
+          type: "string",
+          default: "",
+          description: "Comma-separated metric names to export"
+        },
+        %{
+          name: "period_days",
+          type: "number",
+          default: 30,
+          description: "Number of days of data to export"
+        },
+        %{
+          name: "format",
+          type: "select",
+          options: ~w(json csv),
+          default: "json",
+          description: "Export format"
+        }
       ]
     }
   end

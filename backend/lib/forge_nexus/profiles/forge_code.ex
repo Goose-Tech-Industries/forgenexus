@@ -27,17 +27,25 @@ defmodule ForgeNexus.Profiles.ForgeCode do
   def changeset(forge_code, attrs) do
     forge_code
     |> cast(attrs, [
-      :code, :name, :description, :vibe_tag, :config,
-      :is_official, :is_public, :is_remixable,
-      :preview_image_url, :schema_version, :owner_id
+      :code,
+      :name,
+      :description,
+      :vibe_tag,
+      :config,
+      :is_official,
+      :is_public,
+      :is_remixable,
+      :preview_image_url,
+      :schema_version,
+      :owner_id
     ])
     |> validate_required([:code, :name, :config])
     |> validate_length(:code, min: 4, max: 24)
     |> validate_length(:name, min: 1, max: 80)
     |> validate_length(:description, max: 500)
     |> validate_format(:code, ~r/^[a-z0-9-]+$/,
-         message: "only lowercase letters, numbers, and hyphens"
-       )
+      message: "only lowercase letters, numbers, and hyphens"
+    )
     |> unique_constraint(:code)
   end
 end

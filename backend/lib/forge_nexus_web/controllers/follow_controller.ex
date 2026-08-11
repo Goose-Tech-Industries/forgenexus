@@ -18,20 +18,26 @@ defmodule ForgeNexusWeb.FollowController do
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Cannot follow yourself"})
 
       {:error, _} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update follow status"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Failed to update follow status"})
     end
   end
 
   # GET /api/users/:id/followers
   def followers(conn, %{"id" => user_id}) do
     followers = Accounts.list_followers(user_id)
-    conn |> json(%{users: Enum.map(followers, &user_json/1), count: Accounts.follower_count(user_id)})
+
+    conn
+    |> json(%{users: Enum.map(followers, &user_json/1), count: Accounts.follower_count(user_id)})
   end
 
   # GET /api/users/:id/following
   def following(conn, %{"id" => user_id}) do
     following = Accounts.list_following(user_id)
-    conn |> json(%{users: Enum.map(following, &user_json/1), count: Accounts.following_count(user_id)})
+
+    conn
+    |> json(%{users: Enum.map(following, &user_json/1), count: Accounts.following_count(user_id)})
   end
 
   # GET /api/following/feed
@@ -47,12 +53,14 @@ defmodule ForgeNexusWeb.FollowController do
 
   defp safe_int(nil, default), do: default
   defp safe_int(v, _) when is_integer(v), do: v
+
   defp safe_int(v, default) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       :error -> default
     end
   end
+
   defp safe_int(_, default), do: default
 
   defp user_json(user) do
@@ -73,24 +81,30 @@ defmodule ForgeNexusWeb.FollowController do
       body: post.body,
       body_html: post.body_html,
       inserted_at: post.inserted_at,
-      user: post.user && %{
-        id: post.user.id,
-        username: post.user.username,
-        slug: post.user.slug,
-        avatar_url: post.user.avatar_url,
-        username_color: post.user.username_color,
-        username_effect: post.user.username_effect
-      },
-      thread: post.thread && %{
-        id: post.thread.id,
-        title: post.thread.title,
-        slug: post.thread.slug,
-        forum: post.thread.forum && %{
-          id: post.thread.forum.id,
-          name: post.thread.forum.name,
-          slug: post.thread.forum.slug
-        }
-      }
+      user:
+        post.user &&
+          %{
+            id: post.user.id,
+            username: post.user.username,
+            slug: post.user.slug,
+            avatar_url: post.user.avatar_url,
+            username_color: post.user.username_color,
+            username_effect: post.user.username_effect
+          },
+      thread:
+        post.thread &&
+          %{
+            id: post.thread.id,
+            title: post.thread.title,
+            slug: post.thread.slug,
+            forum:
+              post.thread.forum &&
+                %{
+                  id: post.thread.forum.id,
+                  name: post.thread.forum.name,
+                  slug: post.thread.forum.slug
+                }
+          }
     }
   end
 end

@@ -54,7 +54,12 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.CreatePet do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "nickname", type: "string", default: "", description: "Optional nickname for the pet"}
+        %{
+          name: "nickname",
+          type: "string",
+          default: "",
+          description: "Optional nickname for the pet"
+        }
       ]
     }
   end

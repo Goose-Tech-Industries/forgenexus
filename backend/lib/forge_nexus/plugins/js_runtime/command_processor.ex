@@ -26,7 +26,7 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
     "emit_event" => "emit_events",
     "award_points" => "manage_users",
     "set_custom_title" => "manage_users",
-    "http_request" => "http_request",
+    "http_request" => "http_request"
   }
 
   def process(commands, plugin, triggered_by_id) when is_list(commands) do
@@ -57,10 +57,10 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
   defp execute_command("create_post", args, triggered_by_id) do
     try do
       case Forums.create_post(%{
-        body: Map.get(args, "body", ""),
-        thread_id: Map.get(args, "thread_id"),
-        user_id: triggered_by_id
-      }) do
+             body: Map.get(args, "body", ""),
+             thread_id: Map.get(args, "thread_id"),
+             user_id: triggered_by_id
+           }) do
         {:ok, post} -> %{type: "create_post", status: "ok", id: post.id}
         {:error, _} -> %{type: "create_post", status: "error", error: "Failed to create post"}
       end
@@ -72,10 +72,10 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
   defp execute_command("create_thread", args, triggered_by_id) do
     try do
       case Forums.create_thread(%{
-        title: Map.get(args, "title", ""),
-        forum_id: Map.get(args, "forum_id"),
-        user_id: triggered_by_id
-      }) do
+             title: Map.get(args, "title", ""),
+             forum_id: Map.get(args, "forum_id"),
+             user_id: triggered_by_id
+           }) do
         {:ok, thread} -> %{type: "create_thread", status: "ok", id: thread.id}
         {:error, _} -> %{type: "create_thread", status: "error", error: "Failed to create thread"}
       end
@@ -87,10 +87,10 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
   defp execute_command("send_dm", args, triggered_by_id) do
     try do
       case Chat.send_message(%{
-        recipient_id: Map.get(args, "user_id"),
-        sender_id: triggered_by_id,
-        body: Map.get(args, "body", "")
-      }) do
+             recipient_id: Map.get(args, "user_id"),
+             sender_id: triggered_by_id,
+             body: Map.get(args, "body", "")
+           }) do
         {:ok, _msg} -> %{type: "send_dm", status: "ok"}
         {:error, _} -> %{type: "send_dm", status: "error", error: "Failed to send DM"}
       end
@@ -106,18 +106,24 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
 
   defp execute_command("set_global_data", _args, _triggered_by_id) do
     # TODO: Implement JS plugin-scoped key-value storage
-    %{type: "set_global_data", status: "skipped", error: "JS plugin data store not yet implemented"}
+    %{
+      type: "set_global_data",
+      status: "skipped",
+      error: "JS plugin data store not yet implemented"
+    }
   end
 
   defp execute_command("emit_event", args, _triggered_by_id) do
     try do
       event_name = Map.get(args, "event_name")
       payload = Map.get(args, "payload", %{})
+
       Phoenix.PubSub.broadcast(
         ForgeNexus.PubSub,
         "plugin:custom_event",
         {:custom_event, event_name, payload, nil}
       )
+
       %{type: "emit_event", status: "ok"}
     rescue
       e -> %{type: "emit_event", status: "error", error: Exception.message(e)}

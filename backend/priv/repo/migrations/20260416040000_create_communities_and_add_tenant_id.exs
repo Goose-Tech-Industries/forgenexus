@@ -143,7 +143,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateCommunitiesAndAddTenantId do
     # 5. Create community_members join table
     create table(:community_members, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :role, :string, default: "member"
       add :joined_at, :utc_datetime, default: fragment("NOW()")
@@ -175,13 +178,17 @@ defmodule ForgeNexus.Repo.Migrations.CreateCommunitiesAndAddTenantId do
   end
 
   defp table_exists?(table) do
-    query = "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '#{table}')"
+    query =
+      "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '#{table}')"
+
     %{rows: [[exists]]} = repo().query!(query)
     exists
   end
 
   defp column_exists?(table, column) do
-    query = "SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = '#{table}' AND column_name = '#{column}')"
+    query =
+      "SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = '#{table}' AND column_name = '#{column}')"
+
     %{rows: [[exists]]} = repo().query!(query)
     exists
   end

@@ -52,9 +52,24 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.DefineItem do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "is_tradeable", type: "boolean", default: true, description: "Whether the item can be traded"},
-        %{name: "is_stackable", type: "boolean", default: true, description: "Whether the item stacks"},
-        %{name: "is_consumable", type: "boolean", default: false, description: "Whether the item is consumed on use"},
+        %{
+          name: "is_tradeable",
+          type: "boolean",
+          default: true,
+          description: "Whether the item can be traded"
+        },
+        %{
+          name: "is_stackable",
+          type: "boolean",
+          default: true,
+          description: "Whether the item stacks"
+        },
+        %{
+          name: "is_consumable",
+          type: "boolean",
+          default: false,
+          description: "Whether the item is consumed on use"
+        },
         %{name: "max_stack", type: "number", default: 99, description: "Maximum stack size"},
         %{name: "icon", type: "string", default: "", description: "Icon identifier or URL"}
       ]

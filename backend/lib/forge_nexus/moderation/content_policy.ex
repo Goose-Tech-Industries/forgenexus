@@ -40,8 +40,14 @@ defmodule ForgeNexus.Moderation.ContentPolicy do
   def changeset(policy, attrs) do
     policy
     |> cast(attrs, [
-      :name, :description, :is_active, :ai_moderation_enabled,
-      :rules, :escalation_overrides, :forum_id, :category_id
+      :name,
+      :description,
+      :is_active,
+      :ai_moderation_enabled,
+      :rules,
+      :escalation_overrides,
+      :forum_id,
+      :category_id
     ])
     |> validate_required([:name])
     |> foreign_key_constraint(:forum_id)

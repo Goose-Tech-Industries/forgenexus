@@ -112,20 +112,27 @@ defmodule ForgeNexus.Forums.Polls do
       max_choices: poll.max_choices,
       is_anonymous: poll.is_anonymous,
       hide_results_until_voted: poll.hide_results_until_voted,
-      is_closed: poll.is_closed || (poll.closes_at && DateTime.compare(DateTime.utc_now(), poll.closes_at) == :gt),
+      is_closed:
+        poll.is_closed ||
+          (poll.closes_at && DateTime.compare(DateTime.utc_now(), poll.closes_at) == :gt),
       closes_at: poll.closes_at,
       total_votes: if(show_results, do: poll.total_votes, else: nil),
       has_voted: voted,
       user_votes: user_option_ids,
-      options: Enum.map(poll.options, fn opt ->
-        %{
-          id: opt.id,
-          text: opt.text,
-          vote_count: if(show_results, do: opt.vote_count, else: nil),
-          percentage: if(show_results && poll.total_votes > 0, do: Float.round(opt.vote_count / poll.total_votes * 100, 1), else: nil),
-          voted: opt.id in user_option_ids
-        }
-      end)
+      options:
+        Enum.map(poll.options, fn opt ->
+          %{
+            id: opt.id,
+            text: opt.text,
+            vote_count: if(show_results, do: opt.vote_count, else: nil),
+            percentage:
+              if(show_results && poll.total_votes > 0,
+                do: Float.round(opt.vote_count / poll.total_votes * 100, 1),
+                else: nil
+              ),
+            voted: opt.id in user_option_ids
+          }
+        end)
     }
   end
 end

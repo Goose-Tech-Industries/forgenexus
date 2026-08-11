@@ -18,7 +18,15 @@ defmodule ForgeNexus.Wiki.WikiRevision do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:body, :body_html, :edit_summary, :revision_number, :inserted_at, :page_id, :edited_by_id])
+    |> cast(attrs, [
+      :body,
+      :body_html,
+      :edit_summary,
+      :revision_number,
+      :inserted_at,
+      :page_id,
+      :edited_by_id
+    ])
     |> validate_required([:body, :revision_number, :page_id, :edited_by_id])
   end
 end

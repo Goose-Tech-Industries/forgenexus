@@ -21,7 +21,8 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.GetContentMetrics do
       type: "analytics/get_content_metrics",
       category: "analytics",
       label: "Get Content Metrics",
-      description: "Retrieves engagement metrics for a thread (views, replies, reactions, participants).",
+      description:
+        "Retrieves engagement metrics for a thread (views, replies, reactions, participants).",
       inputs: [%{name: "thread_id", type: "string", required: true}],
       outputs: [
         %{name: "views", type: "number"},

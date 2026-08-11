@@ -15,7 +15,9 @@ defmodule ForgeNexusWeb.Plugs.EnsureCanPost do
       :cooldown ->
         conn
         |> put_status(:forbidden)
-        |> json(%{error: "Your account is on a posting cooldown. Please wait before posting again."})
+        |> json(%{
+          error: "Your account is on a posting cooldown. Please wait before posting again."
+        })
         |> halt()
 
       _ ->

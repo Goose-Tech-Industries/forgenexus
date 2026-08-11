@@ -21,8 +21,13 @@ defmodule ForgeNexus.Federation.FederatedIdentity do
   def changeset(identity, attrs) do
     identity
     |> cast(attrs, [
-      :remote_user_id, :remote_username, :remote_display_name,
-      :portable_reputation, :last_synced_at, :local_user_id, :remote_instance_id
+      :remote_user_id,
+      :remote_username,
+      :remote_display_name,
+      :portable_reputation,
+      :last_synced_at,
+      :local_user_id,
+      :remote_instance_id
     ])
     |> validate_required([:remote_user_id, :remote_username, :local_user_id, :remote_instance_id])
     |> foreign_key_constraint(:local_user_id)

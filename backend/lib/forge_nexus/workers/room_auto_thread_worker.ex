@@ -53,40 +53,46 @@ defmodule ForgeNexus.Workers.RoomAutoThreadWorker do
   end
 
   defp build_session_summary(room, call_log) do
-    duration = if call_log.started_at && call_log.ended_at do
-      secs = DateTime.diff(call_log.ended_at, call_log.started_at, :second)
-      minutes = div(secs, 60)
-      "#{minutes} minutes"
-    else
-      "Unknown"
-    end
+    duration =
+      if call_log.started_at && call_log.ended_at do
+        secs = DateTime.diff(call_log.ended_at, call_log.started_at, :second)
+        minutes = div(secs, 60)
+        "#{minutes} minutes"
+      else
+        "Unknown"
+      end
 
     participants = call_log.participant_ids || []
     participant_count = length(participants)
 
     recordings = Voice.list_recordings(room.id, limit: 5)
 
-    recording_section = if recordings != [] do
-      links = Enum.map(recordings, fn r ->
-        title = r.title || "Recording"
-        "- [#{title}](/voice/recordings/#{r.id})" <>
-          if(r.transcript_status == "ready", do: " (transcript available)", else: "")
-      end)
-      "\n\n**Recordings:**\n#{Enum.join(links, "\n")}"
-    else
-      ""
-    end
+    recording_section =
+      if recordings != [] do
+        links =
+          Enum.map(recordings, fn r ->
+            title = r.title || "Recording"
 
-    stats = [
-      {"Peak participants", call_log.peak_participants},
-      {"Peak speakers", call_log.peak_speakers},
-      {"Peak audience", call_log.peak_audience},
-      {"Hand raises", call_log.total_hand_raises},
-      {"Promotions", call_log.total_promotions}
-    ]
-    |> Enum.filter(fn {_, v} -> v && v > 0 end)
-    |> Enum.map(fn {k, v} -> "- #{k}: #{v}" end)
-    |> Enum.join("\n")
+            "- [#{title}](/voice/recordings/#{r.id})" <>
+              if(r.transcript_status == "ready", do: " (transcript available)", else: "")
+          end)
+
+        "\n\n**Recordings:**\n#{Enum.join(links, "\n")}"
+      else
+        ""
+      end
+
+    stats =
+      [
+        {"Peak participants", call_log.peak_participants},
+        {"Peak speakers", call_log.peak_speakers},
+        {"Peak audience", call_log.peak_audience},
+        {"Hand raises", call_log.total_hand_raises},
+        {"Promotions", call_log.total_promotions}
+      ]
+      |> Enum.filter(fn {_, v} -> v && v > 0 end)
+      |> Enum.map(fn {k, v} -> "- #{k}: #{v}" end)
+      |> Enum.join("\n")
 
     """
     **#{room.name}** — Voice Room Session

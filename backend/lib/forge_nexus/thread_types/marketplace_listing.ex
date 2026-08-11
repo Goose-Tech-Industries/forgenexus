@@ -21,7 +21,16 @@ defmodule ForgeNexus.ThreadTypes.MarketplaceListing do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:price, :currency, :condition, :status, :location, :shipping_info, :thread_id, :user_id])
+    |> cast(attrs, [
+      :price,
+      :currency,
+      :condition,
+      :status,
+      :location,
+      :shipping_info,
+      :thread_id,
+      :user_id
+    ])
     |> validate_required([:price, :condition, :thread_id, :user_id])
     |> validate_inclusion(:condition, ["new", "like_new", "good", "fair", "poor"])
     |> validate_inclusion(:status, ["available", "pending", "sold", "withdrawn"])

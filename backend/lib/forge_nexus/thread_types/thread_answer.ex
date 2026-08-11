@@ -19,7 +19,14 @@ defmodule ForgeNexus.ThreadTypes.ThreadAnswer do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:is_accepted, :vote_count, :accepted_at, :thread_id, :post_id, :accepted_by_id])
+    |> cast(attrs, [
+      :is_accepted,
+      :vote_count,
+      :accepted_at,
+      :thread_id,
+      :post_id,
+      :accepted_by_id
+    ])
     |> validate_required([:thread_id, :post_id])
   end
 end

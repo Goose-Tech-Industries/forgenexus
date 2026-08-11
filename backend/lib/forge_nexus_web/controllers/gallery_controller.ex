@@ -21,9 +21,13 @@ defmodule ForgeNexusWeb.GalleryController do
   def create(conn, params) do
     user = Guardian.Plug.current_resource(conn)
     attrs = Map.put(params, "user_id", user.id)
+
     case Gallery.create_album(attrs) do
-      {:ok, album} -> conn |> put_status(:created) |> json(%{album: album_json(album)})
-      {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
+      {:ok, album} ->
+        conn |> put_status(:created) |> json(%{album: album_json(album)})
+
+      {:error, cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
     end
   end
 
@@ -43,6 +47,7 @@ defmodule ForgeNexusWeb.GalleryController do
 
   def add_media(conn, %{"album_id" => album_id} = params) do
     user = Guardian.Plug.current_resource(conn)
+
     case Gallery.add_media(album_id, user.id, params) do
       {:ok, item} -> conn |> put_status(:created) |> json(%{item: item_json(item)})
       {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
@@ -62,13 +67,29 @@ defmodule ForgeNexusWeb.GalleryController do
   end
 
   defp album_json(a) do
-    %{id: a.id, title: a.title, description: a.description, is_public: a.is_public,
-      cover_image_url: a.cover_image_url, media_count: a.media_count, inserted_at: a.inserted_at}
+    %{
+      id: a.id,
+      title: a.title,
+      description: a.description,
+      is_public: a.is_public,
+      cover_image_url: a.cover_image_url,
+      media_count: a.media_count,
+      inserted_at: a.inserted_at
+    }
   end
 
   defp item_json(i) do
-    %{id: i.id, file_url: i.file_url, thumbnail_url: i.thumbnail_url, file_type: i.file_type,
-      file_size: i.file_size, width: i.width, height: i.height, caption: i.caption, inserted_at: i.inserted_at}
+    %{
+      id: i.id,
+      file_url: i.file_url,
+      thumbnail_url: i.thumbnail_url,
+      file_type: i.file_type,
+      file_size: i.file_size,
+      width: i.width,
+      height: i.height,
+      caption: i.caption,
+      inserted_at: i.inserted_at
+    }
   end
 
   defp format_errors(cs), do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)

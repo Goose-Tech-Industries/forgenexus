@@ -5,7 +5,6 @@ defmodule ForgeNexus.Plugins.Nodes.Notification.DigestSummary do
   alias ForgeNexus.Accounts.User
   alias ForgeNexus.Repo
 
-
   @impl true
   def execute(config, inputs, ctx) do
     Sandbox.check_db_limit!(ctx)
@@ -65,7 +64,13 @@ defmodule ForgeNexus.Plugins.Nodes.Notification.DigestSummary do
         %{name: "summary", type: "map"}
       ],
       config_fields: [
-        %{name: "period", type: "select", options: ~w(daily weekly), default: "daily", description: "Summary time period"}
+        %{
+          name: "period",
+          type: "select",
+          options: ~w(daily weekly),
+          default: "daily",
+          description: "Summary time period"
+        }
       ]
     }
   end

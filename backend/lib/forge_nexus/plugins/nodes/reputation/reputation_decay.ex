@@ -60,8 +60,18 @@ defmodule ForgeNexus.Plugins.Nodes.Reputation.ReputationDecay do
         %{name: "total_decayed", type: "number"}
       ],
       config_fields: [
-        %{name: "decay_percent", type: "number", default: 1.0, description: "Percentage of reputation to decay"},
-        %{name: "inactive_days", type: "number", default: 30, description: "Days of inactivity before decay applies"}
+        %{
+          name: "decay_percent",
+          type: "number",
+          default: 1.0,
+          description: "Percentage of reputation to decay"
+        },
+        %{
+          name: "inactive_days",
+          type: "number",
+          default: 30,
+          description: "Days of inactivity before decay applies"
+        }
       ]
     }
   end

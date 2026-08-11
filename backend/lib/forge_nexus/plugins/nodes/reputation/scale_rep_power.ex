@@ -12,13 +12,17 @@ defmodule ForgeNexus.Plugins.Nodes.Reputation.ScaleRepPower do
 
     base_amount =
       cond do
-        is_number(base_amount) -> base_amount
+        is_number(base_amount) ->
+          base_amount
+
         is_binary(base_amount) ->
           case Float.parse(base_amount) do
             {n, _} -> n
             :error -> 1
           end
-        true -> 1
+
+        true ->
+          1
       end
 
     case ForgeNexus.Reputation.get_reputation(user_id) do

@@ -50,7 +50,12 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.AiContentClassify do
         %{name: "scores", type: "map"}
       ],
       config_fields: [
-        %{name: "categories", type: "string", default: "spam,toxic,nsfw,off_topic", description: "Comma-separated categories to classify content into"}
+        %{
+          name: "categories",
+          type: "string",
+          default: "spam,toxic,nsfw,off_topic",
+          description: "Comma-separated categories to classify content into"
+        }
       ]
     }
   end

@@ -61,8 +61,19 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.SetUsernameStyle do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "color", type: "string", default: "", description: "Hex color code (e.g. #FF0000)"},
-        %{name: "effect", type: "select", options: ~w(none glow bold italic rainbow), default: "none", description: "Username text effect"}
+        %{
+          name: "color",
+          type: "string",
+          default: "",
+          description: "Hex color code (e.g. #FF0000)"
+        },
+        %{
+          name: "effect",
+          type: "select",
+          options: ~w(none glow bold italic rainbow),
+          default: "none",
+          description: "Username text effect"
+        }
       ]
     }
   end

@@ -33,7 +33,16 @@ defmodule ForgeNexus.Forums.ForumWebhook do
 
   def changeset(webhook, attrs) do
     webhook
-    |> cast(attrs, [:name, :url, :secret, :events, :is_active, :created_by_id, :last_triggered_at, :failure_count])
+    |> cast(attrs, [
+      :name,
+      :url,
+      :secret,
+      :events,
+      :is_active,
+      :created_by_id,
+      :last_triggered_at,
+      :failure_count
+    ])
     |> validate_required([:name, :url, :events])
     |> validate_length(:name, min: 1, max: 100)
     |> validate_url()
@@ -43,7 +52,9 @@ defmodule ForgeNexus.Forums.ForumWebhook do
 
   defp validate_url(changeset) do
     case get_field(changeset, :url) do
-      nil -> changeset
+      nil ->
+        changeset
+
       url ->
         if String.starts_with?(url, "https://") or String.starts_with?(url, "http://") do
           changeset
@@ -55,9 +66,12 @@ defmodule ForgeNexus.Forums.ForumWebhook do
 
   defp validate_events(changeset) do
     case get_field(changeset, :events) do
-      nil -> changeset
+      nil ->
+        changeset
+
       events ->
         invalid = Enum.reject(events, &(&1 in @valid_events))
+
         if invalid == [] do
           changeset
         else

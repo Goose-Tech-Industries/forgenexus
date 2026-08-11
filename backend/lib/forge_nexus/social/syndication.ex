@@ -10,10 +10,11 @@ defmodule ForgeNexus.Social.Syndication do
   def syndicate_thread(source_thread_id, target_community_id, syndicated_by_id) do
     source = Forums.get_thread!(source_thread_id)
 
-    excerpt = case Forums.list_posts(source.id, limit: 1) do
-      [first_post | _] -> String.slice(first_post.body || "", 0, 500)
-      [] -> ""
-    end
+    excerpt =
+      case Forums.list_posts(source.id, limit: 1) do
+        [first_post | _] -> String.slice(first_post.body || "", 0, 500)
+        [] -> ""
+      end
 
     target_attrs = %{
       "title" => "[Shared] #{source.title}",

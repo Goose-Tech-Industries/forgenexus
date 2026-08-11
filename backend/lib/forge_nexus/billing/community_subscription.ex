@@ -37,9 +37,17 @@ defmodule ForgeNexus.Billing.CommunitySubscription do
   def changeset(sub, attrs) do
     sub
     |> cast(attrs, [
-      :community_id, :stripe_subscription_id, :stripe_customer_id, :stripe_price_id,
-      :plan, :status, :current_period_start, :current_period_end,
-      :cancel_at_period_end, :canceled_at, :metadata
+      :community_id,
+      :stripe_subscription_id,
+      :stripe_customer_id,
+      :stripe_price_id,
+      :plan,
+      :status,
+      :current_period_start,
+      :current_period_end,
+      :cancel_at_period_end,
+      :canceled_at,
+      :metadata
     ])
     |> validate_required([:community_id, :stripe_subscription_id, :plan, :status])
     |> validate_inclusion(:plan, @plans)

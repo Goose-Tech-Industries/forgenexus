@@ -105,7 +105,10 @@ defmodule ForgeNexus.Repo.Migrations.AddRemainingFeatures do
     create table(:referrals, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :referrer_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
-      add :referred_community_id, references(:communities, type: :binary_id, on_delete: :nilify_all)
+
+      add :referred_community_id,
+          references(:communities, type: :binary_id, on_delete: :nilify_all)
+
       add :referred_user_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :code, :string, null: false
       add :commission_rate, :float, default: 0.15

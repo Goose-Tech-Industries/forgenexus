@@ -50,15 +50,19 @@ defmodule ForgeNexusWeb.AdminDashboardController do
       limit: parse_int(params, "limit", 50),
       offset: parse_int(params, "offset", 0)
     ]
+
     logs = Admin.list_audit_logs(opts)
     conn |> json(%{logs: Enum.map(logs, &audit_log_json/1)})
   end
 
   def rollback_audit_log(conn, %{"id" => id}) do
     user = Guardian.Plug.current_resource(conn)
+
     case Admin.rollback_action(id, user.id) do
       {:ok, log} ->
-        conn |> json(%{log: audit_log_json(ForgeNexus.Repo.preload(log, [:admin, :rolled_back_by]))})
+        conn
+        |> json(%{log: audit_log_json(ForgeNexus.Repo.preload(log, [:admin, :rolled_back_by]))})
+
       {:error, reason} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: reason})
     end
@@ -67,13 +71,18 @@ defmodule ForgeNexusWeb.AdminDashboardController do
   # Forum Reordering
   def reorder_categories(conn, %{"ordered_ids" => ids}) when is_list(ids) do
     user = Guardian.Plug.current_resource(conn)
+
     case Admin.reorder_categories(ids) do
       {:ok, _} ->
         Admin.log_admin_action(user.id, %{
-          action: "category_reordered", category: "forums",
-          target_type: "category", description: "Reordered #{length(ids)} categories"
+          action: "category_reordered",
+          category: "forums",
+          target_type: "category",
+          description: "Reordered #{length(ids)} categories"
         })
+
         conn |> json(%{ok: true})
+
       {:error, _} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to reorder"})
     end
@@ -81,13 +90,18 @@ defmodule ForgeNexusWeb.AdminDashboardController do
 
   def reorder_forums(conn, %{"category_id" => cat_id, "ordered_ids" => ids}) when is_list(ids) do
     user = Guardian.Plug.current_resource(conn)
+
     case Admin.reorder_forums(cat_id, ids) do
       {:ok, _} ->
         Admin.log_admin_action(user.id, %{
-          action: "forum_reordered", category: "forums",
-          target_type: "forum", description: "Reordered #{length(ids)} forums"
+          action: "forum_reordered",
+          category: "forums",
+          target_type: "forum",
+          description: "Reordered #{length(ids)} forums"
         })
+
         conn |> json(%{ok: true})
+
       {:error, _} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to reorder"})
     end
@@ -154,13 +168,16 @@ defmodule ForgeNexusWeb.AdminDashboardController do
       is_rolled_back: log.is_rolled_back,
       rolled_back_at: log.rolled_back_at,
       admin: if(Ecto.assoc_loaded?(log.admin), do: user_mini(log.admin)),
-      rolled_back_by: if(Ecto.assoc_loaded?(log.rolled_back_by), do: user_mini(log.rolled_back_by)),
+      rolled_back_by:
+        if(Ecto.assoc_loaded?(log.rolled_back_by), do: user_mini(log.rolled_back_by)),
       inserted_at: log.inserted_at
     }
   end
 
   defp user_mini(nil), do: nil
-  defp user_mini(user), do: %{id: user.id, username: user.username, slug: user.slug, avatar_url: user.avatar_url}
+
+  defp user_mini(user),
+    do: %{id: user.id, username: user.username, slug: user.slug, avatar_url: user.avatar_url}
 
   defp member_json(user) do
     %{
@@ -198,7 +215,8 @@ defmodule ForgeNexusWeb.AdminDashboardController do
   end
 
   def update_engagement_config(conn, %{"config" => cfg}) when is_map(cfg) do
-    allowed = ~w(window_days weight_post cap_post weight_thread cap_thread weight_reputation cap_reputation recency_max tier_power tier_active tier_casual)
+    allowed =
+      ~w(window_days weight_post cap_post weight_thread cap_thread weight_reputation cap_reputation recency_max tier_power tier_active tier_casual)
 
     updates =
       cfg
@@ -255,7 +273,7 @@ defmodule ForgeNexusWeb.AdminDashboardController do
       :error -> default
     end
   end
+
   defp safe_to_integer(val, _default) when is_integer(val), do: val
   defp safe_to_integer(_, default), do: default
-
 end

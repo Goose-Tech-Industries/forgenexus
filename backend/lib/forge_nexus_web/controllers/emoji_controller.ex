@@ -22,6 +22,7 @@ defmodule ForgeNexusWeb.EmojiController do
     case Channels.create_custom_emoji(attrs) do
       {:ok, emoji} ->
         conn |> put_status(:created) |> json(%{emoji: emoji_json(emoji)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
     end
@@ -31,6 +32,7 @@ defmodule ForgeNexusWeb.EmojiController do
     case Channels.update_custom_emoji(id, params) do
       {:ok, emoji} ->
         conn |> json(%{emoji: emoji_json(emoji)})
+
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})
     end
@@ -38,8 +40,11 @@ defmodule ForgeNexusWeb.EmojiController do
 
   def delete(conn, %{"id" => id}) do
     case Channels.delete_custom_emoji(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 

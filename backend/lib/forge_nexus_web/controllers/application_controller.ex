@@ -20,9 +20,13 @@ defmodule ForgeNexusWeb.ApplicationController do
     case Applications.can_apply?(form, user) do
       :ok ->
         case Applications.submit_application(form_id, user.id, answers) do
-          {:ok, app} -> conn |> put_status(:created) |> json(%{application: app_json(app)})
-          {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to submit"})
+          {:ok, app} ->
+            conn |> put_status(:created) |> json(%{application: app_json(app)})
+
+          {:error, _} ->
+            conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to submit"})
         end
+
       {:error, reason} ->
         conn |> put_status(:forbidden) |> json(%{error: to_string(reason)})
     end
@@ -42,8 +46,11 @@ defmodule ForgeNexusWeb.ApplicationController do
 
   def create_form(conn, params) do
     case Applications.create_form(params) do
-      {:ok, form} -> conn |> put_status(:created) |> json(%{form: form_json(form)})
-      {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
+      {:ok, form} ->
+        conn |> put_status(:created) |> json(%{form: form_json(form)})
+
+      {:error, cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
     end
   end
 
@@ -68,6 +75,7 @@ defmodule ForgeNexusWeb.ApplicationController do
 
   def review(conn, %{"id" => id} = params) do
     admin = Guardian.Plug.current_resource(conn)
+
     case Applications.review_application(id, admin.id, params["status"], params["note"]) do
       {:ok, app} -> conn |> json(%{application: app_json(app)})
       {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
@@ -75,17 +83,30 @@ defmodule ForgeNexusWeb.ApplicationController do
   end
 
   defp form_json(f) do
-    %{id: f.id, title: f.title, description: f.description, fields: f.fields,
-      is_open: f.is_open, min_posts: f.min_posts, min_days_member: f.min_days_member,
-      target_group: f.target_group && %{id: f.target_group.id, name: f.target_group.name}}
+    %{
+      id: f.id,
+      title: f.title,
+      description: f.description,
+      fields: f.fields,
+      is_open: f.is_open,
+      min_posts: f.min_posts,
+      min_days_member: f.min_days_member,
+      target_group: f.target_group && %{id: f.target_group.id, name: f.target_group.name}
+    }
   end
 
   defp app_json(a) do
-    %{id: a.id, answers: a.answers, status: a.status, review_note: a.review_note,
-      reviewed_at: a.reviewed_at, inserted_at: a.inserted_at,
+    %{
+      id: a.id,
+      answers: a.answers,
+      status: a.status,
+      review_note: a.review_note,
+      reviewed_at: a.reviewed_at,
+      inserted_at: a.inserted_at,
       user: a.user && %{id: a.user.id, username: a.user.username},
       form: a.form && %{id: a.form.id, title: a.form.title},
-      reviewer: a.reviewer && %{id: a.reviewer.id, username: a.reviewer.username}}
+      reviewer: a.reviewer && %{id: a.reviewer.id, username: a.reviewer.username}
+    }
   end
 
   defp format_errors(cs), do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)

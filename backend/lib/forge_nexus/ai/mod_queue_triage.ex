@@ -12,7 +12,8 @@ defmodule ForgeNexus.AI.ModQueueTriage do
 
   def triage(report_text, context \\ %{}) do
     if not Settings.get_bool("ai_mod_triage_enabled") do
-      {:ok, %{severity: "medium", category: "other", confidence: 0.0, reason: "AI triage disabled"}}
+      {:ok,
+       %{severity: "medium", category: "other", confidence: 0.0, reason: "AI triage disabled"}}
     else
       api_key = System.get_env("ANTHROPIC_API_KEY")
 
@@ -39,7 +40,12 @@ defmodule ForgeNexus.AI.ModQueueTriage do
     model = Settings.get("ai_mod_triage_model") || "claude-haiku-4-5-20251001"
 
     body = %{model: model, max_tokens: 256, messages: [%{role: "user", content: prompt}]}
-    headers = [{"x-api-key", api_key}, {"anthropic-version", "2023-06-01"}, {"content-type", "application/json"}]
+
+    headers = [
+      {"x-api-key", api_key},
+      {"anthropic-version", "2023-06-01"},
+      {"content-type", "application/json"}
+    ]
 
     try do
       case Req.post(url, headers: headers, json: body, receive_timeout: 30_000) do
@@ -56,13 +62,15 @@ defmodule ForgeNexus.AI.ModQueueTriage do
 
   defp parse_triage_response(text) do
     case Jason.decode(String.trim(text)) do
-      {:ok, %{"severity" => sev, "category" => cat} = result} when sev in @severity_levels and cat in @categories ->
-        {:ok, %{
-          severity: sev,
-          category: cat,
-          confidence: result["confidence"] || 0.5,
-          reason: result["reason"] || ""
-        }}
+      {:ok, %{"severity" => sev, "category" => cat} = result}
+      when sev in @severity_levels and cat in @categories ->
+        {:ok,
+         %{
+           severity: sev,
+           category: cat,
+           confidence: result["confidence"] || 0.5,
+           reason: result["reason"] || ""
+         }}
 
       _ ->
         {:ok, %{severity: "medium", category: "other", confidence: 0.0, reason: "Parse error"}}

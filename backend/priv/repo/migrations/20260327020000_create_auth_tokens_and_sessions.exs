@@ -6,8 +6,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateAuthTokensAndSessions do
     create table(:auth_tokens, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :token, :string, null: false
-      add :type, :string, null: false  # "email_verify", "password_reset", "email_change"
-      add :email, :string  # for email_change: the new email
+      # "email_verify", "password_reset", "email_change"
+      add :type, :string, null: false
+      # for email_change: the new email
+      add :email, :string
       add :used_at, :utc_datetime
       add :expires_at, :utc_datetime, null: false
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
@@ -22,10 +24,12 @@ defmodule ForgeNexus.Repo.Migrations.CreateAuthTokensAndSessions do
     # Login sessions (active device tracking)
     create table(:login_sessions, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :token_jti, :string, null: false  # JWT ID for revocation
+      # JWT ID for revocation
+      add :token_jti, :string, null: false
       add :ip_address, :string
       add :user_agent, :string
-      add :device_name, :string  # parsed from user_agent
+      # parsed from user_agent
+      add :device_name, :string
       add :last_active_at, :utc_datetime
       add :revoked_at, :utc_datetime
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false

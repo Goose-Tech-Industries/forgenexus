@@ -24,11 +24,17 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetDecay do
       []
       |> then(fn e ->
         hr = Map.get(config, "hunger_rate")
-        if is_nil(hr) or (is_number(hr) and hr >= 0), do: e, else: ["hunger_rate must be a non-negative number" | e]
+
+        if is_nil(hr) or (is_number(hr) and hr >= 0),
+          do: e,
+          else: ["hunger_rate must be a non-negative number" | e]
       end)
       |> then(fn e ->
         hr = Map.get(config, "happiness_rate")
-        if is_nil(hr) or (is_number(hr) and hr >= 0), do: e, else: ["happiness_rate must be a non-negative number" | e]
+
+        if is_nil(hr) or (is_number(hr) and hr >= 0),
+          do: e,
+          else: ["happiness_rate must be a non-negative number" | e]
       end)
 
     if errors == [], do: :ok, else: {:error, errors}
@@ -46,8 +52,18 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetDecay do
         %{name: "pets_affected", type: "number"}
       ],
       config_fields: [
-        %{name: "hunger_rate", type: "number", default: 5, description: "Amount to reduce hunger per tick"},
-        %{name: "happiness_rate", type: "number", default: 3, description: "Amount to reduce happiness per tick"}
+        %{
+          name: "hunger_rate",
+          type: "number",
+          default: 5,
+          description: "Amount to reduce hunger per tick"
+        },
+        %{
+          name: "happiness_rate",
+          type: "number",
+          default: 3,
+          description: "Amount to reduce happiness per tick"
+        }
       ]
     }
   end

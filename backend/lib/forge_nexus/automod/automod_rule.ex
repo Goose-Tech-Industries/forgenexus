@@ -20,7 +20,16 @@ defmodule ForgeNexus.AutoMod.AutoModRule do
 
   def changeset(rule, attrs) do
     rule
-    |> cast(attrs, [:name, :description, :rule_type, :config, :action, :severity, :is_enabled, :sort_order])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :rule_type,
+      :config,
+      :action,
+      :severity,
+      :is_enabled,
+      :sort_order
+    ])
     |> validate_required([:name, :rule_type])
     |> validate_inclusion(:rule_type, ~w(keyword spam regex rate_limit custom))
     |> validate_inclusion(:action, ~w(flag warn delete mute ban))

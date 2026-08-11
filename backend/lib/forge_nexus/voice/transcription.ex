@@ -72,8 +72,7 @@ defmodule ForgeNexus.Voice.Transcription do
       [
         {"model", "whisper-1"},
         {"response_format", "verbose_json"},
-        {:file, file_path,
-         {"form-data", [name: "file", filename: Path.basename(file_path)]}, []}
+        {:file, file_path, {"form-data", [name: "file", filename: Path.basename(file_path)]}, []}
       ]
     }
 
@@ -109,7 +108,10 @@ defmodule ForgeNexus.Voice.Transcription do
 
   defp transcribe_local(file_path) do
     bin = Settings.get("voice_transcription_whisper_cpp_bin") || "/opt/whisper.cpp/main"
-    model = Settings.get("voice_transcription_whisper_cpp_model") || "/opt/whisper.cpp/models/ggml-small.en.bin"
+
+    model =
+      Settings.get("voice_transcription_whisper_cpp_model") ||
+        "/opt/whisper.cpp/models/ggml-small.en.bin"
 
     cond do
       not executable?(bin) ->
@@ -165,11 +167,14 @@ defmodule ForgeNexus.Voice.Transcription do
 
   defp call_whisper_cpp(bin, model, wav_path, output_base) do
     args = [
-      "-m", model,
-      "-f", wav_path,
+      "-m",
+      model,
+      "-f",
+      wav_path,
       "-otxt",
       "-nt",
-      "-of", output_base
+      "-of",
+      output_base
     ]
 
     case System.cmd(bin, args, stderr_to_stdout: true) do

@@ -6,8 +6,13 @@ defmodule ForgeNexus.Cooldowns do
 
   def check_cooldown(user_id, action_key) do
     now = DateTime.utc_now()
-    case Repo.one(from cd in UserCooldown, where: cd.user_id == ^user_id and cd.action_key == ^action_key) do
-      nil -> {:ok, :ready}
+
+    case Repo.one(
+           from cd in UserCooldown, where: cd.user_id == ^user_id and cd.action_key == ^action_key
+         ) do
+      nil ->
+        {:ok, :ready}
+
       %{expires_at: expires_at} ->
         if DateTime.compare(expires_at, now) == :gt do
           {:error, DateTime.diff(expires_at, now)}
@@ -18,9 +23,14 @@ defmodule ForgeNexus.Cooldowns do
   end
 
   def set_cooldown(user_id, action_key, duration_seconds) do
-    expires_at = DateTime.utc_now() |> DateTime.add(duration_seconds, :second) |> DateTime.truncate(:second)
+    expires_at =
+      DateTime.utc_now() |> DateTime.add(duration_seconds, :second) |> DateTime.truncate(:second)
+
     attrs = %{user_id: user_id, action_key: action_key, expires_at: expires_at}
-    case Repo.one(from cd in UserCooldown, where: cd.user_id == ^user_id and cd.action_key == ^action_key) do
+
+    case Repo.one(
+           from cd in UserCooldown, where: cd.user_id == ^user_id and cd.action_key == ^action_key
+         ) do
       nil -> %UserCooldown{} |> UserCooldown.changeset(attrs) |> Repo.insert()
       existing -> existing |> UserCooldown.changeset(%{expires_at: expires_at}) |> Repo.update()
     end
@@ -29,13 +39,21 @@ defmodule ForgeNexus.Cooldowns do
   def clear_cooldown(user_id, action_key) do
     from(cd in UserCooldown, where: cd.user_id == ^user_id and cd.action_key == ^action_key)
     |> Repo.delete_all()
+
     :ok
   end
 
   def get_remaining(user_id, action_key) do
     now = DateTime.utc_now()
-    case Repo.one(from cd in UserCooldown, where: cd.user_id == ^user_id and cd.action_key == ^action_key, select: cd.expires_at) do
-      nil -> 0
+
+    case Repo.one(
+           from cd in UserCooldown,
+             where: cd.user_id == ^user_id and cd.action_key == ^action_key,
+             select: cd.expires_at
+         ) do
+      nil ->
+        0
+
       expires_at ->
         diff = DateTime.diff(expires_at, now)
         if diff > 0, do: diff, else: 0

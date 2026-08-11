@@ -2,7 +2,17 @@ defmodule ForgeNexus.Economy do
   @moduledoc "Multi-currency economy system with balances, transactions, transfers, and interest."
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Economy.{Currency, UserBalance, Transaction, PointTransaction, PointConfig, PointPack, PointPackPurchase}
+
+  alias ForgeNexus.Economy.{
+    Currency,
+    UserBalance,
+    Transaction,
+    PointTransaction,
+    PointConfig,
+    PointPack,
+    PointPackPurchase
+  }
+
   alias ForgeNexus.Accounts.User
 
   @default_rates %{
@@ -23,13 +33,23 @@ defmodule ForgeNexus.Economy do
     ref_type = Keyword.get(opts, :reference_type)
     ref_id = Keyword.get(opts, :reference_id)
     description = Keyword.get(opts, :description)
+
     if amount > 0 do
       Repo.transaction(fn ->
         {1, [%{points: new_balance}]} =
           from(u in User, where: u.id == ^user_id, select: %{points: u.points})
           |> Repo.update_all(inc: [points: amount])
+
         %PointTransaction{}
-        |> PointTransaction.changeset(%{user_id: user_id, amount: amount, balance_after: new_balance, reason: reason, reference_type: ref_type, reference_id: ref_id, description: description})
+        |> PointTransaction.changeset(%{
+          user_id: user_id,
+          amount: amount,
+          balance_after: new_balance,
+          reason: reason,
+          reference_type: ref_type,
+          reference_id: ref_id,
+          description: description
+        })
         |> Repo.insert!()
       end)
     else
@@ -40,10 +60,22 @@ defmodule ForgeNexus.Economy do
   def award_points(user_id, currency_id, amount) when is_integer(amount) and amount > 0 do
     Repo.transaction(fn ->
       get_balance(user_id, currency_id)
+
       {1, [%{balance: new_bal}]} =
-        from(ub in UserBalance, where: ub.user_id == ^user_id and ub.currency_id == ^currency_id, select: %{balance: ub.balance})
+        from(ub in UserBalance,
+          where: ub.user_id == ^user_id and ub.currency_id == ^currency_id,
+          select: %{balance: ub.balance}
+        )
         |> Repo.update_all(inc: [balance: amount, lifetime_earned: amount])
-      create_transaction!(%{user_id: user_id, currency_id: currency_id, amount: amount, balance_after: new_bal, type: "award"})
+
+      create_transaction!(%{
+        user_id: user_id,
+        currency_id: currency_id,
+        amount: amount,
+        balance_after: new_bal,
+        type: "award"
+      })
+
       new_bal
     end)
   end
@@ -54,13 +86,27 @@ defmodule ForgeNexus.Economy do
 
   def deduct_legacy_points(user_id, amount, reason, opts \\ []) do
     if amount <= 0, do: raise(ArgumentError, "amount must be positive")
+
     Repo.transaction(fn ->
-      case from(u in User, where: u.id == ^user_id and u.points >= ^amount, select: %{points: u.points})
+      case from(u in User,
+             where: u.id == ^user_id and u.points >= ^amount,
+             select: %{points: u.points}
+           )
            |> Repo.update_all(inc: [points: -amount]) do
-        {0, _} -> Repo.rollback(:insufficient_points)
+        {0, _} ->
+          Repo.rollback(:insufficient_points)
+
         {1, [%{points: new_balance}]} ->
           %PointTransaction{}
-          |> PointTransaction.changeset(%{user_id: user_id, amount: -amount, balance_after: new_balance, reason: reason, reference_type: Keyword.get(opts, :reference_type), reference_id: Keyword.get(opts, :reference_id), description: Keyword.get(opts, :description)})
+          |> PointTransaction.changeset(%{
+            user_id: user_id,
+            amount: -amount,
+            balance_after: new_balance,
+            reason: reason,
+            reference_type: Keyword.get(opts, :reference_type),
+            reference_id: Keyword.get(opts, :reference_id),
+            description: Keyword.get(opts, :description)
+          })
           |> Repo.insert!()
       end
     end)
@@ -68,12 +114,21 @@ defmodule ForgeNexus.Economy do
 
   def transaction_history(user_id, opts \\ []) do
     limit = Keyword.get(opts, :limit, 25)
-    PointTransaction |> where([t], t.user_id == ^user_id) |> order_by(desc: :inserted_at) |> limit(^limit) |> Repo.all()
+
+    PointTransaction
+    |> where([t], t.user_id == ^user_id)
+    |> order_by(desc: :inserted_at)
+    |> limit(^limit)
+    |> Repo.all()
   end
 
   def leaderboard(limit \\ 20) do
-    User |> where([u], u.points > 0) |> order_by(desc: :points) |> limit(^limit)
-    |> select([u], %{id: u.id, username: u.username, avatar_url: u.avatar_url, points: u.points}) |> Repo.all()
+    User
+    |> where([u], u.points > 0)
+    |> order_by(desc: :points)
+    |> limit(^limit)
+    |> select([u], %{id: u.id, username: u.username, avatar_url: u.avatar_url, points: u.points})
+    |> Repo.all()
   end
 
   def get_rate(action) do
@@ -85,18 +140,35 @@ defmodule ForgeNexus.Economy do
 
   def list_config do
     existing = PointConfig |> Repo.all() |> Map.new(fn c -> {c.action, c} end)
+
     Enum.map(@default_rates, fn {action, default} ->
       case Map.get(existing, action) do
-        nil -> %{action: action, points: default, is_active: true, is_default: true}
-        config -> %{action: config.action, points: config.points, is_active: config.is_active, is_default: false, id: config.id}
+        nil ->
+          %{action: action, points: default, is_active: true, is_default: true}
+
+        config ->
+          %{
+            action: config.action,
+            points: config.points,
+            is_active: config.is_active,
+            is_default: false,
+            id: config.id
+          }
       end
     end)
   end
 
   def update_config(action, points, is_active) do
     case Repo.get_by(PointConfig, action: action) do
-      nil -> %PointConfig{} |> PointConfig.changeset(%{action: action, points: points, is_active: is_active}) |> Repo.insert()
-      existing -> existing |> PointConfig.changeset(%{points: points, is_active: is_active}) |> Repo.update()
+      nil ->
+        %PointConfig{}
+        |> PointConfig.changeset(%{action: action, points: points, is_active: is_active})
+        |> Repo.insert()
+
+      existing ->
+        existing
+        |> PointConfig.changeset(%{points: points, is_active: is_active})
+        |> Repo.update()
     end
   end
 
@@ -111,39 +183,91 @@ defmodule ForgeNexus.Economy do
   end
 
   def get_balance(user_id, currency_id) do
-    case Repo.one(from ub in UserBalance, where: ub.user_id == ^user_id and ub.currency_id == ^currency_id, select: ub.balance) do
+    case Repo.one(
+           from ub in UserBalance,
+             where: ub.user_id == ^user_id and ub.currency_id == ^currency_id,
+             select: ub.balance
+         ) do
       nil ->
-        %UserBalance{} |> UserBalance.changeset(%{user_id: user_id, currency_id: currency_id, balance: 0, lifetime_earned: 0})
+        %UserBalance{}
+        |> UserBalance.changeset(%{
+          user_id: user_id,
+          currency_id: currency_id,
+          balance: 0,
+          lifetime_earned: 0
+        })
         |> Repo.insert!(on_conflict: :nothing, conflict_target: [:user_id, :currency_id])
-       
-      balance -> balance
+
+      balance ->
+        balance
     end
   end
 
   def deduct_points(user_id, currency_id, amount) when is_integer(amount) and amount > 0 do
     Repo.transaction(fn ->
-      case from(ub in UserBalance, where: ub.user_id == ^user_id and ub.currency_id == ^currency_id and ub.balance >= ^amount, select: %{balance: ub.balance})
+      case from(ub in UserBalance,
+             where:
+               ub.user_id == ^user_id and ub.currency_id == ^currency_id and ub.balance >= ^amount,
+             select: %{balance: ub.balance}
+           )
            |> Repo.update_all(inc: [balance: -amount]) do
-        {0, _} -> Repo.rollback(:insufficient_balance)
+        {0, _} ->
+          Repo.rollback(:insufficient_balance)
+
         {1, [%{balance: new_bal}]} ->
-          create_transaction!(%{user_id: user_id, currency_id: currency_id, amount: -amount, balance_after: new_bal, type: "deduct"})
+          create_transaction!(%{
+            user_id: user_id,
+            currency_id: currency_id,
+            amount: -amount,
+            balance_after: new_bal,
+            type: "deduct"
+          })
+
           new_bal
       end
     end)
   end
 
-  def transfer_points(from_id, to_id, currency_id, amount) when is_integer(amount) and amount > 0 do
+  def transfer_points(from_id, to_id, currency_id, amount)
+      when is_integer(amount) and amount > 0 do
     Repo.transaction(fn ->
-      case from(ub in UserBalance, where: ub.user_id == ^from_id and ub.currency_id == ^currency_id and ub.balance >= ^amount, select: %{balance: ub.balance})
+      case from(ub in UserBalance,
+             where:
+               ub.user_id == ^from_id and ub.currency_id == ^currency_id and ub.balance >= ^amount,
+             select: %{balance: ub.balance}
+           )
            |> Repo.update_all(inc: [balance: -amount]) do
-        {0, _} -> Repo.rollback(:insufficient_balance)
+        {0, _} ->
+          Repo.rollback(:insufficient_balance)
+
         {1, [%{balance: sender_bal}]} ->
-          create_transaction!(%{user_id: from_id, currency_id: currency_id, amount: -amount, balance_after: sender_bal, type: "transfer", reason: "transfer_to:" <> to_id})
+          create_transaction!(%{
+            user_id: from_id,
+            currency_id: currency_id,
+            amount: -amount,
+            balance_after: sender_bal,
+            type: "transfer",
+            reason: "transfer_to:" <> to_id
+          })
+
           get_balance(to_id, currency_id)
+
           {1, [%{balance: recv_bal}]} =
-            from(ub in UserBalance, where: ub.user_id == ^to_id and ub.currency_id == ^currency_id, select: %{balance: ub.balance})
+            from(ub in UserBalance,
+              where: ub.user_id == ^to_id and ub.currency_id == ^currency_id,
+              select: %{balance: ub.balance}
+            )
             |> Repo.update_all(inc: [balance: amount, lifetime_earned: amount])
-          create_transaction!(%{user_id: to_id, currency_id: currency_id, amount: amount, balance_after: recv_bal, type: "transfer", reason: "transfer_from:" <> from_id})
+
+          create_transaction!(%{
+            user_id: to_id,
+            currency_id: currency_id,
+            amount: amount,
+            balance_after: recv_bal,
+            type: "transfer",
+            reason: "transfer_from:" <> from_id
+          })
+
           :ok
       end
     end)
@@ -152,20 +276,37 @@ defmodule ForgeNexus.Economy do
   def get_leaderboard(currency_id, limit \\ 10) do
     UserBalance
     |> where([ub], ub.currency_id == ^currency_id and ub.balance > 0)
-    |> order_by(desc: :balance) |> limit(^limit)
+    |> order_by(desc: :balance)
+    |> limit(^limit)
     |> join(:inner, [ub], u in User, on: ub.user_id == u.id)
-    |> select([ub, u], %{user_id: u.id, username: u.username, slug: u.slug, avatar_url: u.avatar_url, balance: ub.balance})
+    |> select([ub, u], %{
+      user_id: u.id,
+      username: u.username,
+      slug: u.slug,
+      avatar_url: u.avatar_url,
+      balance: ub.balance
+    })
     |> Repo.all()
   end
 
   def get_user_rank(user_id, currency_id) do
     bal = get_balance(user_id, currency_id)
-    count = Repo.one(from ub in UserBalance, where: ub.currency_id == ^currency_id and ub.balance > ^bal, select: count(ub.id))
+
+    count =
+      Repo.one(
+        from ub in UserBalance,
+          where: ub.currency_id == ^currency_id and ub.balance > ^bal,
+          select: count(ub.id)
+      )
+
     count + 1
   end
 
-  def create_transaction(attrs), do: %Transaction{} |> Transaction.changeset(attrs) |> Repo.insert()
-  defp create_transaction!(attrs), do: %Transaction{} |> Transaction.changeset(attrs) |> Repo.insert!()
+  def create_transaction(attrs),
+    do: %Transaction{} |> Transaction.changeset(attrs) |> Repo.insert()
+
+  defp create_transaction!(attrs),
+    do: %Transaction{} |> Transaction.changeset(attrs) |> Repo.insert!()
 
   # --- Point Packs (real money → economy points) ---
 
@@ -191,10 +332,13 @@ defmodule ForgeNexus.Economy do
     total_points = PointPack.total_points(pack)
 
     Repo.transaction(fn ->
-      award_points(user_id, "point_pack_purchase", amount: total_points,
-        description: "Purchased #{pack.name} (#{pack.points}+#{pack.bonus_points} bonus)")
+      award_points(user_id, "point_pack_purchase",
+        amount: total_points,
+        description: "Purchased #{pack.name} (#{pack.points}+#{pack.bonus_points} bonus)"
+      )
 
-      purchase = %PointPackPurchase{}
+      purchase =
+        %PointPackPurchase{}
         |> PointPackPurchase.changeset(%{
           pack_id: pack.id,
           user_id: user_id,
@@ -220,11 +364,18 @@ defmodule ForgeNexus.Economy do
   end
 
   def apply_interest(currency_id, rate_pct) when is_number(rate_pct) and rate_pct > 0 do
-    bals = from(ub in UserBalance, where: ub.currency_id == ^currency_id and ub.balance > 0, select: %{user_id: ub.user_id, balance: ub.balance}) |> Repo.all()
+    bals =
+      from(ub in UserBalance,
+        where: ub.currency_id == ^currency_id and ub.balance > 0,
+        select: %{user_id: ub.user_id, balance: ub.balance}
+      )
+      |> Repo.all()
+
     Enum.each(bals, fn %{user_id: uid, balance: bal} ->
       interest = trunc(bal * rate_pct / 100)
       if interest > 0, do: award_points(uid, currency_id, interest)
     end)
+
     {:ok, length(bals)}
   end
 

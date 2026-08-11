@@ -3,7 +3,14 @@ defmodule ForgeNexus.Federation do
 
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Federation.{InstanceKeypair, FederatedInstance, FederatedIdentity, FederationPolicy}
+
+  alias ForgeNexus.Federation.{
+    InstanceKeypair,
+    FederatedInstance,
+    FederatedIdentity,
+    FederationPolicy
+  }
+
   alias ForgeNexus.Federation.ActivityPub.{Actor, Object, Follower, Delivery}
   alias ForgeNexus.Settings
 
@@ -13,10 +20,13 @@ defmodule ForgeNexus.Federation do
 
   def list_instances(opts \\ []) do
     query = FederatedInstance |> order_by(:domain)
-    query = case Keyword.get(opts, :status) do
-      nil -> query
-      status -> where(query, status: ^status)
-    end
+
+    query =
+      case Keyword.get(opts, :status) do
+        nil -> query
+        status -> where(query, status: ^status)
+      end
+
     Repo.all(query)
   end
 
@@ -41,7 +51,8 @@ defmodule ForgeNexus.Federation do
     from(fi in FederatedIdentity,
       where: fi.local_user_id == ^user_id,
       preload: :remote_instance
-    ) |> Repo.all()
+    )
+    |> Repo.all()
   end
 
   def link_identity(attrs) do
@@ -59,6 +70,7 @@ defmodule ForgeNexus.Federation do
   def generate_keypair do
     # Generate RSA keypair for signing
     {pub, priv} = generate_rsa_pair()
+
     %InstanceKeypair{}
     |> InstanceKeypair.changeset(%{public_key: pub, private_key_encrypted: priv, is_active: true})
     |> Repo.insert()
@@ -67,7 +79,15 @@ defmodule ForgeNexus.Federation do
   defp generate_rsa_pair do
     key = :public_key.generate_key({:rsa, 2048, 65537})
     private_pem = :public_key.pem_encode([:public_key.pem_entry_encode(:RSAPrivateKey, key)])
-    public_key = :public_key.pem_encode([:public_key.pem_entry_encode(:SubjectPublicKeyInfo, {:RSAPublicKey, elem(key, 1), elem(key, 2)})])
+
+    public_key =
+      :public_key.pem_encode([
+        :public_key.pem_entry_encode(
+          :SubjectPublicKeyInfo,
+          {:RSAPublicKey, elem(key, 1), elem(key, 2)}
+        )
+      ])
+
     {public_key, private_pem}
   end
 
@@ -75,6 +95,7 @@ defmodule ForgeNexus.Federation do
 
   def get_or_create_actor_for_forum(forum) do
     uri = "#{ForgeNexusWeb.Endpoint.url()}/ap/forums/#{forum.slug}"
+
     case Repo.get_by(Actor, uri: uri) do
       nil ->
         %Actor{}
@@ -88,12 +109,15 @@ defmodule ForgeNexus.Federation do
           is_local: true
         })
         |> Repo.insert()
-      actor -> {:ok, actor}
+
+      actor ->
+        {:ok, actor}
     end
   end
 
   def get_or_create_actor_for_user(user) do
     uri = "#{ForgeNexusWeb.Endpoint.url()}/ap/users/#{user.slug}"
+
     case Repo.get_by(Actor, uri: uri) do
       nil ->
         %Actor{}
@@ -107,7 +131,9 @@ defmodule ForgeNexus.Federation do
           is_local: true
         })
         |> Repo.insert()
-      actor -> {:ok, actor}
+
+      actor ->
+        {:ok, actor}
     end
   end
 
@@ -125,7 +151,11 @@ defmodule ForgeNexus.Federation do
 
   def add_follower(actor_id, follower_uri, follower_inbox) do
     %Follower{}
-    |> Follower.changeset(%{actor_id: actor_id, follower_uri: follower_uri, follower_inbox: follower_inbox})
+    |> Follower.changeset(%{
+      actor_id: actor_id,
+      follower_uri: follower_uri,
+      follower_inbox: follower_inbox
+    })
     |> Repo.insert(on_conflict: :nothing, conflict_target: [:actor_id, :follower_uri])
   end
 
@@ -155,7 +185,8 @@ defmodule ForgeNexus.Federation do
       order_by: :inserted_at,
       limit: ^limit,
       preload: :object
-    ) |> Repo.all()
+    )
+    |> Repo.all()
   end
 
   def mark_delivered(delivery_id) do
@@ -166,6 +197,7 @@ defmodule ForgeNexus.Federation do
 
   def mark_failed(delivery_id, error) do
     delivery = Repo.get!(Delivery, delivery_id)
+
     delivery
     |> Ecto.Changeset.change(%{
       attempts: delivery.attempts + 1,
@@ -192,6 +224,7 @@ defmodule ForgeNexus.Federation do
 
   def domain_allowed?(domain) do
     policy = get_policy()
+
     case policy.mode do
       "open" -> domain not in (policy.blocked_domains || [])
       "allowlist" -> domain in (policy.allowed_domains || [])

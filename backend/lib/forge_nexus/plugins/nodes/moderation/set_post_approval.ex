@@ -8,7 +8,9 @@ defmodule ForgeNexus.Plugins.Nodes.Moderation.SetPostApproval do
     Sandbox.check_db_limit!(ctx)
     target_type = Map.get(inputs, :target_type) || Map.get(inputs, "target_type")
     target_id = Map.get(inputs, :target_id) || Map.get(inputs, "target_id")
-    require_approval = Map.get(inputs, :require_approval) || Map.get(inputs, "require_approval", true)
+
+    require_approval =
+      Map.get(inputs, :require_approval) || Map.get(inputs, "require_approval", true)
 
     case ForgeNexus.Moderation.set_post_approval(target_type, target_id, require_approval) do
       {:ok, _} ->

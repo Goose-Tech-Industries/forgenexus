@@ -9,8 +9,21 @@ defmodule ForgeNexusWeb.SitemapController do
 
   # GET /api/sitemap.xml
   def index(conn, _params) do
-    forums = from(f in Forum, where: f.is_visible == true, select: %{slug: f.slug, updated_at: f.updated_at}) |> Repo.all()
-    threads = from(t in Thread, where: t.is_hidden == false, order_by: [desc: :last_post_at], limit: 1000, select: %{slug: t.slug, last_post_at: t.last_post_at, updated_at: t.updated_at}) |> Repo.all()
+    forums =
+      from(f in Forum,
+        where: f.is_visible == true,
+        select: %{slug: f.slug, updated_at: f.updated_at}
+      )
+      |> Repo.all()
+
+    threads =
+      from(t in Thread,
+        where: t.is_hidden == false,
+        order_by: [desc: :last_post_at],
+        limit: 1000,
+        select: %{slug: t.slug, last_post_at: t.last_post_at, updated_at: t.updated_at}
+      )
+      |> Repo.all()
 
     xml = """
     <?xml version="1.0" encoding="UTF-8"?>
@@ -21,20 +34,20 @@ defmodule ForgeNexusWeb.SitemapController do
         <priority>1.0</priority>
       </url>
     #{Enum.map(forums, fn f -> """
-      <url>
-        <loc>#{@base_url}/forums/#{f.slug}</loc>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
-      </url>
-    """ end) |> Enum.join()}
+        <url>
+          <loc>#{@base_url}/forums/#{f.slug}</loc>
+          <changefreq>daily</changefreq>
+          <priority>0.8</priority>
+        </url>
+      """ end) |> Enum.join()}
     #{Enum.map(threads, fn t -> """
-      <url>
-        <loc>#{@base_url}/threads/#{t.slug}</loc>
-        <lastmod>#{format_date(t.last_post_at || t.updated_at)}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-      </url>
-    """ end) |> Enum.join()}
+        <url>
+          <loc>#{@base_url}/threads/#{t.slug}</loc>
+          <lastmod>#{format_date(t.last_post_at || t.updated_at)}</lastmod>
+          <changefreq>weekly</changefreq>
+          <priority>0.6</priority>
+        </url>
+      """ end) |> Enum.join()}
     </urlset>
     """
 

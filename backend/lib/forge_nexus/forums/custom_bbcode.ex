@@ -19,14 +19,18 @@ defmodule ForgeNexus.Forums.CustomBBCode do
     |> cast(attrs, [:tag_name, :replacement_html, :description, :is_active])
     |> validate_required([:tag_name, :replacement_html])
     |> validate_length(:tag_name, min: 1, max: 50)
-    |> validate_format(:tag_name, ~r/^[a-zA-Z][a-zA-Z0-9_-]*$/, message: "must start with a letter and contain only letters, numbers, hyphens, underscores")
+    |> validate_format(:tag_name, ~r/^[a-zA-Z][a-zA-Z0-9_-]*$/,
+      message: "must start with a letter and contain only letters, numbers, hyphens, underscores"
+    )
     |> unique_constraint(:tag_name)
     |> validate_no_script_tags()
   end
 
   defp validate_no_script_tags(changeset) do
     case get_change(changeset, :replacement_html) do
-      nil -> changeset
+      nil ->
+        changeset
+
       html ->
         if String.match?(html, ~r/<script/i) do
           add_error(changeset, :replacement_html, "must not contain script tags")

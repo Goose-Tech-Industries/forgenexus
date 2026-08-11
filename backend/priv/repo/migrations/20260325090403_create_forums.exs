@@ -37,7 +37,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateForums do
       add :last_post_at, :utc_datetime
       add :last_post_user_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :last_thread_id, :binary_id
-      add :category_id, references(:categories, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :category_id, references(:categories, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :parent_id, references(:forums, type: :binary_id, on_delete: :nilify_all)
       add :permissions, :map, default: %{}
 

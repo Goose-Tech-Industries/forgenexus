@@ -4,7 +4,15 @@ defmodule ForgeNexus.Chat do
   """
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Chat.{Conversation, ConversationParticipant, Message, Friendship, Notification, ShoutboxMessage}
+
+  alias ForgeNexus.Chat.{
+    Conversation,
+    ConversationParticipant,
+    Message,
+    Friendship,
+    Notification,
+    ShoutboxMessage
+  }
 
   # --- Conversations ---
 
@@ -31,8 +39,10 @@ defmodule ForgeNexus.Chat do
     existing =
       from(c in Conversation,
         where: c.type == "direct",
-        join: cp1 in ConversationParticipant, on: cp1.conversation_id == c.id and cp1.user_id == ^user_id,
-        join: cp2 in ConversationParticipant, on: cp2.conversation_id == c.id and cp2.user_id == ^other_user_id,
+        join: cp1 in ConversationParticipant,
+        on: cp1.conversation_id == c.id and cp1.user_id == ^user_id,
+        join: cp2 in ConversationParticipant,
+        on: cp2.conversation_id == c.id and cp2.user_id == ^other_user_id,
         limit: 1
       )
       |> Repo.one()
@@ -83,7 +93,11 @@ defmodule ForgeNexus.Chat do
         role = if uid == creator_id, do: "admin", else: "member"
 
         %ConversationParticipant{}
-        |> ConversationParticipant.changeset(%{conversation_id: conversation.id, user_id: uid, role: role})
+        |> ConversationParticipant.changeset(%{
+          conversation_id: conversation.id,
+          user_id: uid,
+          role: role
+        })
         |> Ecto.Changeset.put_change(:joined_at, now)
         |> Repo.insert!()
       end
@@ -137,23 +151,35 @@ defmodule ForgeNexus.Chat do
 
   def edit_message(message_id, user_id, new_body) do
     case Repo.get(Message, message_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       %Message{user_id: ^user_id} = message ->
         message
-        |> Ecto.Changeset.change(body: new_body, is_edited: true, edited_at: DateTime.utc_now() |> DateTime.truncate(:second))
+        |> Ecto.Changeset.change(
+          body: new_body,
+          is_edited: true,
+          edited_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        )
         |> Repo.update()
-      _ -> {:error, :unauthorized}
+
+      _ ->
+        {:error, :unauthorized}
     end
   end
 
   def delete_message(message_id, user_id) do
     case Repo.get(Message, message_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       %Message{user_id: ^user_id} = message ->
         message
         |> Ecto.Changeset.change(is_deleted: true)
         |> Repo.update()
-      _ -> {:error, :unauthorized}
+
+      _ ->
+        {:error, :unauthorized}
     end
   end
 
@@ -171,17 +197,20 @@ defmodule ForgeNexus.Chat do
   def add_reaction(message_id, user_id, emoji) do
     # Store as a simple map on the message for DMs (lightweight approach)
     case Repo.get(Message, message_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       message ->
         reactions = message.reactions || %{}
         entry = reactions[emoji] || %{"count" => 0, "users" => []}
         users = entry["users"] || []
 
         unless user_id in users do
-          updated = Map.put(reactions, emoji, %{
-            "count" => length(users) + 1,
-            "users" => users ++ [user_id]
-          })
+          updated =
+            Map.put(reactions, emoji, %{
+              "count" => length(users) + 1,
+              "users" => users ++ [user_id]
+            })
 
           message
           |> Ecto.Changeset.change(reactions: updated)
@@ -198,7 +227,9 @@ defmodule ForgeNexus.Chat do
 
   def remove_reaction(message_id, user_id, emoji) do
     case Repo.get(Message, message_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       message ->
         reactions = message.reactions || %{}
         entry = reactions[emoji] || %{"count" => 0, "users" => []}
@@ -384,17 +415,33 @@ defmodule ForgeNexus.Chat do
   end
 
   def clear_shoutbox do
-    {count, _} = from(m in ShoutboxMessage, where: m.is_deleted == false)
-    |> Repo.update_all(set: [is_deleted: true])
+    {count, _} =
+      from(m in ShoutboxMessage, where: m.is_deleted == false)
+      |> Repo.update_all(set: [is_deleted: true])
+
     {:ok, count}
   end
 
   def shoutbox_stats do
     total = Repo.one(from m in ShoutboxMessage, where: m.is_deleted == false, select: count(m.id))
-    today = Repo.one(from m in ShoutboxMessage,
-      where: m.is_deleted == false and m.inserted_at >= ^(DateTime.utc_now() |> DateTime.to_date() |> DateTime.new!(~T[00:00:00])),
-      select: count(m.id))
-    pinned = Repo.one(from m in ShoutboxMessage, where: m.is_pinned == true and m.is_deleted == false, select: count(m.id))
+
+    today =
+      Repo.one(
+        from m in ShoutboxMessage,
+          where:
+            m.is_deleted == false and
+              m.inserted_at >=
+                ^(DateTime.utc_now() |> DateTime.to_date() |> DateTime.new!(~T[00:00:00])),
+          select: count(m.id)
+      )
+
+    pinned =
+      Repo.one(
+        from m in ShoutboxMessage,
+          where: m.is_pinned == true and m.is_deleted == false,
+          select: count(m.id)
+      )
+
     %{total_messages: total, messages_today: today || 0, pinned_count: pinned}
   end
 end

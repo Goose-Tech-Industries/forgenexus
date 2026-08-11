@@ -7,8 +7,10 @@ defmodule ForgeNexusWeb.Plugs.AuthCookie do
 
   @access_cookie "fn_token"
   @refresh_cookie "fn_refresh"
-  @access_max_age 86_400       # 1 day
-  @refresh_max_age 2_592_000   # 30 days
+  # 1 day
+  @access_max_age 86_400
+  # 30 days
+  @refresh_max_age 2_592_000
 
   def set_cookie(conn, token) do
     put_resp_cookie(conn, @access_cookie, token,

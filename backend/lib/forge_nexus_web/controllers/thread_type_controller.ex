@@ -58,7 +58,11 @@ defmodule ForgeNexusWeb.ThreadTypeController do
         conn |> put_status(:not_found) |> json(%{error: "no AMA session for thread"})
 
       session ->
-        conn |> json(%{ama_session: Map.take(session, [:id, :thread_id, :status, :host_id, :starts_at, :ends_at])})
+        conn
+        |> json(%{
+          ama_session:
+            Map.take(session, [:id, :thread_id, :status, :host_id, :starts_at, :ends_at])
+        })
     end
   end
 
@@ -68,7 +72,8 @@ defmodule ForgeNexusWeb.ThreadTypeController do
         conn |> put_status(:not_found) |> json(%{error: "no marketplace listing for thread"})
 
       listing ->
-        conn |> json(%{listing: Map.from_struct(listing) |> Map.drop([:__meta__, :thread, :seller])})
+        conn
+        |> json(%{listing: Map.from_struct(listing) |> Map.drop([:__meta__, :thread, :seller])})
     end
   end
 

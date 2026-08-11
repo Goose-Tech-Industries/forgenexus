@@ -15,7 +15,10 @@ defmodule ForgeNexus.Repo.Migrations.AddMyspaceProfilesAndAiFeatures do
       add :heroes, :text
       add :who_id_like_to_meet, :text
       add :profile_layout, :string, default: "classic"
-      add :profile_widget_order, {:array, :string}, default: ["about", "top_friends", "guestbook", "activity", "achievements", "clips"]
+
+      add :profile_widget_order, {:array, :string},
+        default: ["about", "top_friends", "guestbook", "activity", "achievements", "clips"]
+
       add :profile_song_autoplay, :boolean, default: false
       add :show_profile_views, :boolean, default: true
     end
@@ -53,7 +56,10 @@ defmodule ForgeNexus.Repo.Migrations.AddMyspaceProfilesAndAiFeatures do
     # AI community health score
     create table(:community_health_scores, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :community_id, references(:communities, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :score, :float, null: false
       add :trend, :string
       add :components, :jsonb, default: "{}"

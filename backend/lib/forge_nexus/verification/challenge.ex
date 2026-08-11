@@ -21,7 +21,16 @@ defmodule ForgeNexus.Verification.Challenge do
 
   def changeset(challenge, attrs) do
     challenge
-    |> cast(attrs, [:challenge_type, :challenge_data, :expected_answer, :status, :attempts, :max_attempts, :expires_at, :user_id])
+    |> cast(attrs, [
+      :challenge_type,
+      :challenge_data,
+      :expected_answer,
+      :status,
+      :attempts,
+      :max_attempts,
+      :expires_at,
+      :user_id
+    ])
     |> validate_required([:challenge_type, :expected_answer, :user_id])
     |> validate_inclusion(:challenge_type, ~w(math_captcha text_captcha email_verify question))
     |> validate_inclusion(:status, ~w(pending completed failed expired))

@@ -12,6 +12,7 @@ defmodule ForgeNexusWeb.CallController do
       {:ok, call} ->
         # Get other participants to notify
         conversation = Chat.list_conversations(user.id) |> Enum.find(fn c -> c.id == conv_id end)
+
         if conversation do
           for participant <- conversation.participants do
             if participant.user_id != user.id do
@@ -110,11 +111,13 @@ defmodule ForgeNexusWeb.CallController do
       id: call.id,
       conversation_id: call.conversation_id,
       caller_id: call.caller_id,
-      caller: call.caller && %{
-        id: call.caller.id,
-        username: call.caller.username,
-        avatar_url: call.caller.avatar_url
-      },
+      caller:
+        call.caller &&
+          %{
+            id: call.caller.id,
+            username: call.caller.username,
+            avatar_url: call.caller.avatar_url
+          },
       status: call.status,
       type: call.type,
       started_at: call.started_at,

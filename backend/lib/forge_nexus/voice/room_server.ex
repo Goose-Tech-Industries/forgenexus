@@ -19,9 +19,11 @@ defmodule ForgeNexus.Voice.RoomServer do
     :room_type,
     :max_participants,
     :host_id,
-    participants: %{},   # user_id => participant map (see join/1)
+    # user_id => participant map (see join/1)
+    participants: %{},
     started_at: nil,
-    active_poll: nil,    # %{question, options, votes, created_by, created_at}
+    # %{question, options, votes, created_by, created_at}
+    active_poll: nil,
     peak_count: 0,
     peak_audience: 0,
     peak_speakers: 0,
@@ -29,7 +31,8 @@ defmodule ForgeNexus.Voice.RoomServer do
     total_promotions: 0,
     total_demotions: 0,
     seen_user_ids: MapSet.new(),
-    watch_party: nil     # see ForgeNexus.Voice.WatchParty for shape
+    # see ForgeNexus.Voice.WatchParty for shape
+    watch_party: nil
   ]
 
   # --- Client API ---
@@ -170,11 +173,12 @@ defmodule ForgeNexus.Voice.RoomServer do
           state
         end
 
-      role = cond do
-        not is_stage -> :speaker
-        is_host -> :speaker
-        true -> :audience
-      end
+      role =
+        cond do
+          not is_stage -> :speaker
+          is_host -> :speaker
+          true -> :audience
+        end
 
       # Audience members start force-muted
       muted = role == :audience
@@ -242,14 +246,15 @@ defmodule ForgeNexus.Voice.RoomServer do
 
   @impl true
   def handle_call(:get_state, _from, state) do
-    {:reply, %{
-      room_id: state.room_id,
-      room_type: state.room_type,
-      host_id: state.host_id,
-      participant_count: map_size(state.participants),
-      max_participants: state.max_participants,
-      started_at: state.started_at
-    }, state}
+    {:reply,
+     %{
+       room_id: state.room_id,
+       room_type: state.room_type,
+       host_id: state.host_id,
+       participant_count: map_size(state.participants),
+       max_participants: state.max_participants,
+       started_at: state.started_at
+     }, state}
   end
 
   @impl true
@@ -262,6 +267,7 @@ defmodule ForgeNexus.Voice.RoomServer do
         # Audience in a stage room cannot change their own media state
         # (except to stay muted). Silently reject un-mute attempts.
         incoming = atomize_keys(media_state)
+
         if Map.get(incoming, :muted) == false do
           {:reply, {:error, :audience_cannot_unmute}, state}
         else
@@ -570,20 +576,21 @@ defmodule ForgeNexus.Voice.RoomServer do
           end
 
         if map_size(new_participants) == 0 do
-          {:ok, call_log} = Voice.log_call(%{
-            room_id: state.room_id,
-            room_type: state.room_type,
-            started_at: state.started_at,
-            ended_at: DateTime.utc_now() |> DateTime.truncate(:second),
-            peak_participants: state.peak_count,
-            peak_audience: state.peak_audience,
-            peak_speakers: state.peak_speakers,
-            total_hand_raises: state.total_hand_raises,
-            total_promotions: state.total_promotions,
-            total_demotions: state.total_demotions,
-            host_user_id: state.host_id,
-            participant_ids: MapSet.to_list(state.seen_user_ids)
-          })
+          {:ok, call_log} =
+            Voice.log_call(%{
+              room_id: state.room_id,
+              room_type: state.room_type,
+              started_at: state.started_at,
+              ended_at: DateTime.utc_now() |> DateTime.truncate(:second),
+              peak_participants: state.peak_count,
+              peak_audience: state.peak_audience,
+              peak_speakers: state.peak_speakers,
+              total_hand_raises: state.total_hand_raises,
+              total_promotions: state.total_promotions,
+              total_demotions: state.total_demotions,
+              host_user_id: state.host_id,
+              participant_ids: MapSet.to_list(state.seen_user_ids)
+            })
 
           Voice.award_participation_points(
             MapSet.to_list(state.seen_user_ids),
@@ -757,7 +764,11 @@ defmodule ForgeNexus.Voice.RoomServer do
   end
 
   defp apply_watch_command(party, :seek, %{time: time}) when is_number(time) do
-    %{party | current_time: time * 1.0, updated_at: DateTime.utc_now() |> DateTime.truncate(:second)}
+    %{
+      party
+      | current_time: time * 1.0,
+        updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+    }
   end
 
   defp apply_watch_command(party, :sync, %{time: time, playing: playing})
@@ -837,9 +848,10 @@ defmodule ForgeNexus.Voice.RoomServer do
       is_playing: party.is_playing,
       started_at: party.started_at,
       updated_at: party.updated_at,
-      queue: Enum.map(queue, fn m ->
-        %{type: to_string(m.type), id: m.id, url: m.url, label: m.label}
-      end),
+      queue:
+        Enum.map(queue, fn m ->
+          %{type: to_string(m.type), id: m.id, url: m.url, label: m.label}
+        end),
       queue_length: length(queue)
     }
   end

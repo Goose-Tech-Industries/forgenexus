@@ -30,6 +30,7 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetNameplate do
   @impl true
   def validate_config(config) do
     color = Map.get(config, "color", "")
+
     if String.match?(color, ~r/^#[0-9a-fA-F]{3,8}$/) or color == "" do
       :ok
     else
@@ -51,7 +52,12 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetNameplate do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "color", type: "string", default: "", description: "Hex color for the nameplate (e.g. #ff0000)"}
+        %{
+          name: "color",
+          type: "string",
+          default: "",
+          description: "Hex color for the nameplate (e.g. #ff0000)"
+        }
       ]
     }
   end

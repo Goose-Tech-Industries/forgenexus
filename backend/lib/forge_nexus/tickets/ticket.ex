@@ -23,7 +23,17 @@ defmodule ForgeNexus.Tickets.Ticket do
 
   def changeset(ticket, attrs) do
     ticket
-    |> cast(attrs, [:title, :description, :status, :priority, :category, :rating, :escalation_reason, :user_id, :assigned_to_id])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :status,
+      :priority,
+      :category,
+      :rating,
+      :escalation_reason,
+      :user_id,
+      :assigned_to_id
+    ])
     |> validate_required([:title, :description, :user_id])
     |> validate_inclusion(:status, ~w(open in_progress waiting_on_user resolved closed escalated))
     |> validate_inclusion(:priority, ~w(low normal high urgent))

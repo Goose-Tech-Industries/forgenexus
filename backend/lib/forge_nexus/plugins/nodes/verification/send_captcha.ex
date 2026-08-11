@@ -12,7 +12,8 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.SendCaptcha do
     case ForgeNexus.Verification.create_challenge(user_id, captcha_type) do
       {:ok, challenge} ->
         question =
-          case Map.get(challenge.challenge_data, "question") || Map.get(challenge.challenge_data, :question) do
+          case Map.get(challenge.challenge_data, "question") ||
+                 Map.get(challenge.challenge_data, :question) do
             nil -> "Please verify"
             q -> q
           end
@@ -46,7 +47,13 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.SendCaptcha do
         %{name: "question", type: "string"}
       ],
       config_fields: [
-        %{name: "captcha_type", type: "select", options: ~w(math text), default: "math", description: "Type of captcha challenge to generate"}
+        %{
+          name: "captcha_type",
+          type: "select",
+          options: ~w(math text),
+          default: "math",
+          description: "Type of captcha challenge to generate"
+        }
       ]
     }
   end

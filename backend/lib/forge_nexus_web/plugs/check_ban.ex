@@ -27,7 +27,12 @@ defmodule ForgeNexusWeb.Plugs.CheckBan do
                   banned_by: if(ban.banned_by, do: ban.banned_by.username, else: "System")
                 }
               else
-                %{reason: "You are banned", type: "permanent", expires_at: nil, banned_by: "System"}
+                %{
+                  reason: "You are banned",
+                  type: "permanent",
+                  expires_at: nil,
+                  banned_by: "System"
+                }
               end
 
             conn

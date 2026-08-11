@@ -18,7 +18,9 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.HolidayTheme do
       |> DateTime.to_iso8601()
 
     # Store in flow_global_store; frontend can check for active theme effects
-    Logger.info("[PluginFlow] scheduling/holiday_theme: theme=#{theme_name}, until=#{active_until}")
+    Logger.info(
+      "[PluginFlow] scheduling/holiday_theme: theme=#{theme_name}, until=#{active_until}"
+    )
 
     flow_global = Map.get(ctx, :flow_global_store, %{})
     theme_data = %{theme_name: theme_name, active_until: active_until}
@@ -53,14 +55,20 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.HolidayTheme do
       end)
       |> then(fn e ->
         case Map.get(config, "duration_hours") do
-          nil -> ["duration_hours is required" | e]
-          val when is_number(val) and val > 0 -> e
+          nil ->
+            ["duration_hours is required" | e]
+
+          val when is_number(val) and val > 0 ->
+            e
+
           val when is_binary(val) ->
             case Float.parse(val) do
               {n, _} when n > 0 -> e
               _ -> ["duration_hours must be a positive number" | e]
             end
-          _ -> ["duration_hours must be a positive number" | e]
+
+          _ ->
+            ["duration_hours must be a positive number" | e]
         end
       end)
 
@@ -80,8 +88,18 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.HolidayTheme do
         %{name: "active_until", type: "string"}
       ],
       config_fields: [
-        %{name: "theme_name", type: "string", default: "", description: "Theme name (e.g. winter, halloween, summer)"},
-        %{name: "duration_hours", type: "number", default: 24, description: "Duration the theme stays active (hours)"}
+        %{
+          name: "theme_name",
+          type: "string",
+          default: "",
+          description: "Theme name (e.g. winter, halloween, summer)"
+        },
+        %{
+          name: "duration_hours",
+          type: "number",
+          default: 24,
+          description: "Duration the theme stays active (hours)"
+        }
       ]
     }
   end

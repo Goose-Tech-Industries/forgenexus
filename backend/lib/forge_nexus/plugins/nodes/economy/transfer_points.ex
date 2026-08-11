@@ -68,7 +68,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.TransferPoints do
         %{name: "to_balance", type: "number"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        }
       ]
     }
   end

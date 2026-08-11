@@ -76,7 +76,10 @@ defmodule ForgeNexus.Repo.Migrations.AddProfileThemeFeatures do
     # --- Guestbook Entries ---
     create table(:guestbook_entries, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :profile_user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :profile_user_id, references(:users, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :author_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :body_bbcode, :text, null: false
       add :body_html, :text, null: false
@@ -90,7 +93,10 @@ defmodule ForgeNexus.Repo.Migrations.AddProfileThemeFeatures do
     # --- Profile Visits ---
     create table(:profile_visits, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :profile_user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :profile_user_id, references(:users, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :visitor_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :visited_at, :utc_datetime, null: false
 

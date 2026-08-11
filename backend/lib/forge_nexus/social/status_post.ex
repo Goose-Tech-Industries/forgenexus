@@ -25,8 +25,17 @@ defmodule ForgeNexus.Social.StatusPost do
 
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:community_id, :user_id, :body, :media_urls, :media_type,
-                     :reference_type, :reference_id, :is_pinned, :visibility])
+    |> cast(attrs, [
+      :community_id,
+      :user_id,
+      :body,
+      :media_urls,
+      :media_type,
+      :reference_type,
+      :reference_id,
+      :is_pinned,
+      :visibility
+    ])
     |> validate_required([:user_id, :body])
     |> validate_length(:body, min: 1, max: 500)
     |> validate_inclusion(:visibility, ~w(public friends_only private))

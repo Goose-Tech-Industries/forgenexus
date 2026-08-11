@@ -24,7 +24,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateMessaging do
       add :last_read_at, :utc_datetime
       add :is_muted, :boolean, default: false
       add :joined_at, :utc_datetime, null: false
-      add :conversation_id, references(:conversations, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :conversation_id, references(:conversations, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
 
       timestamps()
@@ -41,7 +44,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateMessaging do
       add :is_edited, :boolean, default: false
       add :edited_at, :utc_datetime
       add :is_system, :boolean, default: false
-      add :conversation_id, references(:conversations, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :conversation_id, references(:conversations, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
       add :reply_to_id, references(:messages, type: :binary_id, on_delete: :nilify_all)
 
@@ -75,7 +81,9 @@ defmodule ForgeNexus.Repo.Migrations.CreateMessaging do
     create table(:user_blocks, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :blocked_user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :blocked_user_id, references(:users, type: :binary_id, on_delete: :delete_all),
+        null: false
 
       timestamps()
     end

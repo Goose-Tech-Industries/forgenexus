@@ -34,7 +34,8 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.DuplicateCheck do
     ctx = Sandbox.increment_db_ops(ctx)
 
     if best_sim >= similarity_threshold do
-      {:branch, "duplicate", %{similar_content: best_match, similarity: Float.round(best_sim, 3)}, ctx}
+      {:branch, "duplicate", %{similar_content: best_match, similarity: Float.round(best_sim, 3)},
+       ctx}
     else
       {:branch, "unique", %{content: content}, ctx}
     end
@@ -78,11 +79,28 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.DuplicateCheck do
       ],
       outputs: [
         %{name: "unique", type: "branch", fields: [%{name: "content", type: "string"}]},
-        %{name: "duplicate", type: "branch", fields: [%{name: "similar_content", type: "string"}, %{name: "similarity", type: "number"}]}
+        %{
+          name: "duplicate",
+          type: "branch",
+          fields: [
+            %{name: "similar_content", type: "string"},
+            %{name: "similarity", type: "number"}
+          ]
+        }
       ],
       config_fields: [
-        %{name: "lookback_minutes", type: "number", default: 60, description: "How far back to check for duplicates (minutes)"},
-        %{name: "similarity_threshold", type: "number", default: 0.8, description: "Similarity threshold (0.0-1.0)"}
+        %{
+          name: "lookback_minutes",
+          type: "number",
+          default: 60,
+          description: "How far back to check for duplicates (minutes)"
+        },
+        %{
+          name: "similarity_threshold",
+          type: "number",
+          default: 0.8,
+          description: "Similarity threshold (0.0-1.0)"
+        }
       ]
     }
   end

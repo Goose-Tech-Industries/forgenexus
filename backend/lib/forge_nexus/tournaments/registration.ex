@@ -10,8 +10,12 @@ defmodule ForgeNexus.Tournaments.Registration do
 
   def register(tournament_id, user_id) do
     tournament = Repo.get!(ForgeNexus.Tournaments.Tournament, tournament_id)
-    already = Repo.exists?(from p in "tournament_participants",
-      where: p.tournament_id == ^tournament_id and p.user_id == ^user_id)
+
+    already =
+      Repo.exists?(
+        from p in "tournament_participants",
+          where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
+      )
 
     cond do
       already ->
@@ -27,7 +31,8 @@ defmodule ForgeNexus.Tournaments.Registration do
           {:error, :insufficient_points}
         else
           Economy.deduct_points(user_id, tournament.entry_fee_points, "tournament_entry",
-            description: "Entry fee for #{tournament.name || "tournament"}")
+            description: "Entry fee for #{tournament.name || "tournament"}"
+          )
 
           insert_participant(tournament_id, user_id)
           update_prize_pool(tournament_id, tournament.entry_fee_points)
@@ -46,14 +51,17 @@ defmodule ForgeNexus.Tournaments.Registration do
     if tournament.status != "upcoming" do
       {:error, :cannot_unregister}
     else
-      {count, _} = from(p in "tournament_participants",
-        where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
-      ) |> Repo.delete_all()
+      {count, _} =
+        from(p in "tournament_participants",
+          where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
+        )
+        |> Repo.delete_all()
 
       if count > 0 and tournament.entry_fee_points > 0 do
         Economy.award_points(user_id, "tournament_refund",
           amount: tournament.entry_fee_points,
-          description: "Refund for #{tournament.name || "tournament"}")
+          description: "Refund for #{tournament.name || "tournament"}"
+        )
       end
 
       {:ok, :unregistered}
@@ -72,11 +80,13 @@ defmodule ForgeNexus.Tournaments.Registration do
         if amount > 0 do
           Economy.award_points(user_id, "tournament_prize",
             amount: amount,
-            description: "Tournament prize — #{tournament.name}")
+            description: "Tournament prize — #{tournament.name}"
+          )
 
           from(p in "tournament_participants",
             where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
-          ) |> Repo.update_all(set: [prize_points: amount])
+          )
+          |> Repo.update_all(set: [prize_points: amount])
         end
       end)
 
@@ -97,16 +107,20 @@ defmodule ForgeNexus.Tournaments.Registration do
   defp insert_participant(tournament_id, user_id) do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
-    Repo.insert_all("tournament_participants", [
-      %{
-        id: Ecto.UUID.generate(),
-        tournament_id: tournament_id,
-        user_id: user_id,
-        checked_in: false,
-        inserted_at: now,
-        updated_at: now
-      }
-    ], on_conflict: :nothing)
+    Repo.insert_all(
+      "tournament_participants",
+      [
+        %{
+          id: Ecto.UUID.generate(),
+          tournament_id: tournament_id,
+          user_id: user_id,
+          checked_in: false,
+          inserted_at: now,
+          updated_at: now
+        }
+      ],
+      on_conflict: :nothing
+    )
   end
 
   defp update_prize_pool(tournament_id, points) do

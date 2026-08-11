@@ -29,7 +29,16 @@ defmodule ForgeNexus.Houses.HouseInvitation do
 
   def changeset(invite, attrs) do
     invite
-    |> cast(attrs, [:community_id, :inviter_id, :email, :token_hash, :role, :expires_at, :accepted_at, :accepted_by_user_id])
+    |> cast(attrs, [
+      :community_id,
+      :inviter_id,
+      :email,
+      :token_hash,
+      :role,
+      :expires_at,
+      :accepted_at,
+      :accepted_by_user_id
+    ])
     |> validate_required([:community_id, :email, :token_hash, :expires_at])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/)
     |> validate_inclusion(:role, @roles)

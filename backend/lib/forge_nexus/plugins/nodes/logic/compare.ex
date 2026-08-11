@@ -54,7 +54,13 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.Compare do
       ],
       outputs: [%{name: "result", type: "boolean"}],
       config_fields: [
-        %{name: "operator", type: "select", options: ~w(eq neq gt gte lt lte), default: "eq", description: "Comparison operator"}
+        %{
+          name: "operator",
+          type: "select",
+          options: ~w(eq neq gt gte lt lte),
+          default: "eq",
+          description: "Comparison operator"
+        }
       ]
     }
   end

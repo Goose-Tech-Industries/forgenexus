@@ -15,7 +15,13 @@ defmodule ForgeNexusWeb.Plugs.RateLimit do
   def init(opts) do
     # Ensure ETS table exists
     if :ets.whereis(@table) == :undefined do
-      :ets.new(@table, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
+      :ets.new(@table, [
+        :set,
+        :public,
+        :named_table,
+        read_concurrency: true,
+        write_concurrency: true
+      ])
     end
 
     %{

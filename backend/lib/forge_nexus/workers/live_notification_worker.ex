@@ -10,7 +10,9 @@ defmodule ForgeNexus.Workers.LiveNotificationWorker do
   alias ForgeNexus.Accounts.UserFollow
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"user_id" => user_id, "room_id" => room_id, "room_name" => room_name}}) do
+  def perform(%Oban.Job{
+        args: %{"user_id" => user_id, "room_id" => room_id, "room_name" => room_name}
+      }) do
     follower_ids =
       UserFollow
       |> where([f], f.followed_id == ^user_id)
@@ -21,13 +23,13 @@ defmodule ForgeNexus.Workers.LiveNotificationWorker do
       # Schema only knows type/title/body/url/metadata/user_id/actor_id —
       # room reference goes in metadata so it survives the cast.
       case Notifications.create_notification(%{
-        user_id: follower_id,
-        actor_id: user_id,
-        type: "went_live",
-        title: "is now live in #{room_name}",
-        url: "/voice/#{room_id}",
-        metadata: %{room_id: room_id, room_name: room_name, kind: "voice_room"}
-      }) do
+             user_id: follower_id,
+             actor_id: user_id,
+             type: "went_live",
+             title: "is now live in #{room_name}",
+             url: "/voice/#{room_id}",
+             metadata: %{room_id: room_id, room_name: room_name, kind: "voice_room"}
+           }) do
         {:ok, notif} ->
           # Use the standard broadcast so the user channel + toaster pick it up.
           actor = ForgeNexus.Repo.get(ForgeNexus.Accounts.User, user_id)

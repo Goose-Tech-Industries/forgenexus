@@ -37,7 +37,9 @@ defmodule ForgeNexus.Social.Feed do
 
     items =
       sources
-      |> Enum.flat_map(fn source -> fetch_source(source, community_id, limit, before, user_id) end)
+      |> Enum.flat_map(fn source ->
+        fetch_source(source, community_id, limit, before, user_id)
+      end)
       |> Enum.sort_by(fn item -> {-item.weight, to_unix(item.inserted_at)} end, :desc)
       |> Enum.sort_by(fn item -> to_unix(item.inserted_at) end, :desc)
       |> Enum.take(limit)
@@ -118,7 +120,8 @@ defmodule ForgeNexus.Social.Feed do
   defp fetch_source(:clips, community_id, limit, before, _user_id) do
     query =
       from(c in "voice_clips",
-        join: r in "voice_recordings", on: r.id == c.recording_id,
+        join: r in "voice_recordings",
+        on: r.id == c.recording_id,
         where: r.community_id == type(^community_id, :binary_id) and c.is_public == true,
         order_by: [desc: c.inserted_at],
         limit: ^limit,

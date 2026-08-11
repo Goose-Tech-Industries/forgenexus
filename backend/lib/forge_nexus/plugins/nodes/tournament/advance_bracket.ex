@@ -33,7 +33,8 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.AdvanceBracket do
       type: "tournament/advance_bracket",
       category: "tournament",
       label: "Advance Bracket",
-      description: "Advances the tournament to the next round, creating new matches from winners.",
+      description:
+        "Advances the tournament to the next round, creating new matches from winners.",
       inputs: [
         %{name: "tournament_id", type: "string", required: true}
       ],

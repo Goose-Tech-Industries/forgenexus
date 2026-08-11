@@ -23,8 +23,16 @@ defmodule ForgeNexus.Federation.FederatedInstance do
   def changeset(instance, attrs) do
     instance
     |> cast(attrs, [
-      :domain, :name, :description, :public_key, :software, :software_version,
-      :trust_level, :status, :last_seen_at, :stats
+      :domain,
+      :name,
+      :description,
+      :public_key,
+      :software,
+      :software_version,
+      :trust_level,
+      :status,
+      :last_seen_at,
+      :stats
     ])
     |> validate_required([:domain])
     |> unique_constraint(:domain)

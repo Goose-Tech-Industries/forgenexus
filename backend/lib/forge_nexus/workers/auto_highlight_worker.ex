@@ -12,11 +12,18 @@ defmodule ForgeNexus.Workers.AutoHighlightWorker do
     case ClipAutoHighlight.generate_highlights(recording_id, max_clips: 3) do
       {:ok, clips} ->
         require Logger
-        Logger.info("[AutoHighlight] Generated #{length(clips)} clips for recording #{recording_id}")
+
+        Logger.info(
+          "[AutoHighlight] Generated #{length(clips)} clips for recording #{recording_id}"
+        )
+
         :ok
 
-      {:error, :no_transcript} -> :ok
-      {:error, _reason} -> :ok
+      {:error, :no_transcript} ->
+        :ok
+
+      {:error, _reason} ->
+        :ok
     end
   end
 

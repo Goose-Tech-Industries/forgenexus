@@ -92,11 +92,13 @@ defmodule ForgeNexus.Repo.Migrations.CreatePlatformLedgerAndExtras do
     end
 
     alter table(:posts) do
-      add :paywall_tier_id, references(:subscription_tiers, type: :binary_id, on_delete: :nilify_all)
+      add :paywall_tier_id,
+          references(:subscription_tiers, type: :binary_id, on_delete: :nilify_all)
     end
 
     alter table(:threads) do
-      add :paywall_tier_id, references(:subscription_tiers, type: :binary_id, on_delete: :nilify_all)
+      add :paywall_tier_id,
+          references(:subscription_tiers, type: :binary_id, on_delete: :nilify_all)
     end
   end
 end

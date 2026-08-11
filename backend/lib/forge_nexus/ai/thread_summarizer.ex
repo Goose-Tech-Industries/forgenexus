@@ -20,7 +20,7 @@ defmodule ForgeNexus.AI.ThreadSummarizer do
       thread.reply_count < @min_posts_for_summary ->
         {:error, :thread_too_short}
 
-      cached && (thread.reply_count - (cached.post_count_at_generation || 0)) < @stale_threshold ->
+      cached && thread.reply_count - (cached.post_count_at_generation || 0) < @stale_threshold ->
         {:ok, cached.summary}
 
       not Settings.get_bool("ai_thread_summary_enabled") ->
@@ -124,13 +124,15 @@ defmodule ForgeNexus.AI.ThreadSummarizer do
 
       _existing ->
         from(s in "thread_summaries_ai", where: s.thread_id == ^thread.id)
-        |> Repo.update_all(set: [
-          summary: summary,
-          post_count_at_generation: thread.reply_count,
-          model: model,
-          generated_at: now,
-          updated_at: now
-        ])
+        |> Repo.update_all(
+          set: [
+            summary: summary,
+            post_count_at_generation: thread.reply_count,
+            model: model,
+            generated_at: now,
+            updated_at: now
+          ]
+        )
     end
   end
 end

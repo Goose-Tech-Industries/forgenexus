@@ -11,10 +11,12 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.ContentLengthCheck do
 
     cond do
       length < min_length ->
-        {:branch, "invalid", %{length: length, reason: "Content too short (min: #{min_length})"}, ctx}
+        {:branch, "invalid", %{length: length, reason: "Content too short (min: #{min_length})"},
+         ctx}
 
       length > max_length ->
-        {:branch, "invalid", %{length: length, reason: "Content too long (max: #{max_length})"}, ctx}
+        {:branch, "invalid", %{length: length, reason: "Content too long (max: #{max_length})"},
+         ctx}
 
       true ->
         {:branch, "valid", %{length: length}, ctx}
@@ -47,14 +49,23 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.ContentLengthCheck do
       ],
       outputs: [
         %{name: "valid", type: "branch", fields: [%{name: "length", type: "number"}]},
-        %{name: "invalid", type: "branch", fields: [
-          %{name: "length", type: "number"},
-          %{name: "reason", type: "string"}
-        ]}
+        %{
+          name: "invalid",
+          type: "branch",
+          fields: [
+            %{name: "length", type: "number"},
+            %{name: "reason", type: "string"}
+          ]
+        }
       ],
       config_fields: [
         %{name: "min_length", type: "number", default: 0, description: "Minimum content length"},
-        %{name: "max_length", type: "number", default: 10000, description: "Maximum content length"}
+        %{
+          name: "max_length",
+          type: "number",
+          default: 10000,
+          description: "Maximum content length"
+        }
       ]
     }
   end

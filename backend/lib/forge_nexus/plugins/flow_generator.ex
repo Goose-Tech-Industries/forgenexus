@@ -193,10 +193,17 @@ defmodule ForgeNexus.Plugins.FlowGenerator do
         # Trigger types must either be a valid node type starting with trigger/
         # or the canonical short form (e.g. "post_created").
         cond do
-          MapSet.member?(valid_types, trigger_type) -> {:ok, trigger_type}
-          MapSet.member?(valid_types, "trigger/" <> trigger_type) -> {:ok, "trigger/" <> trigger_type}
-          String.starts_with?(trigger_type, "trigger/") -> {:ok, trigger_type}
-          true -> {:ok, trigger_type}
+          MapSet.member?(valid_types, trigger_type) ->
+            {:ok, trigger_type}
+
+          MapSet.member?(valid_types, "trigger/" <> trigger_type) ->
+            {:ok, "trigger/" <> trigger_type}
+
+          String.starts_with?(trigger_type, "trigger/") ->
+            {:ok, trigger_type}
+
+          true ->
+            {:ok, trigger_type}
         end
 
       _ ->
@@ -223,11 +230,17 @@ defmodule ForgeNexus.Plugins.FlowGenerator do
           _ ->
             reason =
               cond do
-                not is_binary(Map.get(node, "id")) -> {:node_missing_id, node}
-                not is_binary(Map.get(node, "type")) -> {:node_missing_type, node}
+                not is_binary(Map.get(node, "id")) ->
+                  {:node_missing_id, node}
+
+                not is_binary(Map.get(node, "type")) ->
+                  {:node_missing_type, node}
+
                 not MapSet.member?(valid_types, Map.get(node, "type")) ->
                   {:unknown_node_type, Map.get(node, "type")}
-                true -> {:duplicate_node_id, Map.get(node, "id")}
+
+                true ->
+                  {:duplicate_node_id, Map.get(node, "id")}
               end
 
             {:halt, {:error, reason}}
@@ -384,7 +397,10 @@ defmodule ForgeNexus.Plugins.FlowGenerator do
         required: ["name", "trigger_type", "nodes", "edges"],
         properties: %{
           name: %{type: "string", description: "Short human-readable flow name"},
-          description: %{type: "string", description: "One-sentence description of what the flow does"},
+          description: %{
+            type: "string",
+            description: "One-sentence description of what the flow does"
+          },
           trigger_type: %{
             type: "string",
             description: "Full node type of the trigger (e.g. 'trigger/post_created')"

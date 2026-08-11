@@ -19,7 +19,15 @@ defmodule ForgeNexus.Economy.PointTransaction do
 
   def changeset(tx, attrs) do
     tx
-    |> cast(attrs, [:user_id, :amount, :balance_after, :reason, :reference_type, :reference_id, :description])
+    |> cast(attrs, [
+      :user_id,
+      :amount,
+      :balance_after,
+      :reason,
+      :reference_type,
+      :reference_id,
+      :description
+    ])
     |> validate_required([:user_id, :amount, :balance_after, :reason])
   end
 end

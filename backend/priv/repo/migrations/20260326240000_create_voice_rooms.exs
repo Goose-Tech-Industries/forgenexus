@@ -6,9 +6,13 @@ defmodule ForgeNexus.Repo.Migrations.CreateVoiceRooms do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
       add :slug, :string, null: false
-      add :type, :string, default: "lounge"  # lounge, huddle, town_hall
+      # lounge, huddle, town_hall
+      add :type, :string, default: "lounge"
       add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :nilify_all)
-      add :category_id, references(:chat_channel_categories, type: :binary_id, on_delete: :nilify_all)
+
+      add :category_id,
+          references(:chat_channel_categories, type: :binary_id, on_delete: :nilify_all)
+
       add :max_participants, :integer, default: 15
       add :is_locked, :boolean, default: false
       add :is_active, :boolean, default: true

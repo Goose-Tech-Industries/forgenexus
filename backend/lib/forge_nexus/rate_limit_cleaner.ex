@@ -16,7 +16,13 @@ defmodule ForgeNexus.RateLimitCleaner do
   def init(:ok) do
     # Create ETS table if it doesn't exist
     if :ets.whereis(@table) == :undefined do
-      :ets.new(@table, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
+      :ets.new(@table, [
+        :set,
+        :public,
+        :named_table,
+        read_concurrency: true,
+        write_concurrency: true
+      ])
     end
 
     schedule_cleanup()

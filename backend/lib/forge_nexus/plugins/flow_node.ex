@@ -29,7 +29,16 @@ defmodule ForgeNexus.Plugins.FlowNode do
 
   def changeset(node, attrs) do
     node
-    |> cast(attrs, [:flow_id, :type, :category, :label, :config, :position_x, :position_y, :position])
+    |> cast(attrs, [
+      :flow_id,
+      :type,
+      :category,
+      :label,
+      :config,
+      :position_x,
+      :position_y,
+      :position
+    ])
     |> validate_required([:flow_id, :type, :category])
     |> maybe_derive_category()
     |> validate_inclusion(:category, @categories)

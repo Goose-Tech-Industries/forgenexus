@@ -49,7 +49,12 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.PromoteUser do
         %{name: "new_group", type: "string"}
       ],
       config_fields: [
-        %{name: "target_group_id", type: "string", default: "", description: "Group ID to promote the user to"}
+        %{
+          name: "target_group_id",
+          type: "string",
+          default: "",
+          description: "Group ID to promote the user to"
+        }
       ]
     }
   end

@@ -28,9 +28,19 @@ defmodule ForgeNexus.Wiki.WikiPage do
   def changeset(struct, attrs) do
     struct
     |> cast(attrs, [
-      :title, :slug, :body, :body_html, :edit_permission, :allowed_group_ids,
-      :is_published, :is_locked, :view_count, :category_id, :created_by_id,
-      :last_edited_by_id, :source_thread_id
+      :title,
+      :slug,
+      :body,
+      :body_html,
+      :edit_permission,
+      :allowed_group_ids,
+      :is_published,
+      :is_locked,
+      :view_count,
+      :category_id,
+      :created_by_id,
+      :last_edited_by_id,
+      :source_thread_id
     ])
     |> validate_required([:title, :slug, :body, :created_by_id])
     |> unique_constraint(:slug)

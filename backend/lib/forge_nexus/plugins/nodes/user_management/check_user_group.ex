@@ -49,7 +49,12 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.CheckUserGroup do
         %{name: "not_member", type: "list", description: "User is not in the group"}
       ],
       config_fields: [
-        %{name: "group_id", type: "string", default: "", description: "Group ID to check membership for"}
+        %{
+          name: "group_id",
+          type: "string",
+          default: "",
+          description: "Group ID to check membership for"
+        }
       ]
     }
   end

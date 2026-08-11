@@ -21,7 +21,9 @@ defmodule ForgeNexus.Plugins.Nodes.Content.EnforceTemplate do
         !String.contains?(content_lower, String.downcase(section))
       end)
 
-    Logger.info("[PluginFlow] content/enforce_template: required=#{length(required_sections)}, missing=#{length(missing_sections)}")
+    Logger.info(
+      "[PluginFlow] content/enforce_template: required=#{length(required_sections)}, missing=#{length(missing_sections)}"
+    )
 
     if missing_sections == [] do
       {:branch, "valid", %{missing_sections: []}, ctx}
@@ -54,7 +56,13 @@ defmodule ForgeNexus.Plugins.Nodes.Content.EnforceTemplate do
         %{name: "invalid", type: "branch", fields: [%{name: "missing_sections", type: "list"}]}
       ],
       config_fields: [
-        %{name: "required_sections", type: "string", default: "", description: "Comma-separated required section headers (e.g. \"Description,Steps to Reproduce,Expected Behavior\")"}
+        %{
+          name: "required_sections",
+          type: "string",
+          default: "",
+          description:
+            "Comma-separated required section headers (e.g. \"Description,Steps to Reproduce,Expected Behavior\")"
+        }
       ]
     }
   end

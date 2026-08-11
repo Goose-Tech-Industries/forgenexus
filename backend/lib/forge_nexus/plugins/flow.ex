@@ -33,7 +33,17 @@ defmodule ForgeNexus.Plugins.Flow do
 
   def changeset(flow, attrs) do
     flow
-    |> cast(attrs, [:name, :description, :slug, :status, :tier, :trigger_type, :trigger_config, :settings, :created_by_id])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :slug,
+      :status,
+      :tier,
+      :trigger_type,
+      :trigger_config,
+      :settings,
+      :created_by_id
+    ])
     |> validate_required([:name, :slug, :trigger_type, :created_by_id])
     |> validate_inclusion(:status, @statuses)
     |> validate_inclusion(:tier, @tiers)

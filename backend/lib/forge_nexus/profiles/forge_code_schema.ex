@@ -11,20 +11,49 @@ defmodule ForgeNexus.Profiles.ForgeCodeSchema do
   alias ForgeNexus.Accounts.User
 
   @font_allowlist [
-    "Inter", "JetBrains Mono", "Source Code Pro", "Fira Code",
-    "Playfair Display", "Cinzel", "MedievalSharp",
-    "Press Start 2P", "VT323", "Share Tech Mono",
-    "Cormorant Garamond", "EB Garamond", "Lora",
-    "Montserrat", "Poppins", "Quicksand", "Righteous",
-    "Orbitron", "Audiowide", "Russo One",
-    "Creepster", "Nosifer", "Butcherman",
-    "Permanent Marker", "Pacifico", "Lobster", "Dancing Script"
+    "Inter",
+    "JetBrains Mono",
+    "Source Code Pro",
+    "Fira Code",
+    "Playfair Display",
+    "Cinzel",
+    "MedievalSharp",
+    "Press Start 2P",
+    "VT323",
+    "Share Tech Mono",
+    "Cormorant Garamond",
+    "EB Garamond",
+    "Lora",
+    "Montserrat",
+    "Poppins",
+    "Quicksand",
+    "Righteous",
+    "Orbitron",
+    "Audiowide",
+    "Russo One",
+    "Creepster",
+    "Nosifer",
+    "Butcherman",
+    "Permanent Marker",
+    "Pacifico",
+    "Lobster",
+    "Dancing Script"
   ]
 
   @gradient_directions [
-    "to top", "to bottom", "to left", "to right",
-    "to top left", "to top right", "to bottom left", "to bottom right",
-    "135deg", "45deg", "90deg", "180deg", "270deg"
+    "to top",
+    "to bottom",
+    "to left",
+    "to right",
+    "to top left",
+    "to top right",
+    "to bottom left",
+    "to bottom right",
+    "135deg",
+    "45deg",
+    "90deg",
+    "180deg",
+    "270deg"
   ]
 
   @widget_slots ~w(about top_friends guestbook activity achievements clips blurbs music mood heatmap pinned_thread endorsements social_links)
@@ -237,7 +266,8 @@ defmodule ForgeNexus.Profiles.ForgeCodeSchema do
   defp validate_blurbs(nil), do: {:ok, nil}
 
   defp validate_blurbs(%{} = blurbs) do
-    allowed = ~w(interests favorite_music favorite_movies favorite_tv favorite_games favorite_books heroes who_id_like_to_meet about)
+    allowed =
+      ~w(interests favorite_music favorite_movies favorite_tv favorite_games favorite_books heroes who_id_like_to_meet about)
 
     cleaned =
       Enum.reduce(allowed, %{}, fn key, acc ->
@@ -286,11 +316,20 @@ defmodule ForgeNexus.Profiles.ForgeCodeSchema do
 
   def validate_image_url(url) when is_binary(url) do
     cond do
-      byte_size(url) > 400 -> {:error, :url_too_long}
-      String.starts_with?(url, "/uploads/") -> {:ok, url}
-      String.starts_with?(url, "/static/") -> {:ok, url}
-      String.starts_with?(url, "https://") and host_allowlisted?(url, image_host_allowlist()) -> {:ok, url}
-      true -> {:error, {:url_not_allowlisted, url}}
+      byte_size(url) > 400 ->
+        {:error, :url_too_long}
+
+      String.starts_with?(url, "/uploads/") ->
+        {:ok, url}
+
+      String.starts_with?(url, "/static/") ->
+        {:ok, url}
+
+      String.starts_with?(url, "https://") and host_allowlisted?(url, image_host_allowlist()) ->
+        {:ok, url}
+
+      true ->
+        {:error, {:url_not_allowlisted, url}}
     end
   end
 
@@ -302,10 +341,17 @@ defmodule ForgeNexus.Profiles.ForgeCodeSchema do
 
   def validate_media_url(url) when is_binary(url) do
     cond do
-      byte_size(url) > 400 -> {:error, :url_too_long}
-      String.starts_with?(url, "/uploads/") -> {:ok, url}
-      String.starts_with?(url, "https://") and host_allowlisted?(url, media_host_allowlist()) -> {:ok, url}
-      true -> {:error, {:media_url_not_allowlisted, url}}
+      byte_size(url) > 400 ->
+        {:error, :url_too_long}
+
+      String.starts_with?(url, "/uploads/") ->
+        {:ok, url}
+
+      String.starts_with?(url, "https://") and host_allowlisted?(url, media_host_allowlist()) ->
+        {:ok, url}
+
+      true ->
+        {:error, {:media_url_not_allowlisted, url}}
     end
   end
 
@@ -313,18 +359,27 @@ defmodule ForgeNexus.Profiles.ForgeCodeSchema do
 
   defp image_host_allowlist do
     [
-      "i.imgur.com", "imgur.com", "cdn.discordapp.com", "media.discordapp.net",
-      "pbs.twimg.com", "abs.twimg.com", "cdn.bsky.app",
-      "i.redd.it", "preview.redd.it",
-      "raw.githubusercontent.com", "github.com",
+      "i.imgur.com",
+      "imgur.com",
+      "cdn.discordapp.com",
+      "media.discordapp.net",
+      "pbs.twimg.com",
+      "abs.twimg.com",
+      "cdn.bsky.app",
+      "i.redd.it",
+      "preview.redd.it",
+      "raw.githubusercontent.com",
+      "github.com",
       # ForgeNexus own CDN (future R2 domain)
-      "cdn.tcgaming.quest", "forum.tcgaming.quest"
+      "cdn.tcgaming.quest",
+      "forum.tcgaming.quest"
     ]
   end
 
   defp media_host_allowlist do
     [
-      "cdn.tcgaming.quest", "forum.tcgaming.quest"
+      "cdn.tcgaming.quest",
+      "forum.tcgaming.quest"
       # Intentionally conservative — no Spotify/SoundCloud embeds here;
       # we auto-upload the MP3 ourselves for the player.
     ]

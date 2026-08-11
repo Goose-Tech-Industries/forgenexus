@@ -8,8 +8,8 @@ defmodule ForgeNexus.Repo.Migrations.AddScheduledAndDescriptionToVoiceRooms do
     end
 
     create index(:voice_rooms, [:scheduled_at],
-      where: "scheduled_at IS NOT NULL",
-      name: :voice_rooms_scheduled_at_index
-    )
+             where: "scheduled_at IS NOT NULL",
+             name: :voice_rooms_scheduled_at_index
+           )
   end
 end

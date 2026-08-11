@@ -51,7 +51,12 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.InviteLinkFilter do
         %{name: "has_invites", type: "branch", fields: [%{name: "invite_links", type: "list"}]}
       ],
       config_fields: [
-        %{name: "allowed_domains", type: "string", default: "", description: "Comma-separated domains to whitelist (e.g. your own forum invite domain)"}
+        %{
+          name: "allowed_domains",
+          type: "string",
+          default: "",
+          description: "Comma-separated domains to whitelist (e.g. your own forum invite domain)"
+        }
       ]
     }
   end

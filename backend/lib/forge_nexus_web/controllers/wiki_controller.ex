@@ -10,7 +10,14 @@ defmodule ForgeNexusWeb.WikiController do
     |> json(%{
       categories:
         Enum.map(cats, fn c ->
-          %{id: c.id, name: c.name, slug: c.slug, description: c.description, icon: c.icon, position: c.position}
+          %{
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description,
+            icon: c.icon,
+            position: c.position
+          }
         end)
     })
   end

@@ -22,7 +22,18 @@ defmodule ForgeNexus.Gallery.MediaItem do
 
   def changeset(item, attrs) do
     item
-    |> cast(attrs, [:file_url, :thumbnail_url, :file_type, :file_size, :width, :height, :caption, :album_id, :user_id, :position])
+    |> cast(attrs, [
+      :file_url,
+      :thumbnail_url,
+      :file_type,
+      :file_size,
+      :width,
+      :height,
+      :caption,
+      :album_id,
+      :user_id,
+      :position
+    ])
     |> validate_required([:file_url, :album_id, :user_id])
     |> validate_inclusion(:file_type, ~w(image video gif))
   end

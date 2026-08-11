@@ -38,8 +38,19 @@ defmodule ForgeNexus.Plugins.Nodes.Content.FeatureContent do
       inputs: [%{name: "thread_id", type: "string", required: true}],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "featured_until", type: "string", default: "", description: "ISO date until which content is featured"},
-        %{name: "position", type: "select", options: ~w(homepage sidebar banner), default: "homepage", description: "Where to display featured content"}
+        %{
+          name: "featured_until",
+          type: "string",
+          default: "",
+          description: "ISO date until which content is featured"
+        },
+        %{
+          name: "position",
+          type: "select",
+          options: ~w(homepage sidebar banner),
+          default: "homepage",
+          description: "Where to display featured content"
+        }
       ]
     }
   end

@@ -50,7 +50,12 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetPostbitBackground do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "opacity", type: "number", default: 0.3, description: "Background image opacity (0.0 to 1.0)"}
+        %{
+          name: "opacity",
+          type: "number",
+          default: 0.3,
+          description: "Background image opacity (0.0 to 1.0)"
+        }
       ]
     }
   end

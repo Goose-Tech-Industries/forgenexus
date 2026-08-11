@@ -51,7 +51,10 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.CreateSeason do
       []
       |> then(fn e ->
         days = Map.get(config, "duration_days")
-        if is_nil(days) or (is_number(days) and days > 0), do: e, else: ["duration_days must be a positive number" | e]
+
+        if is_nil(days) or (is_number(days) and days > 0),
+          do: e,
+          else: ["duration_days must be a positive number" | e]
       end)
       |> then(fn e ->
         case Map.get(config, "reward_tiers") do
@@ -91,8 +94,18 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.CreateSeason do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "duration_days", type: "number", default: 30, description: "Season duration in days"},
-        %{name: "reward_tiers", type: "json", default: "{}", description: "JSON object defining reward tiers"}
+        %{
+          name: "duration_days",
+          type: "number",
+          default: 30,
+          description: "Season duration in days"
+        },
+        %{
+          name: "reward_tiers",
+          type: "json",
+          default: "{}",
+          description: "JSON object defining reward tiers"
+        }
       ]
     }
   end

@@ -42,8 +42,12 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.SwitchCase do
   def validate_config(config) do
     errors =
       []
-      |> then(fn e -> if Map.has_key?(config, "field"), do: e, else: ["field is required" | e] end)
-      |> then(fn e -> if is_list(Map.get(config, "cases")), do: e, else: ["cases must be a list" | e] end)
+      |> then(fn e ->
+        if Map.has_key?(config, "field"), do: e, else: ["field is required" | e]
+      end)
+      |> then(fn e ->
+        if is_list(Map.get(config, "cases")), do: e, else: ["cases must be a list" | e]
+      end)
 
     if errors == [], do: :ok, else: {:error, errors}
   end
@@ -59,8 +63,18 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.SwitchCase do
       outputs: [%{name: "matched_port", type: "any"}],
       config_fields: [
         %{name: "field", type: "string", default: "", description: "Field path to switch on"},
-        %{name: "cases", type: "json", default: [], description: "List of {value, port} case objects"},
-        %{name: "default_port", type: "string", default: "default", description: "Port for unmatched values"}
+        %{
+          name: "cases",
+          type: "json",
+          default: [],
+          description: "List of {value, port} case objects"
+        },
+        %{
+          name: "default_port",
+          type: "string",
+          default: "default",
+          description: "Port for unmatched values"
+        }
       ]
     }
   end

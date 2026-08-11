@@ -52,7 +52,9 @@ defmodule ForgeNexusWeb.FeaturesController do
         {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
       end
     else
-      conn |> put_status(:forbidden) |> json(%{error: "Only the thread author or staff can mark solved"})
+      conn
+      |> put_status(:forbidden)
+      |> json(%{error: "Only the thread author or staff can mark solved"})
     end
   end
 
@@ -66,7 +68,9 @@ defmodule ForgeNexusWeb.FeaturesController do
         {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
       end
     else
-      conn |> put_status(:forbidden) |> json(%{error: "Only the thread author or staff can unmark solved"})
+      conn
+      |> put_status(:forbidden)
+      |> json(%{error: "Only the thread author or staff can unmark solved"})
     end
   end
 
@@ -84,8 +88,11 @@ defmodule ForgeNexusWeb.FeaturesController do
 
   def create_prefix(conn, params) do
     case Forums.create_prefix(params) do
-      {:ok, p} -> conn |> put_status(:created) |> json(%{prefix: prefix_json(p)})
-      {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
+      {:ok, p} ->
+        conn |> put_status(:created) |> json(%{prefix: prefix_json(p)})
+
+      {:error, cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(cs)})
     end
   end
 
@@ -134,17 +141,47 @@ defmodule ForgeNexusWeb.FeaturesController do
 
   def save_draft(conn, params) do
     user = Guardian.Plug.current_resource(conn)
-    case Forums.save_draft(user.id, params["context_type"], params["context_id"], params["body"], params["title"]) do
-      {:ok, draft} -> conn |> json(%{draft: %{id: draft.id, body: draft.body, title: draft.title, updated_at: draft.updated_at}})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to save draft"})
+
+    case Forums.save_draft(
+           user.id,
+           params["context_type"],
+           params["context_id"],
+           params["body"],
+           params["title"]
+         ) do
+      {:ok, draft} ->
+        conn
+        |> json(%{
+          draft: %{
+            id: draft.id,
+            body: draft.body,
+            title: draft.title,
+            updated_at: draft.updated_at
+          }
+        })
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to save draft"})
     end
   end
 
   def get_draft(conn, %{"context_type" => ct, "context_id" => cid}) do
     user = Guardian.Plug.current_resource(conn)
+
     case Forums.get_draft(user.id, ct, cid) do
-      nil -> conn |> json(%{draft: nil})
-      draft -> conn |> json(%{draft: %{id: draft.id, body: draft.body, title: draft.title, updated_at: draft.updated_at}})
+      nil ->
+        conn |> json(%{draft: nil})
+
+      draft ->
+        conn
+        |> json(%{
+          draft: %{
+            id: draft.id,
+            body: draft.body,
+            title: draft.title,
+            updated_at: draft.updated_at
+          }
+        })
     end
   end
 
@@ -159,11 +196,22 @@ defmodule ForgeNexusWeb.FeaturesController do
   def similar_threads(conn, %{"title" => title} = params) do
     forum_id = params["forum_id"]
     threads = Forums.find_similar_threads(title, forum_id)
-    conn |> json(%{threads: Enum.map(threads, fn t ->
-      %{id: t.id, title: t.title, slug: t.slug, reply_count: t.reply_count,
-        forum_name: t.forum && t.forum.name, user: t.user && t.user.username,
-        inserted_at: t.inserted_at}
-    end)})
+
+    conn
+    |> json(%{
+      threads:
+        Enum.map(threads, fn t ->
+          %{
+            id: t.id,
+            title: t.title,
+            slug: t.slug,
+            reply_count: t.reply_count,
+            forum_name: t.forum && t.forum.name,
+            user: t.user && t.user.username,
+            inserted_at: t.inserted_at
+          }
+        end)
+    })
   end
 
   # === Post Bookmarks ===
@@ -184,39 +232,47 @@ defmodule ForgeNexusWeb.FeaturesController do
     user = Guardian.Plug.current_resource(conn)
     bookmarks = Forums.list_post_bookmarks(user.id)
 
-    conn |> json(%{
-      bookmarks: Enum.map(bookmarks, fn b ->
-        post = b.post
-        thread = post.thread
+    conn
+    |> json(%{
+      bookmarks:
+        Enum.map(bookmarks, fn b ->
+          post = b.post
+          thread = post.thread
 
-        %{
-          id: b.id,
-          note: b.note,
-          bookmarked_at: b.inserted_at,
-          post: %{
-            id: post.id,
-            body: post.body,
-            body_html: post.body_html,
-            inserted_at: post.inserted_at,
-            user: post.user && %{
-              id: post.user.id,
-              username: post.user.username,
-              slug: post.user.slug,
-              avatar_url: post.user.avatar_url
-            },
-            thread: thread && %{
-              id: thread.id,
-              title: thread.title,
-              slug: thread.slug,
-              forum: thread.forum && %{
-                id: thread.forum.id,
-                name: thread.forum.name,
-                slug: thread.forum.slug
-              }
+          %{
+            id: b.id,
+            note: b.note,
+            bookmarked_at: b.inserted_at,
+            post: %{
+              id: post.id,
+              body: post.body,
+              body_html: post.body_html,
+              inserted_at: post.inserted_at,
+              user:
+                post.user &&
+                  %{
+                    id: post.user.id,
+                    username: post.user.username,
+                    slug: post.user.slug,
+                    avatar_url: post.user.avatar_url
+                  },
+              thread:
+                thread &&
+                  %{
+                    id: thread.id,
+                    title: thread.title,
+                    slug: thread.slug,
+                    forum:
+                      thread.forum &&
+                        %{
+                          id: thread.forum.id,
+                          name: thread.forum.name,
+                          slug: thread.forum.slug
+                        }
+                  }
             }
           }
-        }
-      end)
+        end)
     })
   end
 
@@ -252,8 +308,15 @@ defmodule ForgeNexusWeb.FeaturesController do
   # === Helpers ===
 
   defp prefix_json(p) do
-    %{id: p.id, name: p.name, color: p.color, bg_color: p.bg_color,
-      forum_id: p.forum_id, is_global: p.is_global, position: p.position}
+    %{
+      id: p.id,
+      name: p.name,
+      color: p.color,
+      bg_color: p.bg_color,
+      forum_id: p.forum_id,
+      is_global: p.is_global,
+      position: p.position
+    }
   end
 
   defp format_errors(cs), do: Ecto.Changeset.traverse_errors(cs, fn {msg, _} -> msg end)

@@ -219,7 +219,17 @@ defmodule ForgeNexus.Plugins.DataManager do
 
   defp apply_filter(query, column_slug, :in, values) when is_list(values) do
     json_values = Enum.map(values, &Jason.encode!/1)
-    where(query, [r], fragment("?->? IN (SELECT jsonb_array_elements_text(?::jsonb))", r.data, ^column_slug, ^Jason.encode!(json_values)))
+
+    where(
+      query,
+      [r],
+      fragment(
+        "?->? IN (SELECT jsonb_array_elements_text(?::jsonb))",
+        r.data,
+        ^column_slug,
+        ^Jason.encode!(json_values)
+      )
+    )
   end
 
   defp apply_filter(query, _column_slug, _operator, _value), do: query

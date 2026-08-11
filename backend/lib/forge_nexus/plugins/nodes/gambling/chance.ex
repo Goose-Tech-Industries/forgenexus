@@ -45,7 +45,12 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.Chance do
         %{name: "failure", type: "number"}
       ],
       config_fields: [
-        %{name: "probability", type: "number", default: 50, description: "Success probability (0-100)"}
+        %{
+          name: "probability",
+          type: "number",
+          default: 50,
+          description: "Success probability (0-100)"
+        }
       ]
     }
   end

@@ -57,7 +57,13 @@ defmodule ForgeNexus.Plugins.Nodes.UI.RenderProfileWidget do
       outputs: [%{name: "widget_id", type: "string"}],
       config_fields: [
         %{name: "template", type: "json", default: %{}, description: "Widget template data"},
-        %{name: "placement", type: "select", options: ~w(profile_sidebar profile_header), default: "profile_sidebar", description: "Where to display the widget"}
+        %{
+          name: "placement",
+          type: "select",
+          options: ~w(profile_sidebar profile_header),
+          default: "profile_sidebar",
+          description: "Where to display the widget"
+        }
       ]
     }
   end

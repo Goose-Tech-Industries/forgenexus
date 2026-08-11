@@ -31,7 +31,10 @@ defmodule ForgeNexus.Workers.TranscribeRecordingWorker do
             :ok
 
           {:error, reason} ->
-            Logger.warning("[TranscribeRecordingWorker] #{recording_id} failed: #{inspect(reason)}")
+            Logger.warning(
+              "[TranscribeRecordingWorker] #{recording_id} failed: #{inspect(reason)}"
+            )
+
             Voice.mark_transcript_status(recording, "failed")
             {:error, reason}
         end

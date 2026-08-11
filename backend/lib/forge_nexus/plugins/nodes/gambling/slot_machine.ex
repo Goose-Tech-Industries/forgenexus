@@ -9,9 +9,10 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.SlotMachine do
     if symbols == [] do
       {:error, "symbols list is empty", ctx}
     else
-      total_weight = Enum.reduce(symbols, 0, fn s, acc ->
-        acc + (Map.get(s, "weight") || Map.get(s, :weight) || 1)
-      end)
+      total_weight =
+        Enum.reduce(symbols, 0, fn s, acc ->
+          acc + (Map.get(s, "weight") || Map.get(s, :weight) || 1)
+        end)
 
       reels = Enum.map(1..3, fn _ -> pick_symbol(symbols, total_weight) end)
 
@@ -60,7 +61,9 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.SlotMachine do
 
     cond do
       matching_payline != nil ->
-        mult = Map.get(matching_payline, "multiplier") || Map.get(matching_payline, :multiplier) || 1
+        mult =
+          Map.get(matching_payline, "multiplier") || Map.get(matching_payline, :multiplier) || 1
+
         {true, mult}
 
       all_match ->
@@ -108,8 +111,18 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.SlotMachine do
         %{name: "multiplier", type: "number"}
       ],
       config_fields: [
-        %{name: "symbols", type: "json", default: "[]", description: "JSON array of {symbol, weight} objects"},
-        %{name: "paylines", type: "json", default: "[]", description: "JSON array of {pattern, multiplier} objects"}
+        %{
+          name: "symbols",
+          type: "json",
+          default: "[]",
+          description: "JSON array of {symbol, weight} objects"
+        },
+        %{
+          name: "paylines",
+          type: "json",
+          default: "[]",
+          description: "JSON array of {pattern, multiplier} objects"
+        }
       ]
     }
   end

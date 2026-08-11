@@ -31,7 +31,8 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.ConsumeItem do
       type: "inventory/consume_item",
       category: "inventory",
       label: "Consume Item",
-      description: "Consumes an item, removing it and returning its template for effect processing.",
+      description:
+        "Consumes an item, removing it and returning its template for effect processing.",
       inputs: [
         %{name: "user_id", type: "string", required: true},
         %{name: "inventory_id", type: "string", required: true}

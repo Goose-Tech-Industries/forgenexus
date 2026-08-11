@@ -56,7 +56,12 @@ defmodule ForgeNexus.Plugins.Nodes.Notification.SendDm do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "from_system", type: "boolean", default: true, description: "Send as system message"}
+        %{
+          name: "from_system",
+          type: "boolean",
+          default: true,
+          description: "Send as system message"
+        }
       ]
     }
   end

@@ -10,6 +10,7 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.BreedPets do
     pet1_id = Map.get(inputs, :pet1_id) || Map.get(inputs, "pet1_id")
     pet2_id = Map.get(inputs, :pet2_id) || Map.get(inputs, "pet2_id")
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
+
     case ForgeNexus.Pets.breed_pets(pet1_id, pet2_id, user_id) do
       {:ok, offspring} ->
         ctx = Sandbox.increment_db_ops(ctx)
@@ -51,7 +52,12 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.BreedPets do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "nickname", type: "string", default: "", description: "Nickname for the offspring"}
+        %{
+          name: "nickname",
+          type: "string",
+          default: "",
+          description: "Nickname for the offspring"
+        }
       ]
     }
   end

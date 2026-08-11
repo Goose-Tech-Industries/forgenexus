@@ -19,7 +19,8 @@ defmodule ForgeNexusWeb.ActivityController do
         offset = safe_int(params["offset"], 0)
         activity = Forums.user_activity(target_user.id, limit: limit, offset: offset)
 
-        conn |> json(%{
+        conn
+        |> json(%{
           activity: %{
             posts: Enum.map(activity.posts, &post_json/1),
             threads: Enum.map(activity.threads, &thread_json/1)
@@ -49,18 +50,24 @@ defmodule ForgeNexusWeb.ActivityController do
         id: post.thread.id,
         title: post.thread.title,
         slug: post.thread.slug,
-        forum: %{id: post.thread.forum.id, name: post.thread.forum.name, slug: post.thread.forum.slug}
+        forum: %{
+          id: post.thread.forum.id,
+          name: post.thread.forum.name,
+          slug: post.thread.forum.slug
+        }
       }
     }
   end
 
   defp safe_int(nil, default), do: default
+
   defp safe_int(val, default) when is_binary(val) do
     case Integer.parse(val) do
       {n, _} -> n
       :error -> default
     end
   end
+
   defp safe_int(val, _default) when is_integer(val), do: val
   defp safe_int(_, default), do: default
 

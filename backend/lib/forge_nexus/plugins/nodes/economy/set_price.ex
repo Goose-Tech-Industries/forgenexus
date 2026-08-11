@@ -36,7 +36,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.SetPrice do
       ],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        }
       ]
     }
   end

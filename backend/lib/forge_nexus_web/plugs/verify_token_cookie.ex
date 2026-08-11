@@ -11,12 +11,17 @@ defmodule ForgeNexusWeb.Plugs.VerifyTokenCookie do
       nil ->
         # Try reading from cookie
         case conn.cookies["fn_token"] || conn.req_cookies["fn_token"] do
-          nil -> conn
-          "" -> conn
+          nil ->
+            conn
+
+          "" ->
+            conn
+
           token ->
             case ForgeNexus.Guardian.resource_from_token(token) do
               {:ok, user, _claims} ->
                 Guardian.Plug.put_current_resource(conn, user)
+
               _ ->
                 conn
             end

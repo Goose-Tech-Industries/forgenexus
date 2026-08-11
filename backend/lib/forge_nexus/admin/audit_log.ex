@@ -26,7 +26,16 @@ defmodule ForgeNexus.Admin.AuditLog do
 
   def changeset(log, attrs) do
     log
-    |> cast(attrs, [:action, :category, :target_type, :target_id, :description, :previous_state, :new_state, :admin_id])
+    |> cast(attrs, [
+      :action,
+      :category,
+      :target_type,
+      :target_id,
+      :description,
+      :previous_state,
+      :new_state,
+      :admin_id
+    ])
     |> validate_required([:action, :category, :admin_id])
     |> validate_inclusion(:category, @categories)
     |> foreign_key_constraint(:admin_id)

@@ -24,6 +24,7 @@ defmodule ForgeNexus.AutoMod do
 
   def check_content(content, user) do
     rules = AutoModRule |> where([r], r.is_enabled == true) |> order_by(:sort_order) |> Repo.all()
+
     Enum.map(rules, fn rule ->
       triggered = evaluate_rule(rule, content, user)
       {rule, triggered}
@@ -42,6 +43,7 @@ defmodule ForgeNexus.AutoMod do
 
   defp evaluate_rule(%{rule_type: "regex"} = rule, content, _user) do
     pattern = Map.get(rule.config, "pattern", "")
+
     case Regex.compile(pattern, "i") do
       {:ok, regex} -> Regex.match?(regex, content)
       _ -> false
@@ -57,6 +59,7 @@ defmodule ForgeNexus.AutoMod do
 
   def keyword_check(content, word_list) do
     normalized = String.downcase(content)
+
     Enum.any?(word_list, fn word ->
       String.contains?(normalized, String.downcase(word))
     end)
@@ -67,7 +70,11 @@ defmodule ForgeNexus.AutoMod do
     len = String.length(content)
 
     # Caps percentage
-    caps_count = content |> String.graphemes() |> Enum.count(&(&1 == String.upcase(&1) and &1 != String.downcase(&1)))
+    caps_count =
+      content
+      |> String.graphemes()
+      |> Enum.count(&(&1 == String.upcase(&1) and &1 != String.downcase(&1)))
+
     caps_ratio = if len > 0, do: caps_count / len, else: 0
     scores = [caps_ratio * 0.3 | scores]
 
@@ -83,11 +90,13 @@ defmodule ForgeNexus.AutoMod do
     scores = [repetition_score | scores]
 
     # Very short or very long
-    length_score = cond do
-      len < 5 -> 0.1
-      len > 5000 -> 0.1
-      true -> 0.0
-    end
+    length_score =
+      cond do
+        len < 5 -> 0.1
+        len > 5000 -> 0.1
+        true -> 0.0
+      end
+
     scores = [length_score | scores]
 
     Enum.sum(scores)

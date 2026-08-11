@@ -4,7 +4,23 @@ defmodule ForgeNexus.Channels do
   """
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Channels.{ChannelCategory, Channel, ChannelMessage, ChannelMember, MessageReaction, ChatMention, MessageEdit, ChatThread, ThreadMessage, ThreadMember, CustomEmoji, Webhook, MessageBookmark}
+
+  alias ForgeNexus.Channels.{
+    ChannelCategory,
+    Channel,
+    ChannelMessage,
+    ChannelMember,
+    MessageReaction,
+    ChatMention,
+    MessageEdit,
+    ChatThread,
+    ThreadMessage,
+    ThreadMember,
+    CustomEmoji,
+    Webhook,
+    MessageBookmark
+  }
+
   alias ForgeNexus.Accounts.{User, UserGroupMembership}
   alias ForgeNexus.Moderation
 
@@ -16,7 +32,9 @@ defmodule ForgeNexus.Channels do
   end
 
   def get_category!(id), do: Repo.get!(ChannelCategory, id)
-  def create_category(attrs), do: %ChannelCategory{} |> ChannelCategory.changeset(attrs) |> Repo.insert()
+
+  def create_category(attrs),
+    do: %ChannelCategory{} |> ChannelCategory.changeset(attrs) |> Repo.insert()
 
   def update_category(%ChannelCategory{} = category, attrs) do
     category |> ChannelCategory.changeset(attrs) |> Repo.update()
@@ -64,7 +82,10 @@ defmodule ForgeNexus.Channels do
 
   def get_channel(id), do: Channel |> preload(:category) |> Repo.get(id)
   def get_channel!(id), do: Channel |> preload(:category) |> Repo.get!(id)
-  def get_channel_by_slug(slug), do: Channel |> where([c], c.slug == ^slug) |> preload(:category) |> Repo.one()
+
+  def get_channel_by_slug(slug),
+    do: Channel |> where([c], c.slug == ^slug) |> preload(:category) |> Repo.one()
+
   def create_channel(attrs), do: %Channel{} |> Channel.changeset(attrs) |> Repo.insert()
   def update_channel(%Channel{} = ch, attrs), do: ch |> Channel.changeset(attrs) |> Repo.update()
   def delete_channel(id), do: Repo.get!(Channel, id) |> Repo.delete()
@@ -77,32 +98,70 @@ defmodule ForgeNexus.Channels do
     end)
   end
 
-  def archive_channel(%Channel{} = ch), do: ch |> Ecto.Changeset.change(is_archived: true) |> Repo.update()
-  def unarchive_channel(%Channel{} = ch), do: ch |> Ecto.Changeset.change(is_archived: false) |> Repo.update()
+  def archive_channel(%Channel{} = ch),
+    do: ch |> Ecto.Changeset.change(is_archived: true) |> Repo.update()
+
+  def unarchive_channel(%Channel{} = ch),
+    do: ch |> Ecto.Changeset.change(is_archived: false) |> Repo.update()
 
   def list_messages(channel_id, opts \\ []) do
     limit = Keyword.get(opts, :limit, 50)
     before_id = Keyword.get(opts, :before_id)
+
     query =
       ChannelMessage
       |> where([m], m.channel_id == ^channel_id and m.is_deleted == false)
-      |> order_by(desc: :inserted_at) |> limit(^limit)
-      |> preload([:reactions, :spawned_thread, reply_to: [user: :primary_group], user: :primary_group])
-    query = if before_id do
-      before_msg = Repo.get(ChannelMessage, before_id)
-      if before_msg do
-        where(query, [m], m.inserted_at < ^before_msg.inserted_at or (m.inserted_at == ^before_msg.inserted_at and m.id < ^before_id))
+      |> order_by(desc: :inserted_at)
+      |> limit(^limit)
+      |> preload([
+        :reactions,
+        :spawned_thread,
+        reply_to: [user: :primary_group],
+        user: :primary_group
+      ])
+
+    query =
+      if before_id do
+        before_msg = Repo.get(ChannelMessage, before_id)
+
+        if before_msg do
+          where(
+            query,
+            [m],
+            m.inserted_at < ^before_msg.inserted_at or
+              (m.inserted_at == ^before_msg.inserted_at and m.id < ^before_id)
+          )
+        else
+          query
+        end
       else
         query
       end
-    else
-      query
-    end
+
     Repo.all(query) |> Enum.reverse()
   end
 
-  def get_message(id), do: ChannelMessage |> preload([:reactions, :spawned_thread, reply_to: [user: :primary_group], user: :primary_group]) |> Repo.get(id)
-  def get_message!(id), do: ChannelMessage |> preload([:reactions, :spawned_thread, reply_to: [user: :primary_group], user: :primary_group]) |> Repo.get!(id)
+  def get_message(id),
+    do:
+      ChannelMessage
+      |> preload([
+        :reactions,
+        :spawned_thread,
+        reply_to: [user: :primary_group],
+        user: :primary_group
+      ])
+      |> Repo.get(id)
+
+  def get_message!(id),
+    do:
+      ChannelMessage
+      |> preload([
+        :reactions,
+        :spawned_thread,
+        reply_to: [user: :primary_group],
+        user: :primary_group
+      ])
+      |> Repo.get!(id)
 
   def create_message(channel_id, user_id, attrs) do
     Repo.transaction(fn ->
@@ -119,8 +178,12 @@ defmodule ForgeNexus.Channels do
 
       message = %ChannelMessage{} |> ChannelMessage.changeset(message_attrs) |> Repo.insert!()
       now = DateTime.utc_now() |> DateTime.truncate(:second)
-      from(c in Channel, where: c.id == ^channel_id) |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
-      message |> Repo.preload([:reactions, reply_to: [user: :primary_group], user: :primary_group])
+
+      from(c in Channel, where: c.id == ^channel_id)
+      |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
+
+      message
+      |> Repo.preload([:reactions, reply_to: [user: :primary_group], user: :primary_group])
     end)
   end
 
@@ -131,7 +194,10 @@ defmodule ForgeNexus.Channels do
 
     urls
     |> Enum.take(3)
-    |> Task.async_stream(fn url -> LinkEmbed.fetch_metadata(url) end, timeout: 8_000, on_timeout: :kill_task)
+    |> Task.async_stream(fn url -> LinkEmbed.fetch_metadata(url) end,
+      timeout: 8_000,
+      on_timeout: :kill_task
+    )
     |> Enum.flat_map(fn
       {:ok, %{title: nil, description: nil}} -> []
       {:ok, meta} when is_map(meta) -> [meta]
@@ -152,8 +218,14 @@ defmodule ForgeNexus.Channels do
     end
 
     case message |> ChannelMessage.edit_changeset(attrs) |> Repo.update() do
-      {:ok, msg} -> {:ok, Repo.preload(msg, [:reactions, reply_to: [user: :primary_group], user: :primary_group], force: true)}
-      error -> error
+      {:ok, msg} ->
+        {:ok,
+         Repo.preload(msg, [:reactions, reply_to: [user: :primary_group], user: :primary_group],
+           force: true
+         )}
+
+      error ->
+        error
     end
   end
 
@@ -170,8 +242,14 @@ defmodule ForgeNexus.Channels do
     end
 
     case message |> ChannelMessage.edit_changeset(attrs) |> Repo.update() do
-      {:ok, msg} -> {:ok, Repo.preload(msg, [:reactions, reply_to: [user: :primary_group], user: :primary_group], force: true)}
-      error -> error
+      {:ok, msg} ->
+        {:ok,
+         Repo.preload(msg, [:reactions, reply_to: [user: :primary_group], user: :primary_group],
+           force: true
+         )}
+
+      error ->
+        error
     end
   end
 
@@ -182,47 +260,77 @@ defmodule ForgeNexus.Channels do
   def hard_delete_message(id) do
     message = Repo.get!(ChannelMessage, id)
     channel_id = message.channel_id
+
     case Repo.delete(message) do
       {:ok, _} ->
-        from(c in Channel, where: c.id == ^channel_id) |> Repo.update_all(inc: [message_count: -1])
+        from(c in Channel, where: c.id == ^channel_id)
+        |> Repo.update_all(inc: [message_count: -1])
+
         {:ok, message}
-      error -> error
+
+      error ->
+        error
     end
   end
 
-  def pin_message(%ChannelMessage{} = msg, pinned_by_id), do: msg |> ChannelMessage.pin_changeset(pinned_by_id) |> Repo.update()
-  def unpin_message(%ChannelMessage{} = msg), do: msg |> ChannelMessage.unpin_changeset() |> Repo.update()
+  def pin_message(%ChannelMessage{} = msg, pinned_by_id),
+    do: msg |> ChannelMessage.pin_changeset(pinned_by_id) |> Repo.update()
+
+  def unpin_message(%ChannelMessage{} = msg),
+    do: msg |> ChannelMessage.unpin_changeset() |> Repo.update()
 
   def get_pinned_messages(channel_id) do
     ChannelMessage
     |> where([m], m.channel_id == ^channel_id and m.is_pinned == true)
     |> order_by(desc: :pinned_at)
-    |> preload([:reactions, :spawned_thread, reply_to: [user: :primary_group], user: :primary_group])
+    |> preload([
+      :reactions,
+      :spawned_thread,
+      reply_to: [user: :primary_group],
+      user: :primary_group
+    ])
     |> Repo.all()
   end
 
   def get_or_create_member(channel_id, user_id) do
     case Repo.get_by(ChannelMember, channel_id: channel_id, user_id: user_id) do
-      nil -> %ChannelMember{} |> ChannelMember.changeset(%{channel_id: channel_id, user_id: user_id}) |> Repo.insert()
-      member -> {:ok, member}
+      nil ->
+        %ChannelMember{}
+        |> ChannelMember.changeset(%{channel_id: channel_id, user_id: user_id})
+        |> Repo.insert()
+
+      member ->
+        {:ok, member}
     end
   end
 
   def mark_read(channel_id, user_id, message_id) do
     {:ok, member} = get_or_create_member(channel_id, user_id)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    member |> Ecto.Changeset.change(last_read_at: now, last_read_message_id: message_id) |> Repo.update()
+
+    member
+    |> Ecto.Changeset.change(last_read_at: now, last_read_message_id: message_id)
+    |> Repo.update()
   end
 
   def get_unread_counts(nil), do: %{}
 
   def get_unread_counts(user_id) do
     members = ChannelMember |> where([m], m.user_id == ^user_id) |> Repo.all()
-    members |> Enum.map(fn member ->
-      count_query = ChannelMessage |> where([m], m.channel_id == ^member.channel_id and m.is_deleted == false)
-      count_query = if member.last_read_at, do: where(count_query, [m], m.inserted_at > ^member.last_read_at), else: count_query
+
+    members
+    |> Enum.map(fn member ->
+      count_query =
+        ChannelMessage |> where([m], m.channel_id == ^member.channel_id and m.is_deleted == false)
+
+      count_query =
+        if member.last_read_at,
+          do: where(count_query, [m], m.inserted_at > ^member.last_read_at),
+          else: count_query
+
       {member.channel_id, Repo.aggregate(count_query, :count)}
-    end) |> Map.new()
+    end)
+    |> Map.new()
   end
 
   def set_notification_level(channel_id, user_id, level) do
@@ -241,7 +349,9 @@ defmodule ForgeNexus.Channels do
   end
 
   def add_reaction(message_id, user_id, emoji) do
-    %MessageReaction{} |> MessageReaction.changeset(%{message_id: message_id, user_id: user_id, emoji: emoji}) |> Repo.insert()
+    %MessageReaction{}
+    |> MessageReaction.changeset(%{message_id: message_id, user_id: user_id, emoji: emoji})
+    |> Repo.insert()
   end
 
   def remove_reaction(message_id, user_id, emoji) do
@@ -252,11 +362,17 @@ defmodule ForgeNexus.Channels do
   end
 
   def get_reactions(message_id) do
-    reactions = MessageReaction |> where([r], r.message_id == ^message_id) |> preload(:user) |> Repo.all()
+    reactions =
+      MessageReaction |> where([r], r.message_id == ^message_id) |> preload(:user) |> Repo.all()
+
     reactions
     |> Enum.group_by(fn r -> r.emoji end)
     |> Enum.map(fn {emoji, group} ->
-      %{emoji: emoji, count: length(group), users: Enum.map(group, fn r -> %{id: r.user.id, username: r.user.username} end)}
+      %{
+        emoji: emoji,
+        count: length(group),
+        users: Enum.map(group, fn r -> %{id: r.user.id, username: r.user.username} end)
+      }
     end)
   end
 
@@ -283,18 +399,27 @@ defmodule ForgeNexus.Channels do
   """
   def check_slowmode(%Channel{} = channel, %User{} = user) do
     cond do
-      channel.slowmode_seconds == 0 -> :ok
-      Moderation.is_staff?(user.id) -> :ok
+      channel.slowmode_seconds == 0 ->
+        :ok
+
+      Moderation.is_staff?(user.id) ->
+        :ok
+
       true ->
         last_msg =
           ChannelMessage
-          |> where([m], m.channel_id == ^channel.id and m.user_id == ^user.id and m.is_deleted == false)
+          |> where(
+            [m],
+            m.channel_id == ^channel.id and m.user_id == ^user.id and m.is_deleted == false
+          )
           |> order_by(desc: :inserted_at)
           |> limit(1)
           |> Repo.one()
 
         case last_msg do
-          nil -> :ok
+          nil ->
+            :ok
+
           msg ->
             elapsed = DateTime.diff(DateTime.utc_now(), msg.inserted_at, :second)
             remaining = channel.slowmode_seconds - elapsed
@@ -309,19 +434,89 @@ defmodule ForgeNexus.Channels do
   end
 
   def seed_defaults do
-    staff_group_ids = from(g in ForgeNexus.Accounts.UserGroup, where: g.is_staff == true, select: g.id) |> Repo.all()
+    staff_group_ids =
+      from(g in ForgeNexus.Accounts.UserGroup, where: g.is_staff == true, select: g.id)
+      |> Repo.all()
+
     Repo.transaction(fn ->
       {:ok, general_cat} = create_category(%{name: "General", position: 0})
-      create_channel(%{name: "general", slug: "general", description: "General discussion", topic: "Welcome to the community!", position: 0, category_id: general_cat.id})
-      create_channel(%{name: "introductions", slug: "introductions", description: "Introduce yourself to the community", position: 1, category_id: general_cat.id})
-      create_channel(%{name: "off-topic", slug: "off-topic", description: "Anything goes", position: 2, category_id: general_cat.id})
+
+      create_channel(%{
+        name: "general",
+        slug: "general",
+        description: "General discussion",
+        topic: "Welcome to the community!",
+        position: 0,
+        category_id: general_cat.id
+      })
+
+      create_channel(%{
+        name: "introductions",
+        slug: "introductions",
+        description: "Introduce yourself to the community",
+        position: 1,
+        category_id: general_cat.id
+      })
+
+      create_channel(%{
+        name: "off-topic",
+        slug: "off-topic",
+        description: "Anything goes",
+        position: 2,
+        category_id: general_cat.id
+      })
+
       {:ok, community_cat} = create_category(%{name: "Community", position: 1})
-      create_channel(%{name: "announcements", slug: "announcements", description: "Official announcements", topic: "Important updates from the team", position: 0, category_id: community_cat.id, is_read_only: true, type: "announcements"})
-      create_channel(%{name: "feedback", slug: "feedback", description: "Share your feedback and suggestions", position: 1, category_id: community_cat.id})
-      create_channel(%{name: "help", slug: "help", description: "Need help? Ask here", position: 2, category_id: community_cat.id})
+
+      create_channel(%{
+        name: "announcements",
+        slug: "announcements",
+        description: "Official announcements",
+        topic: "Important updates from the team",
+        position: 0,
+        category_id: community_cat.id,
+        is_read_only: true,
+        type: "announcements"
+      })
+
+      create_channel(%{
+        name: "feedback",
+        slug: "feedback",
+        description: "Share your feedback and suggestions",
+        position: 1,
+        category_id: community_cat.id
+      })
+
+      create_channel(%{
+        name: "help",
+        slug: "help",
+        description: "Need help? Ask here",
+        position: 2,
+        category_id: community_cat.id
+      })
+
       {:ok, staff_cat} = create_category(%{name: "Staff", position: 2})
-      create_channel(%{name: "staff-chat", slug: "staff-chat", description: "Staff-only discussion", position: 0, category_id: staff_cat.id, is_private: true, allowed_group_ids: staff_group_ids})
-      create_channel(%{name: "mod-log", slug: "mod-log", description: "Moderation action log", position: 1, category_id: staff_cat.id, is_private: true, is_read_only: true, allowed_group_ids: staff_group_ids})
+
+      create_channel(%{
+        name: "staff-chat",
+        slug: "staff-chat",
+        description: "Staff-only discussion",
+        position: 0,
+        category_id: staff_cat.id,
+        is_private: true,
+        allowed_group_ids: staff_group_ids
+      })
+
+      create_channel(%{
+        name: "mod-log",
+        slug: "mod-log",
+        description: "Moderation action log",
+        position: 1,
+        category_id: staff_cat.id,
+        is_private: true,
+        is_read_only: true,
+        allowed_group_ids: staff_group_ids
+      })
     end)
   end
 
@@ -380,6 +575,7 @@ defmodule ForgeNexus.Channels do
     query =
       if before_id do
         before_msg = Repo.get(ThreadMessage, before_id)
+
         if before_msg do
           where(query, [m], m.inserted_at < ^before_msg.inserted_at)
         else
@@ -400,6 +596,7 @@ defmodule ForgeNexus.Channels do
         |> Repo.insert!()
 
       now = DateTime.utc_now() |> DateTime.truncate(:second)
+
       from(t in ChatThread, where: t.id == ^thread_id)
       |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
 
@@ -409,7 +606,9 @@ defmodule ForgeNexus.Channels do
           %ThreadMember{}
           |> ThreadMember.changeset(%{thread_id: thread_id, user_id: user_id})
           |> Repo.insert()
-        _ -> :ok
+
+        _ ->
+          :ok
       end
 
       msg |> Repo.preload(user: :primary_group)
@@ -434,7 +633,15 @@ defmodule ForgeNexus.Channels do
     MessageBookmark
     |> where([b], b.user_id == ^user_id)
     |> order_by(desc: :inserted_at)
-    |> preload(message: [:reactions, :spawned_thread, channel: [], reply_to: [user: :primary_group], user: :primary_group])
+    |> preload(
+      message: [
+        :reactions,
+        :spawned_thread,
+        channel: [],
+        reply_to: [user: :primary_group],
+        user: :primary_group
+      ]
+    )
     |> Repo.all()
   end
 
@@ -523,8 +730,12 @@ defmodule ForgeNexus.Channels do
     message_attrs = Map.put(attrs, :user_id, webhook.created_by_id)
     message = %ChannelMessage{} |> ChannelMessage.changeset(message_attrs) |> Repo.insert!()
     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    from(c in Channel, where: c.id == ^webhook.channel_id) |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
-    {:ok, message |> Repo.preload([:reactions, reply_to: [user: :primary_group], user: :primary_group])}
+
+    from(c in Channel, where: c.id == ^webhook.channel_id)
+    |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
+
+    {:ok,
+     message |> Repo.preload([:reactions, reply_to: [user: :primary_group], user: :primary_group])}
   end
 
   # --- Custom Emojis ---
@@ -571,7 +782,12 @@ defmodule ForgeNexus.Channels do
       |> order_by(desc: :inserted_at)
       |> limit(^limit)
       |> offset(^offset)
-      |> preload([:reactions, channel: [], reply_to: [user: :primary_group], user: :primary_group])
+      |> preload([
+        :reactions,
+        channel: [],
+        reply_to: [user: :primary_group],
+        user: :primary_group
+      ])
 
     # Filter by channel slug
     base =
@@ -632,7 +848,11 @@ defmodule ForgeNexus.Channels do
     mentions =
       Enum.flat_map(users, fn {_username, user_id} ->
         case Repo.insert(
-               %ChatMention{message_id: message.id, mentioned_user_id: user_id, mention_type: "user"},
+               %ChatMention{
+                 message_id: message.id,
+                 mentioned_user_id: user_id,
+                 mention_type: "user"
+               },
                on_conflict: :nothing
              ) do
           {:ok, m} -> [m]
@@ -702,7 +922,7 @@ defmodule ForgeNexus.Channels do
     |> Repo.all()
   end
 
-    defp user_group_ids(user_id) do
+  defp user_group_ids(user_id) do
     from(m in UserGroupMembership, where: m.user_id == ^user_id, select: m.group_id) |> Repo.all()
   end
 end

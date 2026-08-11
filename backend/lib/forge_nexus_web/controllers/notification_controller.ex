@@ -22,7 +22,9 @@ defmodule ForgeNexusWeb.NotificationController do
 
   def count(conn, _params) do
     case Guardian.Plug.current_resource(conn) do
-      nil -> conn |> json(%{count: 0})
+      nil ->
+        conn |> json(%{count: 0})
+
       user ->
         count = Notifications.unread_count(user.id)
         conn |> json(%{count: count})
@@ -33,8 +35,11 @@ defmodule ForgeNexusWeb.NotificationController do
     user = Guardian.Plug.current_resource(conn)
 
     case Notifications.mark_read(id, user.id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Notification not found"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Notification not found"})
     end
   end
 
@@ -48,8 +53,11 @@ defmodule ForgeNexusWeb.NotificationController do
     user = Guardian.Plug.current_resource(conn)
 
     case Notifications.delete_notification(id, user.id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Notification not found"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Notification not found"})
     end
   end
 
@@ -75,11 +83,13 @@ defmodule ForgeNexusWeb.NotificationController do
   end
 
   defp to_int(nil, default), do: default
+
   defp to_int(val, default) when is_binary(val) do
     case Integer.parse(val) do
       {n, _} -> n
       :error -> default
     end
   end
+
   defp to_int(val, _default) when is_integer(val), do: val
 end

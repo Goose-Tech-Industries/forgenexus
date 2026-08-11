@@ -93,7 +93,12 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.AwardPlacement do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "prizes", type: "json", default: "{\"1\":1000,\"2\":500,\"3\":250}", description: "JSON mapping of place to points"}
+        %{
+          name: "prizes",
+          type: "json",
+          default: "{\"1\":1000,\"2\":500,\"3\":250}",
+          description: "JSON mapping of place to points"
+        }
       ]
     }
   end

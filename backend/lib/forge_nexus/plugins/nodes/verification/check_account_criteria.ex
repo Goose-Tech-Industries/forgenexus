@@ -53,17 +53,33 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CheckAccountCriteria do
       type: "verification/check_account_criteria",
       category: "verification",
       label: "Check Account Criteria",
-      description: "Branches based on whether a user meets account age, post count, avatar, and bio requirements.",
+      description:
+        "Branches based on whether a user meets account age, post count, avatar, and bio requirements.",
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [
         %{name: "passed", type: "branch", fields: [%{name: "criteria_results", type: "map"}]},
         %{name: "failed", type: "branch", fields: [%{name: "criteria_results", type: "map"}]}
       ],
       config_fields: [
-        %{name: "min_age_days", type: "number", default: 0, description: "Minimum account age in days"},
+        %{
+          name: "min_age_days",
+          type: "number",
+          default: 0,
+          description: "Minimum account age in days"
+        },
         %{name: "min_posts", type: "number", default: 0, description: "Minimum number of posts"},
-        %{name: "require_avatar", type: "boolean", default: false, description: "Require user to have an avatar"},
-        %{name: "require_bio", type: "boolean", default: false, description: "Require user to have a bio"}
+        %{
+          name: "require_avatar",
+          type: "boolean",
+          default: false,
+          description: "Require user to have an avatar"
+        },
+        %{
+          name: "require_bio",
+          type: "boolean",
+          default: false,
+          description: "Require user to have a bio"
+        }
       ]
     }
   end

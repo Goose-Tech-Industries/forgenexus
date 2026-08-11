@@ -20,7 +20,16 @@ defmodule ForgeNexus.Pets.PetTemplate do
 
   def changeset(template, attrs) do
     template
-    |> cast(attrs, [:name, :slug, :description, :icon, :species, :base_stats, :evolution_threshold, :evolves_into_id])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :icon,
+      :species,
+      :base_stats,
+      :evolution_threshold,
+      :evolves_into_id
+    ])
     |> validate_required([:name, :slug, :species])
     |> unique_constraint(:slug)
   end

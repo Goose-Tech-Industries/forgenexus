@@ -22,7 +22,15 @@ defmodule ForgeNexus.Predictions.Prediction do
 
   def changeset(prediction, attrs) do
     prediction
-    |> cast(attrs, [:title, :description, :status, :closes_at, :resolved_at, :winning_option, :created_by_id])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :status,
+      :closes_at,
+      :resolved_at,
+      :winning_option,
+      :created_by_id
+    ])
     |> validate_required([:title, :created_by_id])
     |> validate_inclusion(:status, ~w(open locked resolved cancelled))
   end

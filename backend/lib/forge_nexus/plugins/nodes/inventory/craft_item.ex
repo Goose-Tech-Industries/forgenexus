@@ -35,7 +35,8 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.CraftItem do
       type: "inventory/craft_item",
       category: "inventory",
       label: "Craft Item",
-      description: "Attempts to craft an item using a recipe. Consumes ingredients and may fail based on success rate.",
+      description:
+        "Attempts to craft an item using a recipe. Consumes ingredients and may fail based on success rate.",
       inputs: [
         %{name: "user_id", type: "string", required: true},
         %{name: "recipe_id", type: "string", required: true}

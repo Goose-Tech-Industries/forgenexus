@@ -16,7 +16,9 @@ defmodule ForgeNexus.Repo.Migrations.CreateFlowsAndNodes do
       add :error_message, :text
       add :last_executed_at, :utc_datetime
       add :execution_count, :integer, default: 0
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
 
       timestamps()
     end
@@ -46,8 +48,13 @@ defmodule ForgeNexus.Repo.Migrations.CreateFlowsAndNodes do
     create table(:flow_edges, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :flow_id, references(:flows, type: :binary_id, on_delete: :delete_all), null: false
-      add :source_node_id, references(:flow_nodes, type: :binary_id, on_delete: :delete_all), null: false
-      add :target_node_id, references(:flow_nodes, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :source_node_id, references(:flow_nodes, type: :binary_id, on_delete: :delete_all),
+        null: false
+
+      add :target_node_id, references(:flow_nodes, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :source_port, :string, default: "output"
       add :target_port, :string, default: "input"
       add :condition, :string

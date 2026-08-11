@@ -22,7 +22,17 @@ defmodule ForgeNexus.Pets.Pet do
 
   def changeset(pet, attrs) do
     pet
-    |> cast(attrs, [:nickname, :experience, :level, :hunger, :happiness, :energy, :is_active, :user_id, :pet_template_id])
+    |> cast(attrs, [
+      :nickname,
+      :experience,
+      :level,
+      :hunger,
+      :happiness,
+      :energy,
+      :is_active,
+      :user_id,
+      :pet_template_id
+    ])
     |> validate_required([:nickname, :user_id, :pet_template_id])
     |> validate_number(:hunger, greater_than_or_equal_to: 0, less_than_or_equal_to: 100)
     |> validate_number(:happiness, greater_than_or_equal_to: 0, less_than_or_equal_to: 100)

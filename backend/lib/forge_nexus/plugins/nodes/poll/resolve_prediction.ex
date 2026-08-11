@@ -33,7 +33,8 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.ResolvePrediction do
       type: "poll/resolve_prediction",
       category: "poll",
       label: "Resolve Prediction",
-      description: "Resolves a prediction market by selecting the winning option and distributing payouts.",
+      description:
+        "Resolves a prediction market by selecting the winning option and distributing payouts.",
       inputs: [
         %{name: "prediction_id", type: "string", required: true},
         %{name: "winning_option", type: "string", required: true}

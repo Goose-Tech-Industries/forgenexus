@@ -13,13 +13,17 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.SetStat do
 
     value =
       cond do
-        is_number(value) -> value
+        is_number(value) ->
+          value
+
         is_binary(value) ->
           case Float.parse(value) do
             {n, _} -> n
             :error -> 0
           end
-        true -> 0
+
+        true ->
+          0
       end
 
     case ForgeNexus.UserStats.set_stat(user_id, stat_key, value) do
@@ -53,8 +57,18 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.SetStat do
         %{name: "was_clamped", type: "boolean"}
       ],
       config_fields: [
-        %{name: "min_value", type: "number", default: nil, description: "Optional minimum value clamp"},
-        %{name: "max_value", type: "number", default: nil, description: "Optional maximum value clamp"}
+        %{
+          name: "min_value",
+          type: "number",
+          default: nil,
+          description: "Optional minimum value clamp"
+        },
+        %{
+          name: "max_value",
+          type: "number",
+          default: nil,
+          description: "Optional maximum value clamp"
+        }
       ]
     }
   end

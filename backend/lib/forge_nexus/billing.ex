@@ -27,11 +27,28 @@ defmodule ForgeNexus.Billing do
   """
   def plan_catalog do
     [
-      {"forum",      %{name: "Forum",      monthly_cents: 1900,  price_id: System.get_env("STRIPE_PRICE_FORUM")}},
-      {"community",  %{name: "Community",  monthly_cents: 3900,  price_id: System.get_env("STRIPE_PRICE_COMMUNITY")}},
-      {"creator",    %{name: "Creator",    monthly_cents: 7900,  price_id: System.get_env("STRIPE_PRICE_CREATOR")}},
-      {"platform",   %{name: "Platform",   monthly_cents: 22500, price_id: System.get_env("STRIPE_PRICE_PLATFORM")}},
-      {"enterprise", %{name: "Enterprise", monthly_cents: 35000, price_id: System.get_env("STRIPE_PRICE_ENTERPRISE")}}
+      {"forum",
+       %{name: "Forum", monthly_cents: 1900, price_id: System.get_env("STRIPE_PRICE_FORUM")}},
+      {"community",
+       %{
+         name: "Community",
+         monthly_cents: 3900,
+         price_id: System.get_env("STRIPE_PRICE_COMMUNITY")
+       }},
+      {"creator",
+       %{name: "Creator", monthly_cents: 7900, price_id: System.get_env("STRIPE_PRICE_CREATOR")}},
+      {"platform",
+       %{
+         name: "Platform",
+         monthly_cents: 22500,
+         price_id: System.get_env("STRIPE_PRICE_PLATFORM")
+       }},
+      {"enterprise",
+       %{
+         name: "Enterprise",
+         monthly_cents: 35000,
+         price_id: System.get_env("STRIPE_PRICE_ENTERPRISE")
+       }}
     ]
   end
 
@@ -62,7 +79,8 @@ defmodule ForgeNexus.Billing do
     end
   end
 
-  defp ensure_customer(%Community{stripe_customer_id: id} = community) when is_binary(id) and id != "" do
+  defp ensure_customer(%Community{stripe_customer_id: id} = community)
+       when is_binary(id) and id != "" do
     {:ok, id}
   end
 
@@ -127,14 +145,18 @@ defmodule ForgeNexus.Billing do
   end
 
   defp process_event(%{id: stripe_event_id, type: type} = event) do
-    case Repo.insert(%StripeWebhookEvent{} |> StripeWebhookEvent.changeset(%{
-           stripe_event_id: stripe_event_id,
-           type: type,
-           payload: stringify(event)
-         })) do
+    case Repo.insert(
+           %StripeWebhookEvent{}
+           |> StripeWebhookEvent.changeset(%{
+             stripe_event_id: stripe_event_id,
+             type: type,
+             payload: stringify(event)
+           })
+         ) do
       {:ok, row} ->
         try do
           dispatch(event)
+
           row
           |> Ecto.Changeset.change(processed_at: DateTime.utc_now() |> DateTime.truncate(:second))
           |> Repo.update!()
@@ -142,7 +164,10 @@ defmodule ForgeNexus.Billing do
           :ok
         rescue
           err ->
-            Logger.error("[Billing] webhook #{type} #{stripe_event_id} failed: #{Exception.message(err)}")
+            Logger.error(
+              "[Billing] webhook #{type} #{stripe_event_id} failed: #{Exception.message(err)}"
+            )
+
             reraise err, __STACKTRACE__
         end
 
@@ -161,10 +186,13 @@ defmodule ForgeNexus.Billing do
     # Here we just log and stash the customer_id on the community in case
     # we hadn't seen it yet (e.g. raw Stripe Checkout link).
     case Map.get(session, :client_reference_id) do
-      nil -> :ok
+      nil ->
+        :ok
+
       community_id ->
         from(c in Community, where: c.id == ^community_id)
         |> Repo.update_all(set: [stripe_customer_id: Map.get(session, :customer)])
+
         :ok
     end
   end
@@ -175,7 +203,9 @@ defmodule ForgeNexus.Billing do
 
   defp dispatch(%{type: "invoice.payment_failed", data: %{object: invoice}}) do
     case Map.get(invoice, :subscription) do
-      nil -> :ok
+      nil ->
+        :ok
+
       sub_id ->
         from(s in CommunitySubscription, where: s.stripe_subscription_id == ^sub_id)
         |> Repo.update_all(set: [status: "past_due"])
@@ -204,7 +234,8 @@ defmodule ForgeNexus.Billing do
         community_id: community_id,
         stripe_subscription_id: sub.id,
         stripe_customer_id: Map.get(sub, :customer),
-        stripe_price_id: get_in(sub, [:items, :data]) |> List.wrap() |> List.first() |> get_in([:price, :id]),
+        stripe_price_id:
+          get_in(sub, [:items, :data]) |> List.wrap() |> List.first() |> get_in([:price, :id]),
         plan: plan,
         status: to_string(Map.get(sub, :status, "active")),
         current_period_start: epoch_to_dt(Map.get(sub, :current_period_start)),
@@ -215,14 +246,20 @@ defmodule ForgeNexus.Billing do
       }
 
       case Repo.get_by(CommunitySubscription, stripe_subscription_id: sub.id) do
-        nil -> %CommunitySubscription{} |> CommunitySubscription.changeset(attrs) |> Repo.insert!()
-        existing -> existing |> CommunitySubscription.changeset(attrs) |> Repo.update!()
+        nil ->
+          %CommunitySubscription{} |> CommunitySubscription.changeset(attrs) |> Repo.insert!()
+
+        existing ->
+          existing |> CommunitySubscription.changeset(attrs) |> Repo.update!()
       end
 
       sync_community_plan(community_id, plan, attrs)
       :ok
     else
-      Logger.warning("[Billing] subscription #{sub.id} missing community_id or invalid plan: #{inspect(metadata)}")
+      Logger.warning(
+        "[Billing] subscription #{sub.id} missing community_id or invalid plan: #{inspect(metadata)}"
+      )
+
       :ok
     end
   end
@@ -249,18 +286,24 @@ defmodule ForgeNexus.Billing do
   end
 
   defp infer_plan_from_price(sub) do
-    price_id = get_in(sub, [:items, :data]) |> List.wrap() |> List.first() |> get_in([:price, :id])
+    price_id =
+      get_in(sub, [:items, :data]) |> List.wrap() |> List.first() |> get_in([:price, :id])
 
     plan_catalog()
     |> Enum.find_value(fn {plan, info} -> if info.price_id == price_id, do: plan end)
   end
 
   defp epoch_to_dt(nil), do: nil
-  defp epoch_to_dt(unix) when is_integer(unix), do: DateTime.from_unix!(unix) |> DateTime.truncate(:second)
+
+  defp epoch_to_dt(unix) when is_integer(unix),
+    do: DateTime.from_unix!(unix) |> DateTime.truncate(:second)
 
   # Stripe events are structs; persist as plain maps for the audit log.
   defp stringify(%_{} = struct), do: struct |> Map.from_struct() |> stringify()
-  defp stringify(map) when is_map(map), do: Map.new(map, fn {k, v} -> {to_string(k), stringify(v)} end)
+
+  defp stringify(map) when is_map(map),
+    do: Map.new(map, fn {k, v} -> {to_string(k), stringify(v)} end)
+
   defp stringify(list) when is_list(list), do: Enum.map(list, &stringify/1)
   defp stringify(other), do: other
 end

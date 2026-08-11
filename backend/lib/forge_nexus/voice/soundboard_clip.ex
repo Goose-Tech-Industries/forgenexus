@@ -26,8 +26,16 @@ defmodule ForgeNexus.Voice.SoundboardClip do
 
   def changeset(clip, attrs) do
     clip
-    |> cast(attrs, [:room_id, :uploaded_by_id, :name, :emoji, :audio_url,
-                     :duration_ms, :size_bytes, :is_global])
+    |> cast(attrs, [
+      :room_id,
+      :uploaded_by_id,
+      :name,
+      :emoji,
+      :audio_url,
+      :duration_ms,
+      :size_bytes,
+      :is_global
+    ])
     |> validate_required([:name, :audio_url])
     |> validate_length(:name, max: 64)
     |> validate_length(:emoji, max: 8)

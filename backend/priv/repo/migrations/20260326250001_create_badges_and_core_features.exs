@@ -10,9 +10,12 @@ defmodule ForgeNexus.Repo.Migrations.CreateBadgesAndCoreFeatures do
       add :icon_url, :string
       add :icon_emoji, :string
       add :color, :string
-      add :category, :string, default: "achievement"  # achievement, milestone, admin_granted, event
-      add :is_auto, :boolean, default: false  # auto-awarded by system
-      add :auto_criteria, :map  # e.g. %{type: "post_count", value: 100}
+      # achievement, milestone, admin_granted, event
+      add :category, :string, default: "achievement"
+      # auto-awarded by system
+      add :is_auto, :boolean, default: false
+      # e.g. %{type: "post_count", value: 100}
+      add :auto_criteria, :map
       add :position, :integer, default: 0
       add :is_active, :boolean, default: true
 
@@ -27,7 +30,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateBadgesAndCoreFeatures do
       add :badge_id, references(:badges, type: :binary_id, on_delete: :delete_all), null: false
       add :awarded_by_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :reason, :string
-      add :is_featured, :boolean, default: false  # shown on profile/posts
+      # shown on profile/posts
+      add :is_featured, :boolean, default: false
 
       timestamps()
     end
@@ -48,7 +52,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateBadgesAndCoreFeatures do
       add :color, :string, default: "#6366f1"
       add :bg_color, :string
       add :forum_id, references(:forums, type: :binary_id, on_delete: :delete_all)
-      add :is_global, :boolean, default: false  # available in all forums
+      # available in all forums
+      add :is_global, :boolean, default: false
       add :position, :integer, default: 0
 
       timestamps()
@@ -67,9 +72,12 @@ defmodule ForgeNexus.Repo.Migrations.CreateBadgesAndCoreFeatures do
     create table(:post_drafts, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :context_type, :string, null: false  # "thread_create", "thread_reply", "dm"
-      add :context_id, :string  # forum_id for create, thread_id for reply
-      add :title, :string  # for thread_create drafts
+      # "thread_create", "thread_reply", "dm"
+      add :context_type, :string, null: false
+      # forum_id for create, thread_id for reply
+      add :context_id, :string
+      # for thread_create drafts
+      add :title, :string
       add :body, :text, null: false
 
       timestamps()

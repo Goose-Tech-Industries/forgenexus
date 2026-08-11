@@ -32,7 +32,9 @@ defmodule ForgeNexus.Forums.Category do
 
   defp generate_slug(changeset) do
     case get_change(changeset, :name) do
-      nil -> changeset
+      nil ->
+        changeset
+
       name ->
         slug = get_change(changeset, :slug) || Slug.slugify(name)
         put_change(changeset, :slug, slug)

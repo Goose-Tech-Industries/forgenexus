@@ -18,7 +18,10 @@ defmodule ForgeNexusWeb.ThreadChannel do
   # thread subscription and silently break live post updates.
   @impl true
   def handle_in(event, payload, socket) do
-    Logger.warning("[ThreadChannel] unhandled event #{inspect(event)} payload=#{inspect(payload)}")
+    Logger.warning(
+      "[ThreadChannel] unhandled event #{inspect(event)} payload=#{inspect(payload)}"
+    )
+
     {:reply, {:error, %{reason: "unknown event", event: event}}, socket}
   end
 end

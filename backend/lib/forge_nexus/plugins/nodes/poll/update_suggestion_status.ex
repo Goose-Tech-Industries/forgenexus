@@ -33,12 +33,24 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.UpdateSuggestionStatus do
       type: "poll/update_suggestion_status",
       category: "poll",
       label: "Update Suggestion Status",
-      description: "Updates the status of a community suggestion with an optional admin response.",
+      description:
+        "Updates the status of a community suggestion with an optional admin response.",
       inputs: [%{name: "suggestion_id", type: "string", required: true}],
       outputs: [%{name: "success", type: "boolean"}],
       config_fields: [
-        %{name: "status", type: "select", options: ~w(open planned in_progress done declined), default: "open", description: "New suggestion status"},
-        %{name: "admin_response", type: "string", default: "", description: "Admin response or note about the status change"}
+        %{
+          name: "status",
+          type: "select",
+          options: ~w(open planned in_progress done declined),
+          default: "open",
+          description: "New suggestion status"
+        },
+        %{
+          name: "admin_response",
+          type: "string",
+          default: "",
+          description: "Admin response or note about the status change"
+        }
       ]
     }
   end

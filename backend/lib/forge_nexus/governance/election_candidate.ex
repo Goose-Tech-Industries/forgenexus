@@ -19,7 +19,14 @@ defmodule ForgeNexus.Governance.ElectionCandidate do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:platform, :is_accepted, :vote_count, :election_id, :user_id, :nominated_by_id])
+    |> cast(attrs, [
+      :platform,
+      :is_accepted,
+      :vote_count,
+      :election_id,
+      :user_id,
+      :nominated_by_id
+    ])
     |> validate_required([:election_id, :user_id])
   end
 end

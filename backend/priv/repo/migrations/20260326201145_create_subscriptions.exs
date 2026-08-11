@@ -38,7 +38,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateSubscriptions do
     create table(:user_subscriptions, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :tier_id, references(:subscription_tiers, type: :binary_id, on_delete: :restrict), null: false
+
+      add :tier_id, references(:subscription_tiers, type: :binary_id, on_delete: :restrict),
+        null: false
+
       add :status, :string, default: "active"
       add :started_at, :utc_datetime
       add :expires_at, :utc_datetime

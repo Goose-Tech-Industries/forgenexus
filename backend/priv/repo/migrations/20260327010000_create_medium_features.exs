@@ -12,8 +12,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :amount, :integer, null: false
       add :balance_after, :integer, null: false
-      add :reason, :string, null: false  # post_created, thread_created, reaction_received, badge_earned, admin_grant, purchase
-      add :reference_type, :string  # post, thread, badge, item
+      # post_created, thread_created, reaction_received, badge_earned, admin_grant, purchase
+      add :reason, :string, null: false
+      # post, thread, badge, item
+      add :reference_type, :string
       add :reference_id, :binary_id
       add :description, :string
 
@@ -38,8 +40,12 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
       add :from_group_id, references(:user_groups, type: :binary_id, on_delete: :delete_all)
-      add :to_group_id, references(:user_groups, type: :binary_id, on_delete: :delete_all), null: false
-      add :criteria, :map, null: false  # %{post_count: 50, days_member: 30, reputation: 10, points: 500}
+
+      add :to_group_id, references(:user_groups, type: :binary_id, on_delete: :delete_all),
+        null: false
+
+      # %{post_count: 50, days_member: 30, reputation: 10, points: 500}
+      add :criteria, :map, null: false
       add :is_active, :boolean, default: true
       add :position, :integer, default: 0
 
@@ -53,7 +59,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :id, :binary_id, primary_key: true
       add :post_id, references(:posts, type: :binary_id, on_delete: :delete_all), null: false
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :rating_type, :string, null: false  # agree, disagree, informative, funny, winner, useful
+      # agree, disagree, informative, funny, winner, useful
+      add :rating_type, :string, null: false
 
       timestamps()
     end
@@ -68,16 +75,21 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :title, :string, null: false
       add :description, :text
       add :location, :string
-      add :event_type, :string, default: "community"  # community, contest, tournament, stream, meetup, custom
+      # community, contest, tournament, stream, meetup, custom
+      add :event_type, :string, default: "community"
       add :starts_at, :utc_datetime, null: false
       add :ends_at, :utc_datetime
       add :is_all_day, :boolean, default: false
       add :is_recurring, :boolean, default: false
-      add :recurrence_rule, :string  # weekly, biweekly, monthly
+      # weekly, biweekly, monthly
+      add :recurrence_rule, :string
       add :color, :string
       add :max_attendees, :integer
       add :forum_id, references(:forums, type: :binary_id, on_delete: :nilify_all)
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
+
       add :is_published, :boolean, default: true
       add :is_cancelled, :boolean, default: false
 
@@ -91,7 +103,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :id, :binary_id, primary_key: true
       add :event_id, references(:events, type: :binary_id, on_delete: :delete_all), null: false
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :status, :string, default: "going"  # going, maybe, not_going
+      # going, maybe, not_going
+      add :status, :string, default: "going"
 
       timestamps()
     end
@@ -120,7 +133,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :file_url, :string, null: false
       add :thumbnail_url, :string
-      add :file_type, :string, default: "image"  # image, video, gif
+      # image, video, gif
+      add :file_type, :string, default: "image"
       add :file_size, :integer
       add :width, :integer
       add :height, :integer
@@ -138,7 +152,8 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
       add :id, :binary_id, primary_key: true
       add :title, :string, null: false
       add :description, :text
-      add :fields, {:array, :map}, default: []  # [{label, type, required, options}]
+      # [{label, type, required, options}]
+      add :fields, {:array, :map}, default: []
       add :target_group_id, references(:user_groups, type: :binary_id, on_delete: :nilify_all)
       add :is_open, :boolean, default: true
       add :min_posts, :integer, default: 0
@@ -149,10 +164,16 @@ defmodule ForgeNexus.Repo.Migrations.CreateMediumFeatures do
 
     create table(:staff_applications, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :form_id, references(:staff_application_forms, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :form_id,
+          references(:staff_application_forms, type: :binary_id, on_delete: :delete_all),
+          null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :answers, {:array, :map}, default: []  # [{field_label, value}]
-      add :status, :string, default: "pending"  # pending, under_review, accepted, denied
+      # [{field_label, value}]
+      add :answers, {:array, :map}, default: []
+      # pending, under_review, accepted, denied
+      add :status, :string, default: "pending"
       add :reviewer_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :review_note, :string
       add :reviewed_at, :utc_datetime

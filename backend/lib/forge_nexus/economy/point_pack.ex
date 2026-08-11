@@ -22,7 +22,17 @@ defmodule ForgeNexus.Economy.PointPack do
 
   def changeset(pack, attrs) do
     pack
-    |> cast(attrs, [:community_id, :name, :points, :bonus_points, :price_cents, :currency, :is_active, :position, :emoji])
+    |> cast(attrs, [
+      :community_id,
+      :name,
+      :points,
+      :bonus_points,
+      :price_cents,
+      :currency,
+      :is_active,
+      :position,
+      :emoji
+    ])
     |> validate_required([:name, :points, :price_cents])
     |> validate_number(:points, greater_than: 0)
     |> validate_number(:price_cents, greater_than: 0)

@@ -54,7 +54,10 @@ defmodule ForgeNexus.Repo.Migrations.AddSocialFeatures do
     end
 
     create unique_index(:user_premiums, [:user_id])
-    create index(:user_premiums, [:stripe_subscription_id], where: "stripe_subscription_id IS NOT NULL")
+
+    create index(:user_premiums, [:stripe_subscription_id],
+             where: "stripe_subscription_id IS NOT NULL"
+           )
 
     # Community discovery / explore metadata
     alter table(:communities) do

@@ -16,18 +16,24 @@ defmodule ForgeNexus.Workers.AITaggingWorker do
     existing_prefixes = Forums.list_prefixes(forum.id) |> Enum.map(& &1.name)
 
     messages = [
-      %{role: "system", content: """
-      Analyze this forum post and suggest categorization. Return JSON:
-      {
-        "tags": ["tag1", "tag2", "tag3"],
-        "content_type": "question|discussion|announcement|tutorial|showcase",
-        "suggested_prefix": "prefix or null",
-        "confidence": 0.0-1.0
+      %{
+        role: "system",
+        content: """
+        Analyze this forum post and suggest categorization. Return JSON:
+        {
+          "tags": ["tag1", "tag2", "tag3"],
+          "content_type": "question|discussion|announcement|tutorial|showcase",
+          "suggested_prefix": "prefix or null",
+          "confidence": 0.0-1.0
+        }
+        Available prefixes: #{Enum.join(existing_prefixes, ", ")}
+        Forum: #{forum.name} - #{forum.description}
+        """
+      },
+      %{
+        role: "user",
+        content: "Title: #{thread.title}\n\nBody: #{if first_post, do: first_post.body, else: ""}"
       }
-      Available prefixes: #{Enum.join(existing_prefixes, ", ")}
-      Forum: #{forum.name} - #{forum.description}
-      """},
-      %{role: "user", content: "Title: #{thread.title}\n\nBody: #{if first_post, do: first_post.body, else: ""}"}
     ]
 
     case Client.complete(:tagging, messages, metadata: %{thread_id: thread_id}) do
@@ -41,9 +47,13 @@ defmodule ForgeNexus.Workers.AITaggingWorker do
               content_type: parsed["content_type"],
               confidence: parsed["confidence"] || 0.5
             })
-          _ -> :ok
+
+          _ ->
+            :ok
         end
-      {:error, _} -> :ok
+
+      {:error, _} ->
+        :ok
     end
 
     :ok

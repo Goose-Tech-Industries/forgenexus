@@ -28,7 +28,16 @@ defmodule ForgeNexus.Plugins.JsPlugin do
 
   def changeset(plugin, attrs) do
     plugin
-    |> cast(attrs, [:name, :slug, :description, :version, :code, :manifest, :settings, :created_by_id])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :version,
+      :code,
+      :manifest,
+      :settings,
+      :created_by_id
+    ])
     |> validate_required([:name, :slug, :created_by_id])
     |> validate_inclusion(:status, @statuses)
     |> validate_manifest()
@@ -54,9 +63,12 @@ defmodule ForgeNexus.Plugins.JsPlugin do
 
   defp validate_manifest(changeset) do
     case get_field(changeset, :manifest) do
-      nil -> changeset
+      nil ->
+        changeset
+
       manifest ->
         hooks = Map.get(manifest, "hooks", [])
+
         if is_list(hooks) do
           changeset
         else

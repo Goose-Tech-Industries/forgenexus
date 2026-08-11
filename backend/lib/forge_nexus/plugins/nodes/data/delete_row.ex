@@ -36,7 +36,12 @@ defmodule ForgeNexus.Plugins.Nodes.Data.DeleteRow do
       inputs: [%{name: "row_id", type: "string", required: true}],
       outputs: [%{name: "deleted", type: "boolean"}],
       config_fields: [
-        %{name: "table_slug", type: "string", default: "", description: "Table slug (for reference)"}
+        %{
+          name: "table_slug",
+          type: "string",
+          default: "",
+          description: "Table slug (for reference)"
+        }
       ]
     }
   end

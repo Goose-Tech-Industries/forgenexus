@@ -26,7 +26,21 @@ defmodule ForgeNexus.Spaces.MapRoom do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:name, :type, :linked_resource_type, :linked_resource_id, :x, :y, :width, :height, :shape, :style, :max_occupancy, :config, :map_id])
+    |> cast(attrs, [
+      :name,
+      :type,
+      :linked_resource_type,
+      :linked_resource_id,
+      :x,
+      :y,
+      :width,
+      :height,
+      :shape,
+      :style,
+      :max_occupancy,
+      :config,
+      :map_id
+    ])
     |> validate_required([:name, :x, :y, :width, :height, :map_id])
   end
 end

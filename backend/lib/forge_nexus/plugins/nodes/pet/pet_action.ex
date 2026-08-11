@@ -62,7 +62,13 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetAction do
         %{name: "new_stats", type: "map"}
       ],
       config_fields: [
-        %{name: "action", type: "select", options: ~w(feed play clean rest heal), default: "feed", description: "Action to perform on the pet"}
+        %{
+          name: "action",
+          type: "select",
+          options: ~w(feed play clean rest heal),
+          default: "feed",
+          description: "Action to perform on the pet"
+        }
       ]
     }
   end

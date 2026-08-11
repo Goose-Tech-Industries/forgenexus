@@ -5,9 +5,16 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatThreads do
     create table(:chat_threads, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :name, :string, null: false
-      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all), null: false
-      add :parent_message_id, references(:chat_messages, type: :binary_id, on_delete: :delete_all), null: false
-      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
+
+      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all),
+        null: false
+
+      add :parent_message_id,
+          references(:chat_messages, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all),
+        null: false
+
       add :is_archived, :boolean, default: false
       add :is_locked, :boolean, default: false
       add :message_count, :integer, default: 0
@@ -24,7 +31,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatThreads do
     create table(:chat_thread_messages, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :body, :text, null: false
-      add :thread_id, references(:chat_threads, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :thread_id, references(:chat_threads, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
       add :is_edited, :boolean, default: false
       add :edited_at, :utc_datetime
@@ -38,7 +48,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateChatThreads do
     # Thread members (for notification tracking)
     create table(:chat_thread_members, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :thread_id, references(:chat_threads, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :thread_id, references(:chat_threads, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :last_read_at, :utc_datetime
 

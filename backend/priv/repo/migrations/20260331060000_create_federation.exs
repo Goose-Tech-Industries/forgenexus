@@ -35,7 +35,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateFederation do
     create table(:federated_identities, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :local_user_id, references(:users, type: :binary_id, on_delete: :delete_all)
-      add :remote_instance_id, references(:federated_instances, type: :binary_id, on_delete: :delete_all)
+
+      add :remote_instance_id,
+          references(:federated_instances, type: :binary_id, on_delete: :delete_all)
+
       add :remote_user_id, :string, null: false
       add :remote_username, :string
       add :remote_display_name, :string

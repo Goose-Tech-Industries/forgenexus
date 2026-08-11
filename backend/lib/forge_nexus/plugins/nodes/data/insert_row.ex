@@ -23,7 +23,10 @@ defmodule ForgeNexus.Plugins.Nodes.Data.InsertRow do
         # Build data from column mappings: maps table columns to input fields
         data =
           Enum.reduce(column_mappings, %{}, fn {col_name, input_field}, acc ->
-            value = Map.get(inputs, input_field) || Map.get(inputs, String.to_existing_atom(input_field))
+            value =
+              Map.get(inputs, input_field) ||
+                Map.get(inputs, String.to_existing_atom(input_field))
+
             Map.put(acc, col_name, value)
           end)
 
@@ -59,8 +62,18 @@ defmodule ForgeNexus.Plugins.Nodes.Data.InsertRow do
         %{name: "row_id", type: "string"}
       ],
       config_fields: [
-        %{name: "table_slug", type: "string", default: "", description: "Table slug to insert into"},
-        %{name: "column_mappings", type: "json", default: %{}, description: "Maps table columns to input field names"}
+        %{
+          name: "table_slug",
+          type: "string",
+          default: "",
+          description: "Table slug to insert into"
+        },
+        %{
+          name: "column_mappings",
+          type: "json",
+          default: %{},
+          description: "Maps table columns to input field names"
+        }
       ]
     }
   end

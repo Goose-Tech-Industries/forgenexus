@@ -23,7 +23,18 @@ defmodule ForgeNexus.ThreadTypes.ThreadType do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:name, :slug, :label, :icon, :description, :config, :is_builtin, :is_active, :position, :created_by_id])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :label,
+      :icon,
+      :description,
+      :config,
+      :is_builtin,
+      :is_active,
+      :position,
+      :created_by_id
+    ])
     |> validate_required([:name, :slug, :label])
     |> unique_constraint(:slug)
   end

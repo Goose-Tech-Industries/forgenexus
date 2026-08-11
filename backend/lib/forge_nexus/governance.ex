@@ -26,16 +26,19 @@ defmodule ForgeNexus.Governance do
   end
 
   defp maybe_filter_status(query, nil), do: query
+
   defp maybe_filter_status(query, status) do
     where(query, [p], p.status == ^status)
   end
 
   defp maybe_filter_type(query, nil), do: query
+
   defp maybe_filter_type(query, type) do
     where(query, [p], p.type == ^type)
   end
 
   defp maybe_paginate(query, nil, _), do: query
+
   defp maybe_paginate(query, page, per_page) do
     per_page = per_page || 20
     offset = (page - 1) * per_page
@@ -148,22 +151,32 @@ defmodule ForgeNexus.Governance do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     cond do
-      proposal.status == "discussion" && proposal.discussion_ends_at && DateTime.compare(now, proposal.discussion_ends_at) == :gt ->
+      proposal.status == "discussion" && proposal.discussion_ends_at &&
+          DateTime.compare(now, proposal.discussion_ends_at) == :gt ->
         update_proposal(proposal, %{status: "voting"})
 
-      proposal.status == "voting" && proposal.voting_ends_at && DateTime.compare(now, proposal.voting_ends_at) == :gt ->
+      proposal.status == "voting" && proposal.voting_ends_at &&
+          DateTime.compare(now, proposal.voting_ends_at) == :gt ->
         total_votes = proposal.yes_count + proposal.no_count + proposal.abstain_count
         min_met = is_nil(proposal.min_participation) || total_votes >= proposal.min_participation
 
         passed =
           case proposal.threshold_type do
-            "simple_majority" -> proposal.yes_count > proposal.no_count && min_met
-            "two_thirds" -> proposal.yes_count >= (total_votes - proposal.abstain_count) * 2 / 3 && min_met
-            _ -> proposal.yes_count > proposal.no_count && min_met
+            "simple_majority" ->
+              proposal.yes_count > proposal.no_count && min_met
+
+            "two_thirds" ->
+              proposal.yes_count >= (total_votes - proposal.abstain_count) * 2 / 3 && min_met
+
+            _ ->
+              proposal.yes_count > proposal.no_count && min_met
           end
 
         new_status = if passed, do: "passed", else: "failed"
-        result = "Yes: #{proposal.yes_count}, No: #{proposal.no_count}, Abstain: #{proposal.abstain_count}"
+
+        result =
+          "Yes: #{proposal.yes_count}, No: #{proposal.no_count}, Abstain: #{proposal.abstain_count}"
+
         update_proposal(proposal, %{status: new_status, result_summary: result})
 
       true ->

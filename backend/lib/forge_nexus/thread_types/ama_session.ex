@@ -20,7 +20,15 @@ defmodule ForgeNexus.ThreadTypes.AmaSession do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:title, :description, :scheduled_start, :scheduled_end, :status, :thread_id, :host_id])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :scheduled_start,
+      :scheduled_end,
+      :status,
+      :thread_id,
+      :host_id
+    ])
     |> validate_required([:title, :thread_id, :host_id])
     |> validate_inclusion(:status, ["upcoming", "live", "ended"])
   end

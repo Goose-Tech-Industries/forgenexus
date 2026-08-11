@@ -29,7 +29,8 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.GetShoutboxStats do
       type: "shoutbox/get_shoutbox_stats",
       category: "shoutbox",
       label: "Get Shoutbox Stats",
-      description: "Retrieves shoutbox statistics including total messages, today's count, and pinned count.",
+      description:
+        "Retrieves shoutbox statistics including total messages, today's count, and pinned count.",
       inputs: [],
       outputs: [
         %{name: "total_messages", type: "number"},

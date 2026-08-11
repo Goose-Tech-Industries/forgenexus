@@ -6,7 +6,16 @@ defmodule ForgeNexus.Plugins do
 
   import Ecto.Query
   alias ForgeNexus.Repo
-  alias ForgeNexus.Plugins.{Flow, FlowNode, FlowEdge, FlowExecution, FlowGlobalStore, PluginPage, PluginWidget}
+
+  alias ForgeNexus.Plugins.{
+    Flow,
+    FlowNode,
+    FlowEdge,
+    FlowExecution,
+    FlowGlobalStore,
+    PluginPage,
+    PluginWidget
+  }
 
   # =====================
   # Flows
@@ -30,6 +39,7 @@ defmodule ForgeNexus.Plugins do
 
   def create_flow_from_spec(spec, created_by_id) when is_map(spec) do
     raw_trigger = Map.fetch!(spec, :trigger_type)
+
     {canonical_trigger, trigger_config} =
       normalize_trigger(raw_trigger, Map.get(spec, :trigger_config, %{}))
 
@@ -374,7 +384,12 @@ defmodule ForgeNexus.Plugins do
     case Repo.one(from s in FlowGlobalStore, where: s.flow_id == ^flow_id and s.key == ^key) do
       nil ->
         %FlowGlobalStore{}
-        |> FlowGlobalStore.changeset(%{flow_id: flow_id, key: key, value: value, expires_at: expires_at})
+        |> FlowGlobalStore.changeset(%{
+          flow_id: flow_id,
+          key: key,
+          value: value,
+          expires_at: expires_at
+        })
         |> Repo.insert()
 
       existing ->
@@ -427,7 +442,9 @@ defmodule ForgeNexus.Plugins do
   end
 
   def upsert_widget(flow_id, placement, attrs) do
-    case Repo.one(from w in PluginWidget, where: w.flow_id == ^flow_id and w.placement == ^placement) do
+    case Repo.one(
+           from w in PluginWidget, where: w.flow_id == ^flow_id and w.placement == ^placement
+         ) do
       nil ->
         %PluginWidget{}
         |> PluginWidget.changeset(Map.merge(attrs, %{flow_id: flow_id, placement: placement}))

@@ -9,7 +9,9 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.AddToSet do
     Sandbox.check_db_limit!(ctx)
 
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
-    collection_item_id = Map.get(inputs, :collection_item_id) || Map.get(inputs, "collection_item_id")
+
+    collection_item_id =
+      Map.get(inputs, :collection_item_id) || Map.get(inputs, "collection_item_id")
 
     case Collections.add_to_set(user_id, collection_item_id) do
       {:ok, %{was_new: was_new, progress_count: progress_count, total_count: total_count}} ->

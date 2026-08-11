@@ -33,7 +33,9 @@ defmodule ForgeNexusWeb.CommunityController do
     community = Communities.get_community!(id)
 
     case Communities.update_community(community, params) do
-      {:ok, community} -> conn |> json(%{community: community_json(community)})
+      {:ok, community} ->
+        conn |> json(%{community: community_json(community)})
+
       {:error, changeset} ->
         errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _} -> msg end)
         conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
@@ -44,8 +46,11 @@ defmodule ForgeNexusWeb.CommunityController do
     community = Communities.get_community!(id)
 
     case Communities.delete_community(community) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 

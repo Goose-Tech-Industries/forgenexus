@@ -42,14 +42,16 @@ defmodule ForgeNexus.Houses do
   creators (email-side delivery best-effort; links are also surfaced in
   the API response so the founder can copy-paste if mail isn't wired).
   """
-  def found_house(%{
-        founder_email: founder_email,
-        founder_password: founder_password,
-        founder_username: founder_username,
-        house_name: house_name,
-        house_slug: house_slug,
-        creator_emails: creator_emails
-      } = attrs) do
+  def found_house(
+        %{
+          founder_email: founder_email,
+          founder_password: founder_password,
+          founder_username: founder_username,
+          house_name: house_name,
+          house_slug: house_slug,
+          creator_emails: creator_emails
+        } = attrs
+      ) do
     creator_emails =
       creator_emails
       |> Enum.map(&String.trim/1)
@@ -57,7 +59,13 @@ defmodule ForgeNexus.Houses do
       |> Enum.uniq()
 
     Repo.transaction(fn ->
-      with {:ok, user} <- create_founder(founder_email, founder_password, founder_username, Map.get(attrs, :registered_ip)),
+      with {:ok, user} <-
+             create_founder(
+               founder_email,
+               founder_password,
+               founder_username,
+               Map.get(attrs, :registered_ip)
+             ),
            {:ok, community} <- create_house_community(user, house_name, house_slug),
            {:ok, _} <- enroll_founder(community.id, user.id),
            {:ok, invitations} <- queue_invitations(community.id, user.id, creator_emails) do
@@ -131,7 +139,11 @@ defmodule ForgeNexus.Houses do
   end
 
   defp queue_invitations(community_id, inviter_id, emails) do
-    expires_at = DateTime.utc_now() |> DateTime.add(@invite_ttl_seconds, :second) |> DateTime.truncate(:second)
+    expires_at =
+      DateTime.utc_now()
+      |> DateTime.add(@invite_ttl_seconds, :second)
+      |> DateTime.truncate(:second)
+
     base_url = Application.get_env(:forge_nexus, :public_base_url, "https://forgenexus.com")
 
     results =
@@ -147,8 +159,12 @@ defmodule ForgeNexus.Houses do
                expires_at: expires_at
              })
              |> Repo.insert() do
-          {:ok, _row} -> {:ok, %{email: email, accept_url: "#{base_url}/signup/houses/accept?token=#{plaintext}"}}
-          {:error, cs} -> {:error, {email, cs}}
+          {:ok, _row} ->
+            {:ok,
+             %{email: email, accept_url: "#{base_url}/signup/houses/accept?token=#{plaintext}"}}
+
+          {:error, cs} ->
+            {:error, {email, cs}}
         end
       end)
 

@@ -23,8 +23,23 @@ defmodule ForgeNexus.Platform.LedgerEntry do
 
   def changeset(entry, attrs) do
     entry
-    |> cast(attrs, [:community_id, :type, :source, :amount_cents, :infra_allocation_cents,
-                     :profit_allocation_cents, :reference_type, :reference_id, :description, :metadata])
-    |> validate_required([:type, :amount_cents, :infra_allocation_cents, :profit_allocation_cents])
+    |> cast(attrs, [
+      :community_id,
+      :type,
+      :source,
+      :amount_cents,
+      :infra_allocation_cents,
+      :profit_allocation_cents,
+      :reference_type,
+      :reference_id,
+      :description,
+      :metadata
+    ])
+    |> validate_required([
+      :type,
+      :amount_cents,
+      :infra_allocation_cents,
+      :profit_allocation_cents
+    ])
   end
 end

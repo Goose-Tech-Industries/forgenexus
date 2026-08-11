@@ -42,7 +42,18 @@ defmodule ForgeNexus.Forums.Thread do
 
   def changeset(thread, attrs) do
     thread
-    |> cast(attrs, [:title, :slug, :is_pinned, :is_locked, :prefix, :tags, :forum_id, :user_id, :scheduled_at, :status])
+    |> cast(attrs, [
+      :title,
+      :slug,
+      :is_pinned,
+      :is_locked,
+      :prefix,
+      :tags,
+      :forum_id,
+      :user_id,
+      :scheduled_at,
+      :status
+    ])
     |> validate_required([:title, :forum_id, :user_id])
     |> validate_length(:title, min: 3, max: 200)
     |> generate_slug()
@@ -54,14 +65,29 @@ defmodule ForgeNexus.Forums.Thread do
 
   def mod_changeset(thread, attrs) do
     thread
-    |> cast(attrs, [:is_pinned, :is_locked, :is_hidden, :is_approved, :forum_id, :moved_from_forum_id, :merged_into_id, :auto_close_at, :auto_delete_at, :status, :scheduled_at])
+    |> cast(attrs, [
+      :is_pinned,
+      :is_locked,
+      :is_hidden,
+      :is_approved,
+      :forum_id,
+      :moved_from_forum_id,
+      :merged_into_id,
+      :auto_close_at,
+      :auto_delete_at,
+      :status,
+      :scheduled_at
+    ])
   end
 
   defp maybe_set_scheduled_status(changeset) do
     case get_change(changeset, :scheduled_at) do
-      nil -> changeset
+      nil ->
+        changeset
+
       scheduled_at ->
         now = DateTime.utc_now()
+
         if DateTime.compare(scheduled_at, now) == :gt do
           changeset
           |> put_change(:status, "scheduled")
@@ -74,7 +100,9 @@ defmodule ForgeNexus.Forums.Thread do
 
   defp generate_slug(changeset) do
     case get_change(changeset, :title) do
-      nil -> changeset
+      nil ->
+        changeset
+
       title ->
         slug = get_change(changeset, :slug) || Slug.slugify(title)
         put_change(changeset, :slug, slug)

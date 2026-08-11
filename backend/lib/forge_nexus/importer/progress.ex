@@ -97,7 +97,13 @@ defmodule ForgeNexus.Importer.Progress do
             entry.steps_completed
           end
 
-        %{entry | current_step: step, processed: processed, total: total, steps_completed: steps_completed}
+        %{
+          entry
+          | current_step: step,
+            processed: processed,
+            total: total,
+            steps_completed: steps_completed
+        }
       end)
 
     {:noreply, state}
@@ -124,12 +130,13 @@ defmodule ForgeNexus.Importer.Progress do
             entry.steps_completed
           end
 
-        %{entry |
-          status: :completed,
-          current_step: "done",
-          steps_completed: steps_completed,
-          completed_at: DateTime.utc_now(),
-          stats: stats
+        %{
+          entry
+          | status: :completed,
+            current_step: "done",
+            steps_completed: steps_completed,
+            completed_at: DateTime.utc_now(),
+            stats: stats
         }
       end)
 
@@ -140,10 +147,13 @@ defmodule ForgeNexus.Importer.Progress do
   def handle_cast({:fail, import_id, reason}, state) do
     state =
       Map.update(state, import_id, %{}, fn entry ->
-        %{entry |
-          status: :failed,
-          completed_at: DateTime.utc_now(),
-          errors: entry.errors ++ [%{message: "Import failed: #{reason}", timestamp: DateTime.utc_now()}]
+        %{
+          entry
+          | status: :failed,
+            completed_at: DateTime.utc_now(),
+            errors:
+              entry.errors ++
+                [%{message: "Import failed: #{reason}", timestamp: DateTime.utc_now()}]
         }
       end)
 

@@ -42,7 +42,8 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.CheckOnlineStatus do
       type: "user_management/check_online_status",
       category: "user_management",
       label: "Check Online Status",
-      description: "Branches based on whether a user is currently online (seen within 5 minutes).",
+      description:
+        "Branches based on whether a user is currently online (seen within 5 minutes).",
       inputs: [
         %{name: "user_id", type: "string", required: true}
       ],

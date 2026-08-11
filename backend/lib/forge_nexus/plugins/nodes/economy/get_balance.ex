@@ -40,7 +40,12 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.GetBalance do
         %{name: "currency_name", type: "string"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        }
       ]
     }
   end

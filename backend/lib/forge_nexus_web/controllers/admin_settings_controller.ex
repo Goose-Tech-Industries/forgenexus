@@ -12,10 +12,13 @@ defmodule ForgeNexusWeb.AdminSettingsController do
     Settings.set_many(settings_map)
 
     user = Guardian.Plug.current_resource(conn)
+
     ForgeNexus.Admin.log_admin_action(user.id, %{
-      action: "setting_changed", category: "settings",
+      action: "setting_changed",
+      category: "settings",
       target_type: "setting",
-      description: "Updated #{map_size(settings_map)} setting(s): #{settings_map |> Map.keys() |> Enum.join(", ")}",
+      description:
+        "Updated #{map_size(settings_map)} setting(s): #{settings_map |> Map.keys() |> Enum.join(", ")}",
       new_state: settings_map
     })
 

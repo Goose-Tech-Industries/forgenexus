@@ -23,7 +23,17 @@ defmodule ForgeNexus.Spaces.CommunityMap do
 
   def changeset(struct, attrs) do
     struct
-    |> cast(attrs, [:name, :slug, :description, :is_default, :background_image_url, :width, :height, :is_active, :config])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :is_default,
+      :background_image_url,
+      :width,
+      :height,
+      :is_active,
+      :config
+    ])
     |> validate_required([:name, :slug, :width, :height])
     |> unique_constraint(:slug)
   end

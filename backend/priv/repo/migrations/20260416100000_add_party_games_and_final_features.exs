@@ -26,7 +26,10 @@ defmodule ForgeNexus.Repo.Migrations.AddPartyGamesAndFinalFeatures do
 
     create table(:party_game_players, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :game_id, references(:party_games, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :game_id, references(:party_games, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :score, :integer, default: 0
       add :is_active, :boolean, default: true
@@ -107,7 +110,9 @@ defmodule ForgeNexus.Repo.Migrations.AddPartyGamesAndFinalFeatures do
     alter table(:tournaments) do
       add_if_not_exists :broadcast_enabled, :boolean, default: false
       add_if_not_exists :broadcast_layout, :string, default: "tournament"
-      add_if_not_exists :commentary_room_id, references(:voice_rooms, type: :binary_id, on_delete: :nilify_all)
+
+      add_if_not_exists :commentary_room_id,
+                        references(:voice_rooms, type: :binary_id, on_delete: :nilify_all)
     end
   end
 end

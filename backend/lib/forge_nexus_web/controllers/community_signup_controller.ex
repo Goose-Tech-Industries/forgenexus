@@ -95,7 +95,10 @@ defmodule ForgeNexusWeb.CommunitySignupController do
           base -> base
         end
 
-      username = username <> "-" <> (:crypto.strong_rand_bytes(3) |> Base.url_encode64(padding: false) |> String.downcase())
+      username =
+        username <>
+          "-" <>
+          (:crypto.strong_rand_bytes(3) |> Base.url_encode64(padding: false) |> String.downcase())
 
       {:ok,
        %{
@@ -124,13 +127,14 @@ defmodule ForgeNexusWeb.CommunitySignupController do
 
   defp create_member(community, attrs) do
     Repo.transaction(fn ->
-      with {:ok, user} <- Accounts.register_user(%{
-             "email" => String.downcase(attrs.email),
-             "password" => attrs.password,
-             "username" => attrs.username,
-             "display_name" => attrs.display_name,
-             "registered_ip" => attrs.registered_ip
-           }),
+      with {:ok, user} <-
+             Accounts.register_user(%{
+               "email" => String.downcase(attrs.email),
+               "password" => attrs.password,
+               "username" => attrs.username,
+               "display_name" => attrs.display_name,
+               "registered_ip" => attrs.registered_ip
+             }),
            {:ok, _member} <- Communities.join_community(community.id, user.id, "member") do
         %{user: user}
       else

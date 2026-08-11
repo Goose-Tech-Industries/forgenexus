@@ -53,7 +53,12 @@ defmodule ForgeNexus.Plugins.Nodes.Reputation.CheckReputation do
         %{name: "below", type: "number"}
       ],
       config_fields: [
-        %{name: "threshold", type: "number", default: 0, description: "Reputation threshold to check against"}
+        %{
+          name: "threshold",
+          type: "number",
+          default: 0,
+          description: "Reputation threshold to check against"
+        }
       ]
     }
   end

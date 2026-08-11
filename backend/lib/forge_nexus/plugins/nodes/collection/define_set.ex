@@ -47,8 +47,18 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.DefineSet do
       ],
       config_fields: [
         %{name: "icon", type: "string", default: "", description: "Icon identifier or URL"},
-        %{name: "reward_points", type: "number", default: 0, description: "Points awarded on set completion"},
-        %{name: "reward_badge_id", type: "string", default: "", description: "Badge ID awarded on set completion"}
+        %{
+          name: "reward_points",
+          type: "number",
+          default: 0,
+          description: "Points awarded on set completion"
+        },
+        %{
+          name: "reward_badge_id",
+          type: "string",
+          default: "",
+          description: "Badge ID awarded on set completion"
+        }
       ]
     }
   end

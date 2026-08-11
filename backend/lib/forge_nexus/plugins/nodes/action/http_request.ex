@@ -91,6 +91,7 @@ defmodule ForgeNexus.Plugins.Nodes.Action.HttpRequest do
 
   defp blocked_ip?({a, b, _c, _d}) do
     import Bitwise
+
     Enum.any?(@blocked_ranges, fn {ra, rb, _rc, _rd, prefix_len} ->
       case prefix_len do
         8 -> a == ra
@@ -194,7 +195,8 @@ defmodule ForgeNexus.Plugins.Nodes.Action.HttpRequest do
       type: "action/http_request",
       category: "action",
       label: "HTTP Request",
-      description: "Makes an external HTTP request (SSRF-protected, 10s timeout, 1MB max response).",
+      description:
+        "Makes an external HTTP request (SSRF-protected, 10s timeout, 1MB max response).",
       inputs: [%{name: "data", type: "map", required: false}],
       outputs: [
         %{name: "status", type: "number"},
@@ -202,10 +204,26 @@ defmodule ForgeNexus.Plugins.Nodes.Action.HttpRequest do
         %{name: "body", type: "any"}
       ],
       config_fields: [
-        %{name: "url", type: "string", default: "", description: "Request URL (supports {{var}} templates)"},
-        %{name: "method", type: "select", options: ~w(GET POST PUT PATCH DELETE HEAD), default: "GET", description: "HTTP method"},
+        %{
+          name: "url",
+          type: "string",
+          default: "",
+          description: "Request URL (supports {{var}} templates)"
+        },
+        %{
+          name: "method",
+          type: "select",
+          options: ~w(GET POST PUT PATCH DELETE HEAD),
+          default: "GET",
+          description: "HTTP method"
+        },
         %{name: "headers", type: "json", default: %{}, description: "Request headers"},
-        %{name: "body_template", type: "text", default: "", description: "Request body template (supports {{var}} templates)"}
+        %{
+          name: "body_template",
+          type: "text",
+          default: "",
+          description: "Request body template (supports {{var}} templates)"
+        }
       ]
     }
   end

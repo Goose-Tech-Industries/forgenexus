@@ -42,8 +42,16 @@ defmodule ForgeNexus.Content.EmbedParser do
 
   defp resolve("clip", id) do
     case ForgeNexus.Voice.get_clip(id) do
-      nil -> %{error: "clip not found"}
-      clip -> %{title: clip.title, start_ms: clip.start_ms, end_ms: clip.end_ms, view_count: clip.view_count}
+      nil ->
+        %{error: "clip not found"}
+
+      clip ->
+        %{
+          title: clip.title,
+          start_ms: clip.start_ms,
+          end_ms: clip.end_ms,
+          view_count: clip.view_count
+        }
     end
   end
 

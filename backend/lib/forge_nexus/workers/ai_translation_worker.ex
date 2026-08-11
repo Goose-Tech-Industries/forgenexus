@@ -14,11 +14,17 @@ defmodule ForgeNexus.Workers.AITranslationWorker do
     post = Forums.get_post!(post_id)
 
     messages = [
-      %{role: "system", content: "Translate the following forum post to #{target_lang}. Preserve formatting, BBCode tags, and @mentions. Return only the translated text, no explanation."},
+      %{
+        role: "system",
+        content:
+          "Translate the following forum post to #{target_lang}. Preserve formatting, BBCode tags, and @mentions. Return only the translated text, no explanation."
+      },
       %{role: "user", content: post.body}
     ]
 
-    case Client.complete(:translation, messages, metadata: %{post_id: post_id, target: target_lang}) do
+    case Client.complete(:translation, messages,
+           metadata: %{post_id: post_id, target: target_lang}
+         ) do
       {:ok, translated} ->
         AI.create_translation(%{
           post_id: post_id,
@@ -26,7 +32,9 @@ defmodule ForgeNexus.Workers.AITranslationWorker do
           target_language: target_lang,
           translated_body: translated
         })
-      {:error, _} -> :ok
+
+      {:error, _} ->
+        :ok
     end
 
     :ok

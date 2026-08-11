@@ -49,7 +49,10 @@ defmodule ForgeNexus.Plugins.Hooks do
     # Subscribe to a single custom event topic (wildcard not supported by PubSub)
     Phoenix.PubSub.subscribe(ForgeNexus.PubSub, "plugin:custom_event")
 
-    Logger.info("[Plugins.Hooks] Started and subscribed to #{map_size(@event_topics)} event topics")
+    Logger.info(
+      "[Plugins.Hooks] Started and subscribed to #{map_size(@event_topics)} event topics"
+    )
+
     {:ok, %{}}
   end
 
@@ -126,7 +129,11 @@ defmodule ForgeNexus.Plugins.Hooks do
     js_plugins = JsPlugins.get_active_js_plugins_for_hook(trigger_type)
 
     for plugin <- js_plugins do
-      execute_js_plugin_async(plugin.id, Map.put(trigger_data, "type", trigger_type), triggered_by_id)
+      execute_js_plugin_async(
+        plugin.id,
+        Map.put(trigger_data, "type", trigger_type),
+        triggered_by_id
+      )
     end
   end
 

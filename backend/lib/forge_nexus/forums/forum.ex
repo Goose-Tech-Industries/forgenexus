@@ -37,7 +37,19 @@ defmodule ForgeNexus.Forums.Forum do
 
   def changeset(forum, attrs) do
     forum
-    |> cast(attrs, [:name, :slug, :description, :icon, :color, :position, :is_visible, :is_locked, :category_id, :parent_id, :permissions])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :icon,
+      :color,
+      :position,
+      :is_visible,
+      :is_locked,
+      :category_id,
+      :parent_id,
+      :permissions
+    ])
     |> validate_required([:name, :category_id])
     |> generate_slug()
     |> unique_constraint(:slug)
@@ -46,7 +58,9 @@ defmodule ForgeNexus.Forums.Forum do
 
   defp generate_slug(changeset) do
     case get_change(changeset, :name) do
-      nil -> changeset
+      nil ->
+        changeset
+
       name ->
         slug = get_change(changeset, :slug) || Slug.slugify(name)
         put_change(changeset, :slug, slug)

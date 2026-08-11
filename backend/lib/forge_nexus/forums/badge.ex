@@ -24,7 +24,18 @@ defmodule ForgeNexus.Forums.Badge do
 
   def changeset(badge, attrs) do
     badge
-    |> cast(attrs, [:name, :description, :icon_url, :icon_emoji, :color, :category, :is_auto, :auto_criteria, :position, :is_active])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :icon_url,
+      :icon_emoji,
+      :color,
+      :category,
+      :is_auto,
+      :auto_criteria,
+      :position,
+      :is_active
+    ])
     |> validate_required([:name])
     |> validate_inclusion(:category, ["achievement", "milestone", "admin_granted", "event"])
     |> unique_constraint(:name)

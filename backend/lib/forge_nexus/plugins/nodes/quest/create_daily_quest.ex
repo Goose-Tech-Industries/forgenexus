@@ -22,7 +22,10 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.CreateDailyQuest do
       []
       |> then(fn e ->
         ps = Map.get(config, "pool_size")
-        if is_nil(ps) or (is_number(ps) and ps > 0), do: e, else: ["pool_size must be a positive number" | e]
+
+        if is_nil(ps) or (is_number(ps) and ps > 0),
+          do: e,
+          else: ["pool_size must be a positive number" | e]
       end)
 
     if errors == [], do: :ok, else: {:error, errors}
@@ -43,8 +46,18 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.CreateDailyQuest do
         %{name: "count", type: "number"}
       ],
       config_fields: [
-        %{name: "pool_size", type: "number", default: 3, description: "Number of daily quests to assign from the pool"},
-        %{name: "quest_type", type: "string", default: "daily", description: "Quest type to pull from"}
+        %{
+          name: "pool_size",
+          type: "number",
+          default: 3,
+          description: "Number of daily quests to assign from the pool"
+        },
+        %{
+          name: "quest_type",
+          type: "string",
+          default: "daily",
+          description: "Quest type to pull from"
+        }
       ]
     }
   end

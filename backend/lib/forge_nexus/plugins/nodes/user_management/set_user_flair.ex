@@ -50,7 +50,12 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.SetUserFlair do
       ],
       config_fields: [
         %{name: "flair_text", type: "string", default: "", description: "Flair label text"},
-        %{name: "flair_color", type: "string", default: "", description: "Flair background color (hex)"}
+        %{
+          name: "flair_color",
+          type: "string",
+          default: "",
+          description: "Flair background color (hex)"
+        }
       ]
     }
   end

@@ -18,16 +18,19 @@ defmodule ForgeNexus.Platform.Ledger do
 
   @type entry_type :: String.t()
   @doc false
-  def entry_types, do: ~w(community_fee tip_revenue redemption_revenue point_pack_sale premium_subscription marketplace_commission refund adjustment)
+  def entry_types,
+    do:
+      ~w(community_fee tip_revenue redemption_revenue point_pack_sale premium_subscription marketplace_commission refund adjustment)
 
   def record_revenue(attrs) do
     amount = Map.get(attrs, :amount_cents) || Map.get(attrs, "amount_cents") || 0
     {infra, profit} = split(amount)
 
-    full = Map.merge(attrs, %{
-      infra_allocation_cents: infra,
-      profit_allocation_cents: profit
-    })
+    full =
+      Map.merge(attrs, %{
+        infra_allocation_cents: infra,
+        profit_allocation_cents: profit
+      })
 
     %ForgeNexus.Platform.LedgerEntry{}
     |> ForgeNexus.Platform.LedgerEntry.changeset(full)

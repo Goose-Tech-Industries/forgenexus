@@ -43,7 +43,8 @@ defmodule ForgeNexusWeb.OverlayController do
     room = Voice.get_room!(room_id)
     token = Phoenix.Token.sign(ForgeNexusWeb.Endpoint, "overlay", room.id)
 
-    conn |> json(%{
+    conn
+    |> json(%{
       token: token,
       urls: %{
         alerts: "/overlay/#{token}/alerts",

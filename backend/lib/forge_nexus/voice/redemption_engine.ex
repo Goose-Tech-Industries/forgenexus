@@ -73,7 +73,10 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
 
     exists? =
       Redemption
-      |> where([r], r.redeemable_id == ^rid and r.user_id == ^user_id and r.inserted_at > ^threshold)
+      |> where(
+        [r],
+        r.redeemable_id == ^rid and r.user_id == ^user_id and r.inserted_at > ^threshold
+      )
       |> Repo.exists?()
 
     if exists?, do: {:error, :cooldown}, else: :ok
@@ -122,13 +125,19 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         %{type: "sound_effect", clip_id: clip_id, audio_url: config["audio_url"]}
 
       "visual_effect" ->
-        %{type: "visual_effect", effect: config["effect"] || "confetti",
+        %{
+          type: "visual_effect",
+          effect: config["effect"] || "confetti",
           duration_ms: config["duration_ms"] || 3000,
-          color: config["color"]}
+          color: config["color"]
+        }
 
       "highlighted_message" ->
-        %{type: "highlighted_message", text: redemption.user_text,
-          style: config["style"] || "gold"}
+        %{
+          type: "highlighted_message",
+          text: redemption.user_text,
+          style: config["style"] || "gold"
+        }
 
       "game_command" ->
         payload = %{
@@ -159,8 +168,12 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
             ForgeNexus.PubSub,
             "plugin:custom_event",
             {:custom_event, "redemption:#{redeemable.name}",
-             %{user_id: user_id, flow_id: flow_id, redeemable_id: redeemable.id,
-               user_text: redemption.user_text}}
+             %{
+               user_id: user_id,
+               flow_id: flow_id,
+               redeemable_id: redeemable.id,
+               user_text: redemption.user_text
+             }}
           )
         end
 
@@ -181,10 +194,13 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         %{type: "webhook"}
 
       "tts_message" ->
-        %{type: "tts_message", text: redemption.user_text || "",
+        %{
+          type: "tts_message",
+          text: redemption.user_text || "",
           voice: config["voice"] || "default",
           rate: config["rate"] || 1.0,
-          max_length: config["max_length"] || 200}
+          max_length: config["max_length"] || 200
+        }
 
       "temp_custom_title" ->
         title = redemption.user_text || config["default_title"] || "VIP"
@@ -216,11 +232,17 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
 
       "choose_next_video" ->
         url = redemption.user_text
+
         if url do
           case ForgeNexus.Voice.WatchParty.parse_url(url) do
             {:ok, media} ->
               ForgeNexusWeb.Endpoint.broadcast("voice:#{room_id}", "watch_party_updated", %{
-                queue_insert: %{type: to_string(media.type), id: media.id, url: media.url, label: media.label},
+                queue_insert: %{
+                  type: to_string(media.type),
+                  id: media.id,
+                  url: media.url,
+                  label: media.label
+                },
                 position: 0,
                 by: user_id
               })
@@ -261,12 +283,14 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         %{type: "raid", target_room_id: target_room_id}
 
       "screen_takeover" ->
-        %{type: "screen_takeover",
+        %{
+          type: "screen_takeover",
           effect: config["effect"] || "fireworks",
           duration_ms: config["duration_ms"] || 5000,
           text: redemption.user_text,
           color: config["color"] || "#6366f1",
-          size: "fullscreen"}
+          size: "fullscreen"
+        }
 
       "gift_achievement" ->
         achievement_id = config["achievement_id"]
@@ -302,8 +326,11 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         %{type: "slow_mode_toggle", duration_seconds: duration_seconds}
 
       "dare_challenge" ->
-        %{type: "dare_challenge", text: redemption.user_text || "",
-          alert_style: config["alert_style"] || "fire"}
+        %{
+          type: "dare_challenge",
+          text: redemption.user_text || "",
+          alert_style: config["alert_style"] || "fire"
+        }
 
       "hydration_check" ->
         %{type: "hydration_check", alert: true, sound: config["sound_url"]}
@@ -329,7 +356,12 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
             case ForgeNexus.Voice.WatchParty.parse_url(url) do
               {:ok, media} ->
                 ForgeNexusWeb.Endpoint.broadcast("voice:#{room_id}", "watch_party_updated", %{
-                  queue_insert: %{type: to_string(media.type), id: media.id, url: media.url, label: media.label},
+                  queue_insert: %{
+                    type: to_string(media.type),
+                    id: media.id,
+                    url: media.url,
+                    label: media.label
+                  },
                   position: 0,
                   by: user_id,
                   reason: "dj_request"
@@ -381,12 +413,29 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         %{type: "emoji_rain", emoji: emoji, count: count}
 
       "lucky_wheel" ->
-        prizes = config["prizes"] || [
-          %{"label" => "100 points", "weight" => 40, "action" => "award_points", "value" => 100},
-          %{"label" => "500 points", "weight" => 20, "action" => "award_points", "value" => 500},
-          %{"label" => "Custom title (1hr)", "weight" => 15, "action" => "temp_title", "value" => "Lucky Winner"},
-          %{"label" => "Nothing!", "weight" => 25, "action" => "none", "value" => nil}
-        ]
+        prizes =
+          config["prizes"] ||
+            [
+              %{
+                "label" => "100 points",
+                "weight" => 40,
+                "action" => "award_points",
+                "value" => 100
+              },
+              %{
+                "label" => "500 points",
+                "weight" => 20,
+                "action" => "award_points",
+                "value" => 500
+              },
+              %{
+                "label" => "Custom title (1hr)",
+                "weight" => 15,
+                "action" => "temp_title",
+                "value" => "Lucky Winner"
+              },
+              %{"label" => "Nothing!", "weight" => 25, "action" => "none", "value" => nil}
+            ]
 
         winner = spin_wheel(prizes)
 
@@ -397,6 +446,7 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
 
           "temp_title" ->
             title = winner["value"] || "Lucky"
+
             Task.start(fn ->
               ForgeNexus.Accounts.update_user_fields(user_id, %{custom_title: title})
               Process.sleep(3_600_000)
@@ -479,7 +529,9 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
 
         if target_id && amount > 0 do
           Economy.award_points(target_id, "gift_received",
-            amount: amount, description: "Gift from #{user_id}")
+            amount: amount,
+            description: "Gift from #{user_id}"
+          )
 
           ForgeNexusWeb.Endpoint.broadcast("voice:#{room_id}", "points_gifted", %{
             from: user_id,
@@ -491,9 +543,11 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         %{type: "gift_points", target: target_id, amount: amount}
 
       "combo_multiplier" ->
-        %{type: "combo_multiplier",
+        %{
+          type: "combo_multiplier",
           multiplier: config["multiplier"] || 2,
-          window_seconds: config["window_seconds"] || 10}
+          window_seconds: config["window_seconds"] || 10
+        }
 
       _ ->
         %{type: redeemable.type}

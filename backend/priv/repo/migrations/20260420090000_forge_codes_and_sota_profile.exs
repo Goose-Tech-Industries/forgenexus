@@ -73,7 +73,10 @@ defmodule ForgeNexus.Repo.Migrations.ForgeCodesAndSotaProfile do
     # ---- Log of applications (for trending + per-user history) ----
     create table(:forge_code_applications, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :forge_code_id, references(:forge_codes, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :forge_code_id, references(:forge_codes, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :inserted_at, :utc_datetime, null: false
     end
@@ -84,7 +87,10 @@ defmodule ForgeNexus.Repo.Migrations.ForgeCodesAndSotaProfile do
     # ---- Profile endorsements (emoji reactions on a profile) ----
     create table(:profile_endorsements, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :profile_user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :profile_user_id, references(:users, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :sender_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :emoji, :string, null: false
 

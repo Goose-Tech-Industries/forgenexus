@@ -17,6 +17,7 @@ defmodule ForgeNexusWeb.WebhookController do
     case Channels.create_webhook(attrs) do
       {:ok, webhook} ->
         conn |> put_status(:created) |> json(%{webhook: webhook_json(webhook)})
+
       {:error, changeset} ->
         errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, _} -> msg end)
         conn |> put_status(:unprocessable_entity) |> json(%{error: errors})
@@ -25,22 +26,31 @@ defmodule ForgeNexusWeb.WebhookController do
 
   def update(conn, %{"id" => id} = params) do
     case Channels.update_webhook(id, params) do
-      {:ok, webhook} -> conn |> json(%{webhook: webhook_json(webhook)})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update"})
+      {:ok, webhook} ->
+        conn |> json(%{webhook: webhook_json(webhook)})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update"})
     end
   end
 
   def delete(conn, %{"id" => id}) do
     case Channels.delete_webhook(id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to delete"})
     end
   end
 
   def regenerate(conn, %{"id" => id}) do
     case Channels.regenerate_webhook_token(id) do
-      {:ok, webhook} -> conn |> json(%{webhook: webhook_json(webhook)})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to regenerate"})
+      {:ok, webhook} ->
+        conn |> json(%{webhook: webhook_json(webhook)})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to regenerate"})
     end
   end
 
@@ -60,11 +70,21 @@ defmodule ForgeNexusWeb.WebhookController do
             {:ok, message} ->
               # Broadcast to channel
               ForgeNexusWeb.Endpoint.broadcast("chat:#{webhook.channel_id}", "new_message", %{
-                id: message.id, body: message.body, channel_id: message.channel_id,
-                user: nil, embeds: message.embeds, inserted_at: message.inserted_at,
-                is_edited: false, is_pinned: false, is_deleted: false,
-                reply_to: nil, reactions: [], attachments: [], thread: nil
+                id: message.id,
+                body: message.body,
+                channel_id: message.channel_id,
+                user: nil,
+                embeds: message.embeds,
+                inserted_at: message.inserted_at,
+                is_edited: false,
+                is_pinned: false,
+                is_deleted: false,
+                reply_to: nil,
+                reactions: [],
+                attachments: [],
+                thread: nil
               })
+
               conn |> put_status(:created) |> json(%{ok: true, message_id: message.id})
 
             {:error, _} ->

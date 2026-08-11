@@ -25,7 +25,8 @@ defmodule ForgeNexusWeb.ThreadRatingController do
     stats = Forums.get_thread_rating_stats(thread_id)
     user_rating = Forums.get_user_thread_rating(thread_id, user.id)
 
-    conn |> json(%{
+    conn
+    |> json(%{
       rating: stats,
       user_rating: if(user_rating, do: user_rating.rating)
     })

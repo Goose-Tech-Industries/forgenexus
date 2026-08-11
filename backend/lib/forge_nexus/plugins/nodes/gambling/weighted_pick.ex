@@ -7,17 +7,27 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.WeightedPick do
 
     items =
       cond do
-        is_list(items) -> items
-        is_binary(items) -> (try do Jason.decode!(items) rescue _ -> [] end)
-        true -> []
+        is_list(items) ->
+          items
+
+        is_binary(items) ->
+          try do
+            Jason.decode!(items)
+          rescue
+            _ -> []
+          end
+
+        true ->
+          []
       end
 
     if items == [] do
       {:error, "items list is empty", ctx}
     else
-      total_weight = Enum.reduce(items, 0, fn item, acc ->
-        acc + (Map.get(item, "weight") || Map.get(item, :weight) || 1)
-      end)
+      total_weight =
+        Enum.reduce(items, 0, fn item, acc ->
+          acc + (Map.get(item, "weight") || Map.get(item, :weight) || 1)
+        end)
 
       roll = :rand.uniform() * total_weight
 
@@ -46,14 +56,20 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.WeightedPick do
   @impl true
   def validate_config(config) do
     case Map.get(config, "items") do
-      nil -> {:error, ["items is required"]}
-      items when is_list(items) and length(items) > 0 -> :ok
+      nil ->
+        {:error, ["items is required"]}
+
+      items when is_list(items) and length(items) > 0 ->
+        :ok
+
       items when is_binary(items) ->
         case Jason.decode(items) do
           {:ok, list} when is_list(list) and length(list) > 0 -> :ok
           _ -> {:error, ["items must be a non-empty JSON array"]}
         end
-      _ -> {:error, ["items must be a non-empty list of {label, weight} objects"]}
+
+      _ ->
+        {:error, ["items must be a non-empty list of {label, weight} objects"]}
     end
   end
 
@@ -70,7 +86,12 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.WeightedPick do
         %{name: "index", type: "number"}
       ],
       config_fields: [
-        %{name: "items", type: "json", default: "[]", description: "JSON array of {label, weight} objects"}
+        %{
+          name: "items",
+          type: "json",
+          default: "[]",
+          description: "JSON array of {label, weight} objects"
+        }
       ]
     }
   end

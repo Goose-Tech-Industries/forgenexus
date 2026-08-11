@@ -49,7 +49,10 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.CreateMilestone do
       end)
       |> then(fn e ->
         ms = Map.get(config, "milestones")
-        if is_binary(ms) and ms != "", do: e, else: ["milestones is required (comma-separated numbers)" | e]
+
+        if is_binary(ms) and ms != "",
+          do: e,
+          else: ["milestones is required (comma-separated numbers)" | e]
       end)
 
     if errors == [], do: :ok, else: {:error, errors}
@@ -68,9 +71,24 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.CreateMilestone do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "stat_type", type: "string", default: "", description: "The stat type to create milestones for"},
-        %{name: "milestones", type: "string", default: "10,50,100,500,1000", description: "Comma-separated milestone thresholds"},
-        %{name: "reward_points_per", type: "number", default: 0, description: "Points awarded per milestone reached"}
+        %{
+          name: "stat_type",
+          type: "string",
+          default: "",
+          description: "The stat type to create milestones for"
+        },
+        %{
+          name: "milestones",
+          type: "string",
+          default: "10,50,100,500,1000",
+          description: "Comma-separated milestone thresholds"
+        },
+        %{
+          name: "reward_points_per",
+          type: "number",
+          default: 0,
+          description: "Points awarded per milestone reached"
+        }
       ]
     }
   end

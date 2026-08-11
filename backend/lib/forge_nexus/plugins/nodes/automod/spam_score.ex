@@ -11,12 +11,19 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.SpamScore do
 
     # Weighted heuristic spam score (0-100)
     score =
-      (caps_ratio * 25 + min(link_count * 10, 30) + repetition_score * 25 + excess_length_score(content))
+      (caps_ratio * 25 + min(link_count * 10, 30) + repetition_score * 25 +
+         excess_length_score(content))
       |> min(100)
       |> max(0)
       |> round()
 
-    {:ok, %{score: score, caps_ratio: Float.round(caps_ratio, 2), link_count: link_count, repetition_score: Float.round(repetition_score, 2)}, ctx}
+    {:ok,
+     %{
+       score: score,
+       caps_ratio: Float.round(caps_ratio, 2),
+       link_count: link_count,
+       repetition_score: Float.round(repetition_score, 2)
+     }, ctx}
   end
 
   defp calculate_caps_ratio(""), do: 0.0

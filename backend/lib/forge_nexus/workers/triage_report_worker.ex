@@ -11,16 +11,20 @@ defmodule ForgeNexus.Workers.TriageReportWorker do
   alias ForgeNexus.AI.ModQueueTriage
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"report_id" => report_id, "content" => content, "reason" => reason}}) do
+  def perform(%Oban.Job{
+        args: %{"report_id" => report_id, "content" => content, "reason" => reason}
+      }) do
     case ModQueueTriage.triage(content, %{reporter_reason: reason}) do
       {:ok, result} ->
         from(r in "reports", where: r.id == type(^report_id, :binary_id))
-        |> Repo.update_all(set: [
-          ai_severity: result.severity,
-          ai_category: result.category,
-          ai_confidence: result.confidence,
-          ai_reason: result.reason
-        ])
+        |> Repo.update_all(
+          set: [
+            ai_severity: result.severity,
+            ai_category: result.category,
+            ai_confidence: result.confidence,
+            ai_reason: result.reason
+          ]
+        )
 
         :ok
 

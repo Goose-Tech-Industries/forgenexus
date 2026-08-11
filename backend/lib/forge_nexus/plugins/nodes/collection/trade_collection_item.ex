@@ -10,7 +10,9 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.TradeCollectionItem do
 
     from_user_id = Map.get(inputs, :from_user_id) || Map.get(inputs, "from_user_id")
     to_user_id = Map.get(inputs, :to_user_id) || Map.get(inputs, "to_user_id")
-    collection_item_id = Map.get(inputs, :collection_item_id) || Map.get(inputs, "collection_item_id")
+
+    collection_item_id =
+      Map.get(inputs, :collection_item_id) || Map.get(inputs, "collection_item_id")
 
     case Collections.trade_item(from_user_id, to_user_id, collection_item_id) do
       {:ok, _} ->

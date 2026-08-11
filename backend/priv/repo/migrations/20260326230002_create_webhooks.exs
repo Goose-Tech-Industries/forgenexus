@@ -7,7 +7,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateWebhooks do
       add :name, :string, null: false
       add :avatar_url, :string
       add :token, :string, null: false
-      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :channel_id, references(:chat_channels, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :created_by_id, references(:users, type: :binary_id, on_delete: :nilify_all)
       add :is_active, :boolean, default: true
 

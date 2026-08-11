@@ -20,7 +20,13 @@ defmodule ForgeNexusWeb.SignupController do
         attrs = Map.put(attrs, :registered_ip, to_string(:inet.ntoa(conn.remote_ip)))
 
         case Signup.provision(attrs) do
-          {:ok, %{user: user, community: community, checkout_url: checkout_url, stripe_status: stripe_status}} ->
+          {:ok,
+           %{
+             user: user,
+             community: community,
+             checkout_url: checkout_url,
+             stripe_status: stripe_status
+           }} ->
             {:ok, token, _claims} = Guardian.encode_and_sign(user)
 
             conn
@@ -53,7 +59,10 @@ defmodule ForgeNexusWeb.SignupController do
 
           {:error, reason} ->
             Logger.error("[SignupController] provision failed: #{inspect(reason)}")
-            conn |> put_status(:internal_server_error) |> json(%{error: "Signup failed — try again"})
+
+            conn
+            |> put_status(:internal_server_error)
+            |> json(%{error: "Signup failed — try again"})
         end
 
       {:error, missing} ->

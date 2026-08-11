@@ -2,7 +2,19 @@ defmodule ForgeNexus.Moderation do
   import Ecto.Query
   alias ForgeNexus.Repo
   alias ForgeNexus.Accounts.{User, UserGroupMembership}
-  alias ForgeNexus.Moderation.{Ban, Warning, Report, ModerationLog, ModNote, Appeal, SuspiciousAccount, ImpersonationLog, ContentPolicy}
+
+  alias ForgeNexus.Moderation.{
+    Ban,
+    Warning,
+    Report,
+    ModerationLog,
+    ModNote,
+    Appeal,
+    SuspiciousAccount,
+    ImpersonationLog,
+    ContentPolicy
+  }
+
   alias ForgeNexus.Forums.Post
 
   # --- Auto-escalation thresholds ---
@@ -886,7 +898,8 @@ defmodule ForgeNexus.Moderation do
       end
 
     # Find email pattern matches (same email prefix with different domains, or +alias)
-    base_email = user.email |> String.split("@") |> List.first() |> String.split("+") |> List.first()
+    base_email =
+      user.email |> String.split("@") |> List.first() |> String.split("+") |> List.first()
 
     email_matches =
       Repo.all(
@@ -1081,7 +1094,11 @@ defmodule ForgeNexus.Moderation do
         merged_body = post.body <> "\n\n---\n\n" <> new_body
 
         post
-        |> Ecto.Changeset.change(body: merged_body, is_edited: true, edited_at: DateTime.utc_now() |> DateTime.truncate(:second))
+        |> Ecto.Changeset.change(
+          body: merged_body,
+          is_edited: true,
+          edited_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        )
         |> Repo.update()
         |> case do
           {:ok, updated_post} -> {:ok, :merged, updated_post}

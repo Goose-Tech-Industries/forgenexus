@@ -16,8 +16,11 @@ defmodule ForgeNexusWeb.ContentIgnoreController do
     user = Guardian.Plug.current_resource(conn)
 
     case Forums.ignore_forum(user.id, forum_id) do
-      {:ok, _} -> conn |> json(%{status: "ok"})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Could not mute forum"})
+      {:ok, _} ->
+        conn |> json(%{status: "ok"})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Could not mute forum"})
     end
   end
 
@@ -36,8 +39,11 @@ defmodule ForgeNexusWeb.ContentIgnoreController do
     user = Guardian.Plug.current_resource(conn)
 
     case Forums.ignore_thread(user.id, thread_id) do
-      {:ok, _} -> conn |> json(%{status: "ok"})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Could not mute thread"})
+      {:ok, _} ->
+        conn |> json(%{status: "ok"})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Could not mute thread"})
     end
   end
 
@@ -54,8 +60,14 @@ defmodule ForgeNexusWeb.ContentIgnoreController do
   defp ignore_json(ignore) do
     %{
       id: ignore.id,
-      forum: if(ignore.forum, do: %{id: ignore.forum.id, name: ignore.forum.name, slug: ignore.forum.slug}),
-      thread: if(ignore.thread, do: %{id: ignore.thread.id, title: ignore.thread.title, slug: ignore.thread.slug}),
+      forum:
+        if(ignore.forum,
+          do: %{id: ignore.forum.id, name: ignore.forum.name, slug: ignore.forum.slug}
+        ),
+      thread:
+        if(ignore.thread,
+          do: %{id: ignore.thread.id, title: ignore.thread.title, slug: ignore.thread.slug}
+        ),
       inserted_at: ignore.inserted_at
     }
   end

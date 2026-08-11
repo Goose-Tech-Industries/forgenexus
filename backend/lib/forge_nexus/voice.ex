@@ -21,7 +21,9 @@ defmodule ForgeNexus.Voice do
   end
 
   def get_room!(id), do: Room |> preload(:category) |> Repo.get!(id)
-  def get_room_by_slug(slug), do: Room |> where([r], r.slug == ^slug) |> preload(:category) |> Repo.one()
+
+  def get_room_by_slug(slug),
+    do: Room |> where([r], r.slug == ^slug) |> preload(:category) |> Repo.one()
 
   def create_room(attrs) do
     %Room{} |> Room.changeset(attrs) |> Repo.insert()
@@ -216,10 +218,15 @@ defmodule ForgeNexus.Voice do
 
   def complete_money_tip(tip_id, stripe_payment_intent_id \\ nil) do
     case Repo.get(MoneyTip, tip_id) do
-      nil -> {:error, :not_found}
+      nil ->
+        {:error, :not_found}
+
       tip ->
         tip
-        |> MoneyTip.changeset(%{status: "completed", stripe_payment_intent_id: stripe_payment_intent_id})
+        |> MoneyTip.changeset(%{
+          status: "completed",
+          stripe_payment_intent_id: stripe_payment_intent_id
+        })
         |> Repo.update()
     end
   end
@@ -462,7 +469,11 @@ defmodule ForgeNexus.Voice do
       new_participants = Enum.uniq(call.participant_ids ++ [user_id])
 
       call
-      |> DmCall.changeset(%{status: "active", answered_at: now, participant_ids: new_participants})
+      |> DmCall.changeset(%{
+        status: "active",
+        answered_at: now,
+        participant_ids: new_participants
+      })
       |> Repo.update()
     else
       {:error, :invalid_state}
@@ -521,7 +532,9 @@ defmodule ForgeNexus.Voice do
     from(c in DmCall,
       where: c.status == "ringing" and c.started_at < ^threshold
     )
-    |> Repo.update_all(set: [status: "missed", ended_at: DateTime.utc_now() |> DateTime.truncate(:second)])
+    |> Repo.update_all(
+      set: [status: "missed", ended_at: DateTime.utc_now() |> DateTime.truncate(:second)]
+    )
   end
 
   # --- Seed defaults ---

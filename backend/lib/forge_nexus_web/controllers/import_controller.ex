@@ -3,7 +3,6 @@ defmodule ForgeNexusWeb.ImportController do
 
   alias ForgeNexus.Importer
 
-
   # GET /api/admin/import/sources
   def available_sources(conn, _params) do
     json(conn, %{sources: Importer.available_sources()})
@@ -19,7 +18,6 @@ defmodule ForgeNexusWeb.ImportController do
          :ok <- Importer.validate_config(config),
          opts <- build_opts(params),
          {:ok, import_id} <- Importer.run_import(config, opts) do
-
       ForgeNexus.Admin.log_admin_action(admin.id, %{
         action: "import_started",
         category: "data",
@@ -58,9 +56,10 @@ defmodule ForgeNexusWeb.ImportController do
           steps_completed: status.steps_completed,
           total: status.total,
           processed: status.processed,
-          errors: Enum.map(status.errors, fn e ->
-            %{message: e.message, timestamp: DateTime.to_iso8601(e.timestamp)}
-          end),
+          errors:
+            Enum.map(status.errors, fn e ->
+              %{message: e.message, timestamp: DateTime.to_iso8601(e.timestamp)}
+            end),
           started_at: status.started_at && DateTime.to_iso8601(status.started_at),
           completed_at: status.completed_at && DateTime.to_iso8601(status.completed_at),
           stats: status.stats
@@ -89,7 +88,8 @@ defmodule ForgeNexusWeb.ImportController do
   # --- Private ---
 
   defp parse_import_data(%{"file" => %Plug.Upload{path: path, content_type: ct}}) do
-    if ct in ["application/json", "text/json", "application/octet-stream"] || String.ends_with?(path, ".json") do
+    if ct in ["application/json", "text/json", "application/octet-stream"] ||
+         String.ends_with?(path, ".json") do
       case File.read(path) do
         {:ok, contents} ->
           case Jason.decode(contents) do

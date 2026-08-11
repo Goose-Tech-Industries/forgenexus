@@ -53,7 +53,12 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.ListForSale do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency for the listing price"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency for the listing price"
+        }
       ]
     }
   end

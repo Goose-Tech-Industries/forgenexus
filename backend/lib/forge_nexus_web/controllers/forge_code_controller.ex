@@ -69,10 +69,14 @@ defmodule ForgeNexusWeb.ForgeCodeController do
         conn |> put_status(:created) |> json(%{code: code_json(fc)})
 
       {:error, :limit_reached} ->
-        conn |> put_status(:forbidden) |> json(%{error: "You've reached the max of 50 Forge Codes"})
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "You've reached the max of 50 Forge Codes"})
 
       {:error, {:invalid_hex, value}} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Invalid color in profile: #{value}"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Invalid color in profile: #{value}"})
 
       {:error, reason} when is_atom(reason) or is_tuple(reason) ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
@@ -117,11 +121,21 @@ defmodule ForgeNexusWeb.ForgeCodeController do
       %{owner_id: owner_id} = fc when owner_id == user.id ->
         attrs =
           params
-          |> Map.take(["name", "description", "vibe_tag", "is_public", "is_remixable", "preview_image_url"])
+          |> Map.take([
+            "name",
+            "description",
+            "vibe_tag",
+            "is_public",
+            "is_remixable",
+            "preview_image_url"
+          ])
 
         case ForgeCodes.update_visibility(fc, attrs) do
-          {:ok, updated} -> conn |> json(%{code: code_json(updated)})
-          {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(cs)})
+          {:ok, updated} ->
+            conn |> json(%{code: code_json(updated)})
+
+          {:error, cs} ->
+            conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(cs)})
         end
 
       _ ->
@@ -134,7 +148,9 @@ defmodule ForgeNexusWeb.ForgeCodeController do
     user = Guardian.Plug.current_resource(conn)
 
     case ForgeCodes.get_by_code(code) do
-      nil -> conn |> put_status(:not_found) |> json(%{error: "Forge Code not found"})
+      nil ->
+        conn |> put_status(:not_found) |> json(%{error: "Forge Code not found"})
+
       %{owner_id: owner_id} = fc when owner_id == user.id ->
         ForgeCodes.delete(fc)
         conn |> json(%{ok: true})

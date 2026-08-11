@@ -68,7 +68,9 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.KarmaCheck do
         %{name: "above", type: "branch", fields: [%{name: "karma", type: "number"}]},
         %{name: "below", type: "branch", fields: [%{name: "karma", type: "number"}]}
       ],
-      config_fields: [%{name: "min_karma", type: "number", default: 0, description: "Minimum karma threshold"}]
+      config_fields: [
+        %{name: "min_karma", type: "number", default: 0, description: "Minimum karma threshold"}
+      ]
     }
   end
 end

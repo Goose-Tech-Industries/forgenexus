@@ -44,7 +44,12 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetCustomTitle do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "title", type: "string", default: "", description: "The custom title to set for the user"}
+        %{
+          name: "title",
+          type: "string",
+          default: "",
+          description: "The custom title to set for the user"
+        }
       ]
     }
   end

@@ -58,11 +58,37 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.DefineQuest do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "quest_type", type: "select", options: ~w(main side daily weekly), default: "side", description: "Type of quest"},
-        %{name: "is_repeatable", type: "boolean", default: false, description: "Whether the quest can be repeated"},
-        %{name: "cooldown_hours", type: "number", default: 0, description: "Hours before quest can be repeated"},
-        %{name: "reward_points", type: "number", default: 0, description: "Points awarded on completion"},
-        %{name: "required_level", type: "number", default: 0, description: "Minimum level required to start"}
+        %{
+          name: "quest_type",
+          type: "select",
+          options: ~w(main side daily weekly),
+          default: "side",
+          description: "Type of quest"
+        },
+        %{
+          name: "is_repeatable",
+          type: "boolean",
+          default: false,
+          description: "Whether the quest can be repeated"
+        },
+        %{
+          name: "cooldown_hours",
+          type: "number",
+          default: 0,
+          description: "Hours before quest can be repeated"
+        },
+        %{
+          name: "reward_points",
+          type: "number",
+          default: 0,
+          description: "Points awarded on completion"
+        },
+        %{
+          name: "required_level",
+          type: "number",
+          default: 0,
+          description: "Minimum level required to start"
+        }
       ]
     }
   end

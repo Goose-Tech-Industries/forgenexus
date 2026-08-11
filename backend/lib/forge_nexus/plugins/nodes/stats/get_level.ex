@@ -42,8 +42,19 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.GetLevel do
         %{name: "progress_percent", type: "number"}
       ],
       config_fields: [
-        %{name: "xp_stat_key", type: "string", default: "xp", description: "The stat key that stores XP"},
-        %{name: "formula", type: "select", options: ~w(linear sqrt exponential), default: "linear", description: "Level calculation formula"}
+        %{
+          name: "xp_stat_key",
+          type: "string",
+          default: "xp",
+          description: "The stat key that stores XP"
+        },
+        %{
+          name: "formula",
+          type: "select",
+          options: ~w(linear sqrt exponential),
+          default: "linear",
+          description: "Level calculation formula"
+        }
       ]
     }
   end

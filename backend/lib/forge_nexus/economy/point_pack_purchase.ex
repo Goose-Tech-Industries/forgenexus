@@ -20,7 +20,15 @@ defmodule ForgeNexus.Economy.PointPackPurchase do
 
   def changeset(purchase, attrs) do
     purchase
-    |> cast(attrs, [:pack_id, :user_id, :community_id, :points_granted, :amount_cents, :stripe_payment_intent_id, :status])
+    |> cast(attrs, [
+      :pack_id,
+      :user_id,
+      :community_id,
+      :points_granted,
+      :amount_cents,
+      :stripe_payment_intent_id,
+      :status
+    ])
     |> validate_required([:user_id, :points_granted, :amount_cents])
     |> validate_inclusion(:status, ~w(pending completed failed refunded))
   end

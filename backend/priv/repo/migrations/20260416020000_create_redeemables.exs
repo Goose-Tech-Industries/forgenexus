@@ -28,8 +28,13 @@ defmodule ForgeNexus.Repo.Migrations.CreateRedeemables do
 
     create table(:redemptions, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :redeemable_id, references(:room_redeemables, type: :binary_id, on_delete: :delete_all), null: false
-      add :room_id, references(:voice_rooms, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :redeemable_id, references(:room_redeemables, type: :binary_id, on_delete: :delete_all),
+        null: false
+
+      add :room_id, references(:voice_rooms, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
 
       add :user_text, :string

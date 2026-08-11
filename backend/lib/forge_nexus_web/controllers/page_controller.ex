@@ -21,8 +21,11 @@ defmodule ForgeNexusWeb.PageController do
     case %PluginPage{}
          |> PluginPage.changeset(atomize_keys(attrs))
          |> Repo.insert() do
-      {:ok, page} -> conn |> put_status(:created) |> json(%{page: page_json(page)})
-      {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(cs.errors)})
+      {:ok, page} ->
+        conn |> put_status(:created) |> json(%{page: page_json(page)})
+
+      {:error, cs} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(cs.errors)})
     end
   end
 
@@ -37,8 +40,11 @@ defmodule ForgeNexusWeb.PageController do
 
       page ->
         case page |> PluginPage.changeset(atomize_keys(attrs)) |> Repo.update() do
-          {:ok, page} -> conn |> json(%{page: page_json(page)})
-          {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(cs.errors)})
+          {:ok, page} ->
+            conn |> json(%{page: page_json(page)})
+
+          {:error, cs} ->
+            conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(cs.errors)})
         end
     end
   end
@@ -49,7 +55,9 @@ defmodule ForgeNexusWeb.PageController do
 
   def delete(conn, %{"id" => id}) do
     case Repo.get(PluginPage, id) do
-      nil -> conn |> put_status(:not_found) |> json(%{error: "Page not found"})
+      nil ->
+        conn |> put_status(:not_found) |> json(%{error: "Page not found"})
+
       page ->
         Repo.delete!(page)
         conn |> json(%{ok: true})

@@ -11,25 +11,29 @@ defmodule ForgeNexus.Workers.AISentimentDailyWorker do
     start_dt = DateTime.new!(yesterday, ~T[00:00:00], "Etc/UTC")
     end_dt = DateTime.new!(yesterday, ~T[23:59:59], "Etc/UTC")
 
-    stats = from(ps in PostSentiment,
-      where: ps.inserted_at >= ^start_dt and ps.inserted_at <= ^end_dt,
-      select: %{
-        avg_sentiment: avg(ps.sentiment),
-        total: count(ps.id),
-        heated: count(fragment("CASE WHEN ? < -0.5 THEN 1 END", ps.sentiment))
-      }
-    ) |> Repo.one()
+    stats =
+      from(ps in PostSentiment,
+        where: ps.inserted_at >= ^start_dt and ps.inserted_at <= ^end_dt,
+        select: %{
+          avg_sentiment: avg(ps.sentiment),
+          total: count(ps.id),
+          heated: count(fragment("CASE WHEN ? < -0.5 THEN 1 END", ps.sentiment))
+        }
+      )
+      |> Repo.one()
 
     # Get top emotions
-    emotions = from(ps in PostSentiment,
-      where: ps.inserted_at >= ^start_dt and ps.inserted_at <= ^end_dt,
-      select: ps.emotion_tags
-    ) |> Repo.all()
-    |> List.flatten()
-    |> Enum.frequencies()
-    |> Enum.sort_by(&elem(&1, 1), :desc)
-    |> Enum.take(5)
-    |> Map.new()
+    emotions =
+      from(ps in PostSentiment,
+        where: ps.inserted_at >= ^start_dt and ps.inserted_at <= ^end_dt,
+        select: ps.emotion_tags
+      )
+      |> Repo.all()
+      |> List.flatten()
+      |> Enum.frequencies()
+      |> Enum.sort_by(&elem(&1, 1), :desc)
+      |> Enum.take(5)
+      |> Map.new()
 
     %CommunitySentiment{}
     |> CommunitySentiment.changeset(%{

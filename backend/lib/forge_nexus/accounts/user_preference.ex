@@ -62,13 +62,35 @@ defmodule ForgeNexus.Accounts.UserPreference do
   end
 
   @cast_fields [
-    :pagination_mode, :thread_display_mode, :content_density, :show_signatures, :posts_per_page,
-    :reduced_motion, :high_contrast, :colorblind_mode, :dyslexia_font, :text_only_mode,
-    :dnd_enabled, :dnd_start, :dnd_end, :email_mentions, :email_replies, :email_dms,
-    :email_digest, :notification_sound,
-    :show_online_status, :profile_visibility, :show_activity,
-    :notify_replies, :notify_mentions, :notify_reactions, :notify_followers, :notify_badges,
-    :auto_subscribe_threads, :default_thread_notification, :show_spoilers
+    :pagination_mode,
+    :thread_display_mode,
+    :content_density,
+    :show_signatures,
+    :posts_per_page,
+    :reduced_motion,
+    :high_contrast,
+    :colorblind_mode,
+    :dyslexia_font,
+    :text_only_mode,
+    :dnd_enabled,
+    :dnd_start,
+    :dnd_end,
+    :email_mentions,
+    :email_replies,
+    :email_dms,
+    :email_digest,
+    :notification_sound,
+    :show_online_status,
+    :profile_visibility,
+    :show_activity,
+    :notify_replies,
+    :notify_mentions,
+    :notify_reactions,
+    :notify_followers,
+    :notify_badges,
+    :auto_subscribe_threads,
+    :default_thread_notification,
+    :show_spoilers
   ]
 
   def changeset(preference, attrs) do
@@ -105,7 +127,9 @@ defmodule ForgeNexus.Accounts.UserPreference do
 
   defp validate_time_format(changeset, field) do
     case get_change(changeset, field) do
-      nil -> changeset
+      nil ->
+        changeset
+
       value ->
         if Regex.match?(~r/^([01]\d|2[0-3]):[0-5]\d$/, value) do
           changeset

@@ -4,7 +4,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateWebhookDeliveries do
   def change do
     create table(:webhook_deliveries, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :webhook_id, references(:forum_webhooks, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :webhook_id, references(:forum_webhooks, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :event_type, :string, null: false
       add :payload, :map, null: false, default: %{}
       add :response_status, :integer

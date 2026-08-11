@@ -13,14 +13,19 @@ defmodule ForgeNexusWeb.FeedController do
       user_id: user && user.id
     ]
 
-    opts = if params["before"], do: Keyword.put(opts, :before, parse_datetime(params["before"])), else: opts
+    opts =
+      if params["before"],
+        do: Keyword.put(opts, :before, parse_datetime(params["before"])),
+        else: opts
 
     items = Social.get_feed(community_id, opts)
 
-    conn |> json(%{
-      items: Enum.map(items, fn item ->
-        %{type: item.type, id: item.id, data: item.data, inserted_at: item.inserted_at}
-      end)
+    conn
+    |> json(%{
+      items:
+        Enum.map(items, fn item ->
+          %{type: item.type, id: item.id, data: item.data, inserted_at: item.inserted_at}
+        end)
     })
   end
 
@@ -119,12 +124,19 @@ defmodule ForgeNexusWeb.FeedController do
     unread = params["unread"] == "true"
     pokes = Social.list_pokes(user.id, unread_only: unread)
 
-    conn |> json(%{
-      pokes: Enum.map(pokes, fn p ->
-        %{id: p.id, type: p.type, message: p.message, is_read: p.is_read,
-          from: %{id: p.sender.id, username: p.sender.username, avatar_url: p.sender.avatar_url},
-          inserted_at: p.inserted_at}
-      end),
+    conn
+    |> json(%{
+      pokes:
+        Enum.map(pokes, fn p ->
+          %{
+            id: p.id,
+            type: p.type,
+            message: p.message,
+            is_read: p.is_read,
+            from: %{id: p.sender.id, username: p.sender.username, avatar_url: p.sender.avatar_url},
+            inserted_at: p.inserted_at
+          }
+        end),
       unread_count: Social.unread_poke_count(user.id)
     })
   end
@@ -157,7 +169,8 @@ defmodule ForgeNexusWeb.FeedController do
     premium = Social.get_premium(user.id)
 
     if premium do
-      conn |> json(%{
+      conn
+      |> json(%{
         is_premium: premium.status == "active",
         plan: premium.plan,
         features: premium.features,
@@ -171,29 +184,43 @@ defmodule ForgeNexusWeb.FeedController do
   # --- Discovery ---
 
   def discover(conn, params) do
-    communities = Social.discover_communities(
-      category: params["category"],
-      tag: params["tag"],
-      limit: parse_int(params["limit"], 30)
-    )
+    communities =
+      Social.discover_communities(
+        category: params["category"],
+        tag: params["tag"],
+        limit: parse_int(params["limit"], 30)
+      )
 
-    conn |> json(%{communities: Enum.map(communities, fn c ->
-      %{id: c.id, name: c.name, slug: c.slug, description: c.description,
-        logo_url: c.logo_url, category: c.category, tags: c.tags,
-        member_count: c.member_count, activity_score: c.activity_score,
-        plan: c.plan}
-    end)})
+    conn
+    |> json(%{
+      communities:
+        Enum.map(communities, fn c ->
+          %{
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description,
+            logo_url: c.logo_url,
+            category: c.category,
+            tags: c.tags,
+            member_count: c.member_count,
+            activity_score: c.activity_score,
+            plan: c.plan
+          }
+        end)
+    })
   end
 
   def suggested_members(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
     community_id = conn.assigns.community_id
 
-    members = if user do
-      Social.suggested_members(community_id, user.id)
-    else
-      []
-    end
+    members =
+      if user do
+        Social.suggested_members(community_id, user.id)
+      else
+        []
+      end
 
     conn |> json(%{members: members})
   end
@@ -217,21 +244,25 @@ defmodule ForgeNexusWeb.FeedController do
   end
 
   defp parse_int(nil, default), do: default
+
   defp parse_int(val, default) when is_binary(val) do
     case Integer.parse(val) do
       {n, _} -> n
       _ -> default
     end
   end
+
   defp parse_int(val, _) when is_integer(val), do: val
   defp parse_int(_, default), do: default
 
   defp parse_datetime(nil), do: nil
+
   defp parse_datetime(str) when is_binary(str) do
     case DateTime.from_iso8601(str) do
       {:ok, dt, _} -> dt
       _ -> nil
     end
   end
+
   defp parse_datetime(_), do: nil
 end

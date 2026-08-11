@@ -65,11 +65,24 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.TicketSlaCheck do
       description: "Branches based on whether a ticket response time is within SLA or breached.",
       inputs: [%{name: "ticket_id", type: "string", required: true}],
       outputs: [
-        %{name: "within_sla", type: "branch", fields: [%{name: "hours_elapsed", type: "number"}, %{name: "threshold", type: "number"}]},
-        %{name: "breached", type: "branch", fields: [%{name: "hours_elapsed", type: "number"}, %{name: "threshold", type: "number"}]}
+        %{
+          name: "within_sla",
+          type: "branch",
+          fields: [%{name: "hours_elapsed", type: "number"}, %{name: "threshold", type: "number"}]
+        },
+        %{
+          name: "breached",
+          type: "branch",
+          fields: [%{name: "hours_elapsed", type: "number"}, %{name: "threshold", type: "number"}]
+        }
       ],
       config_fields: [
-        %{name: "max_response_hours", type: "number", default: 24, description: "Maximum hours before SLA is considered breached"}
+        %{
+          name: "max_response_hours",
+          type: "number",
+          default: 24,
+          description: "Maximum hours before SLA is considered breached"
+        }
       ]
     }
   end

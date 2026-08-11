@@ -56,13 +56,21 @@ defmodule ForgeNexus.Plugins.Nodes.Moderation.CheckInfractionPoints do
       type: "moderation/check_infraction_points",
       category: "moderation",
       label: "Check Infraction Points",
-      description: "Branches based on whether a user's infraction points are above or below a threshold.",
+      description:
+        "Branches based on whether a user's infraction points are above or below a threshold.",
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [
         %{name: "above", type: "branch", fields: [%{name: "points", type: "number"}]},
         %{name: "below", type: "branch", fields: [%{name: "points", type: "number"}]}
       ],
-      config_fields: [%{name: "threshold", type: "number", default: 10, description: "Point threshold for branching"}]
+      config_fields: [
+        %{
+          name: "threshold",
+          type: "number",
+          default: 10,
+          description: "Point threshold for branching"
+        }
+      ]
     }
   end
 end

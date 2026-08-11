@@ -33,7 +33,8 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.EmailInbound do
       type: "integration/email_inbound",
       category: "integration",
       label: "Email Inbound",
-      description: "Extracts fields from an inbound email webhook trigger (from, subject, body, attachments).",
+      description:
+        "Extracts fields from an inbound email webhook trigger (from, subject, body, attachments).",
       inputs: [],
       outputs: [
         %{name: "from", type: "string"},

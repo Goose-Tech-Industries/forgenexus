@@ -17,12 +17,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.ComparePeriods do
 
   defp to_int(v) when is_integer(v), do: v
   defp to_int(v) when is_float(v), do: trunc(v)
+
   defp to_int(v) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       _ -> 0
     end
   end
+
   defp to_int(_), do: 0
 
   @impl true
@@ -49,7 +51,8 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.ComparePeriods do
       type: "analytics/compare_periods",
       category: "analytics",
       label: "Compare Periods",
-      description: "Compares a metric between the current period and a previous period, showing trend direction.",
+      description:
+        "Compares a metric between the current period and a previous period, showing trend direction.",
       inputs: [],
       outputs: [
         %{name: "current", type: "number"},
@@ -58,9 +61,26 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.ComparePeriods do
         %{name: "trend", type: "string"}
       ],
       config_fields: [
-        %{name: "metric", type: "select", options: ~w(users posts threads active_users), default: "posts", description: "Metric to compare"},
-        %{name: "period_days", type: "number", default: 30, description: "Number of days in each period"},
-        %{name: "compare_to", type: "select", options: ~w(previous_period same_period_last_month), default: "previous_period", description: "What to compare against"}
+        %{
+          name: "metric",
+          type: "select",
+          options: ~w(users posts threads active_users),
+          default: "posts",
+          description: "Metric to compare"
+        },
+        %{
+          name: "period_days",
+          type: "number",
+          default: 30,
+          description: "Number of days in each period"
+        },
+        %{
+          name: "compare_to",
+          type: "select",
+          options: ~w(previous_period same_period_last_month),
+          default: "previous_period",
+          description: "What to compare against"
+        }
       ]
     }
   end

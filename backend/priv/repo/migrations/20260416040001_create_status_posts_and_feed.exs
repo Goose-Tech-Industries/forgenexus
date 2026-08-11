@@ -30,7 +30,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateStatusPostsAndFeed do
 
     create table(:status_post_comments, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :status_post_id, references(:status_posts, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :status_post_id, references(:status_posts, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :body, :text, null: false
 
@@ -41,7 +44,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateStatusPostsAndFeed do
 
     create table(:status_post_likes, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :status_post_id, references(:status_posts, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :status_post_id, references(:status_posts, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
 
       timestamps()

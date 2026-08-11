@@ -4,16 +4,26 @@ defmodule ForgeNexusWeb.ChatController do
   alias ForgeNexus.Chat
 
   def shoutbox(conn, params) do
-    limit = case Map.get(params, "limit") do
-      nil -> 50
-      val when is_binary(val) -> case Integer.parse(val) do {n, _} -> min(n, 100); :error -> 50 end
-      val when is_integer(val) -> min(val, 100)
-    end
+    limit =
+      case Map.get(params, "limit") do
+        nil ->
+          50
+
+        val when is_binary(val) ->
+          case Integer.parse(val) do
+            {n, _} -> min(n, 100)
+            :error -> 50
+          end
+
+        val when is_integer(val) ->
+          min(val, 100)
+      end
 
     messages = Chat.get_shoutbox_messages(limit: limit)
     pinned = Chat.get_pinned_shouts()
 
-    conn |> json(%{
+    conn
+    |> json(%{
       messages: Enum.map(messages, &shoutbox_message_json/1),
       pinned: Enum.map(pinned, &shoutbox_message_json/1),
       total: length(messages)
@@ -51,23 +61,32 @@ defmodule ForgeNexusWeb.ChatController do
     end
   end
 
-  def send_shoutbox(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "Missing body"})
+  def send_shoutbox(conn, _),
+    do: conn |> put_status(:bad_request) |> json(%{error: "Missing body"})
 
   defp shoutbox_message_json(msg) do
-    group = if Ecto.assoc_loaded?(msg.user) && Ecto.assoc_loaded?(msg.user.primary_group), do: msg.user.primary_group
+    group =
+      if Ecto.assoc_loaded?(msg.user) && Ecto.assoc_loaded?(msg.user.primary_group),
+        do: msg.user.primary_group
+
     %{
       id: msg.id,
       body: msg.body,
       is_pinned: msg.is_pinned,
       is_system: msg.is_system,
       inserted_at: msg.inserted_at,
-      user: if(Ecto.assoc_loaded?(msg.user) && msg.user, do: %{
-        id: msg.user.id,
-        username: msg.user.username,
-        avatar_url: msg.user.avatar_url,
-        username_color: msg.user.username_color || (group && group.username_color) || (group && group.color),
-        username_effect: msg.user.username_effect || (group && group.username_effect) || "none"
-      })
+      user:
+        if(Ecto.assoc_loaded?(msg.user) && msg.user,
+          do: %{
+            id: msg.user.id,
+            username: msg.user.username,
+            avatar_url: msg.user.avatar_url,
+            username_color:
+              msg.user.username_color || (group && group.username_color) || (group && group.color),
+            username_effect:
+              msg.user.username_effect || (group && group.username_effect) || "none"
+          }
+        )
     }
   end
 
@@ -102,7 +121,9 @@ defmodule ForgeNexusWeb.ChatController do
         conn |> json(%{conversation: %{id: conversation.id, type: conversation.type}})
 
       {:error, _} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to create conversation"})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Failed to create conversation"})
     end
   end
 
@@ -122,14 +143,20 @@ defmodule ForgeNexusWeb.ChatController do
         1 ->
           # For a 2-person group, reuse a direct conversation
           case Chat.get_or_create_direct_conversation(user.id, List.first(participant_ids)) do
-            {:ok, conv} -> conn |> put_status(:created) |> json(%{conversation: group_conversation_json(conv)})
-            {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
+            {:ok, conv} ->
+              conn |> put_status(:created) |> json(%{conversation: group_conversation_json(conv)})
+
+            {:error, _} ->
+              conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
           end
 
         _ ->
           case Chat.create_group_conversation(user.id, title, participant_ids) do
-            {:ok, conv} -> conn |> put_status(:created) |> json(%{conversation: group_conversation_json(conv)})
-            {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
+            {:ok, conv} ->
+              conn |> put_status(:created) |> json(%{conversation: group_conversation_json(conv)})
+
+            {:error, _} ->
+              conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
           end
       end
     end
@@ -173,10 +200,17 @@ defmodule ForgeNexusWeb.ChatController do
       conn |> put_status(:unprocessable_entity) |> json(%{error: "Message body is required"})
     else
       case Chat.edit_message(message_id, user.id, body) do
-        {:ok, message} -> conn |> json(%{message: message_json(Repo.preload(message, :user))})
-        {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Message not found"})
-        {:error, :unauthorized} -> conn |> put_status(:forbidden) |> json(%{error: "Not your message"})
-        {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
+        {:ok, message} ->
+          conn |> json(%{message: message_json(Repo.preload(message, :user))})
+
+        {:error, :not_found} ->
+          conn |> put_status(:not_found) |> json(%{error: "Message not found"})
+
+        {:error, :unauthorized} ->
+          conn |> put_status(:forbidden) |> json(%{error: "Not your message"})
+
+        {:error, _} ->
+          conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
       end
     end
   end
@@ -186,9 +220,14 @@ defmodule ForgeNexusWeb.ChatController do
     user = Guardian.Plug.current_resource(conn)
 
     case Chat.delete_message(message_id, user.id) do
-      {:ok, _} -> conn |> json(%{ok: true})
-      {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Message not found"})
-      {:error, :unauthorized} -> conn |> put_status(:forbidden) |> json(%{error: "Not your message"})
+      {:ok, _} ->
+        conn |> json(%{ok: true})
+
+      {:error, :not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Message not found"})
+
+      {:error, :unauthorized} ->
+        conn |> put_status(:forbidden) |> json(%{error: "Not your message"})
     end
   end
 
@@ -198,6 +237,7 @@ defmodule ForgeNexusWeb.ChatController do
     uuid_like? = fn s -> is_binary(s) and String.match?(s, ~r/^[0-9a-f]{8}-[0-9a-f]{4}-/i) end
 
     {ids, handles} = Enum.split_with(refs, uuid_like?)
+
     handle_ids =
       handles
       |> Enum.reject(&(&1 == "" or is_nil(&1)))
@@ -236,7 +276,12 @@ defmodule ForgeNexusWeb.ChatController do
       message_count: conv.message_count,
       participants:
         Enum.map(participants, fn p ->
-          %{id: p.user.id, username: p.user.username, avatar_url: p.user.avatar_url, is_online: p.user.is_online}
+          %{
+            id: p.user.id,
+            username: p.user.username,
+            avatar_url: p.user.avatar_url,
+            is_online: p.user.is_online
+          }
         end)
     }
   end
@@ -247,9 +292,16 @@ defmodule ForgeNexusWeb.ChatController do
 
     conn
     |> json(%{
-      friends: Enum.map(friends, fn f ->
-        %{id: f.id, username: f.username, slug: f.slug, avatar_url: f.avatar_url, is_online: f.is_online}
-      end)
+      friends:
+        Enum.map(friends, fn f ->
+          %{
+            id: f.id,
+            username: f.username,
+            slug: f.slug,
+            avatar_url: f.avatar_url,
+            is_online: f.is_online
+          }
+        end)
     })
   end
 
@@ -259,9 +311,14 @@ defmodule ForgeNexusWeb.ChatController do
 
     conn
     |> json(%{
-      requests: Enum.map(requests, fn f ->
-        %{id: f.id, user: %{id: f.user.id, username: f.user.username, avatar_url: f.user.avatar_url}, inserted_at: f.inserted_at}
-      end)
+      requests:
+        Enum.map(requests, fn f ->
+          %{
+            id: f.id,
+            user: %{id: f.user.id, username: f.user.username, avatar_url: f.user.avatar_url},
+            inserted_at: f.inserted_at
+          }
+        end)
     })
   end
 
@@ -271,12 +328,17 @@ defmodule ForgeNexusWeb.ChatController do
     case Chat.friendship_between(user.id, friend_id) do
       nil ->
         case Chat.send_friend_request(user.id, friend_id) do
-          {:ok, f} -> conn |> put_status(:created) |> json(%{ok: true, id: f.id, status: "request_sent"})
-          {:error, cs} -> conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(cs.errors)})
+          {:ok, f} ->
+            conn |> put_status(:created) |> json(%{ok: true, id: f.id, status: "request_sent"})
+
+          {:error, cs} ->
+            conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(cs.errors)})
         end
 
       _existing ->
-        conn |> put_status(:conflict) |> json(%{error: "A friendship already exists between you two"})
+        conn
+        |> put_status(:conflict)
+        |> json(%{error: "A friendship already exists between you two"})
     end
   end
 
@@ -341,7 +403,14 @@ defmodule ForgeNexusWeb.ChatController do
     other_participants =
       conversation.participants
       |> Enum.reject(fn p -> p.user_id == current_user_id end)
-      |> Enum.map(fn p -> %{id: p.user.id, username: p.user.username, avatar_url: p.user.avatar_url, is_online: p.user.is_online} end)
+      |> Enum.map(fn p ->
+        %{
+          id: p.user.id,
+          username: p.user.username,
+          avatar_url: p.user.avatar_url,
+          is_online: p.user.is_online
+        }
+      end)
 
     %{
       id: conversation.id,

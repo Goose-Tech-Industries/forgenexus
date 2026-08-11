@@ -25,7 +25,9 @@ defmodule ForgeNexusWeb.ProfileEndorsementController do
             conn |> put_status(:forbidden) |> json(%{error: "You can't endorse your own profile"})
 
           {:error, %Ecto.Changeset{}} ->
-            conn |> put_status(:unprocessable_entity) |> json(%{error: "Invalid emoji (must be from the allowed set)"})
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Invalid emoji (must be from the allowed set)"})
         end
     end
   end

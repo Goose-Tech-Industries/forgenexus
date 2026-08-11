@@ -48,8 +48,12 @@ defmodule ForgeNexus.Plugins.Nodes.UI.RenderPage do
   def validate_config(config) do
     errors =
       []
-      |> then(fn e -> if Map.get(config, "slug", "") != "", do: e, else: ["slug is required" | e] end)
-      |> then(fn e -> if Map.get(config, "title", "") != "", do: e, else: ["title is required" | e] end)
+      |> then(fn e ->
+        if Map.get(config, "slug", "") != "", do: e, else: ["slug is required" | e]
+      end)
+      |> then(fn e ->
+        if Map.get(config, "title", "") != "", do: e, else: ["title is required" | e]
+      end)
 
     if errors == [], do: :ok, else: {:error, errors}
   end

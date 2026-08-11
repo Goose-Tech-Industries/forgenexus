@@ -39,7 +39,8 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.GetProgress do
       type: "collection/get_progress",
       category: "collection",
       label: "Get Progress",
-      description: "Retrieves a user's collection progress for a set, including per-item collected flags.",
+      description:
+        "Retrieves a user's collection progress for a set, including per-item collected flags.",
       inputs: [
         %{name: "user_id", type: "string", required: true},
         %{name: "set_id", type: "string", required: true}

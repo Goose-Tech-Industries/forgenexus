@@ -26,7 +26,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateJsPlugins do
 
     create table(:js_plugin_executions, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :js_plugin_id, references(:js_plugins, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :js_plugin_id, references(:js_plugins, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :status, :string, null: false, default: "running"
       add :trigger_type, :string
       add :trigger_data, :map, default: %{}
@@ -47,7 +50,10 @@ defmodule ForgeNexus.Repo.Migrations.CreateJsPlugins do
 
     create table(:js_plugin_rate_limits, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :js_plugin_id, references(:js_plugins, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :js_plugin_id, references(:js_plugins, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :window_start, :utc_datetime, null: false
       add :window_seconds, :integer, null: false, default: 3600
       add :execution_count, :integer, null: false, default: 0

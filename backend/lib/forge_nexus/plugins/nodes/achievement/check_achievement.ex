@@ -41,7 +41,8 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.CheckAchievement do
       type: "achievement/check_achievement",
       category: "achievement",
       label: "Check Achievement",
-      description: "Checks a user's progress toward an achievement and branches on earned/not earned.",
+      description:
+        "Checks a user's progress toward an achievement and branches on earned/not earned.",
       inputs: [
         %{name: "user_id", type: "string", required: true},
         %{name: "achievement_id", type: "string", required: true}

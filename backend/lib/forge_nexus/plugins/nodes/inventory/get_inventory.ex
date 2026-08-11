@@ -33,7 +33,12 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.GetInventory do
         %{name: "total_count", type: "number"}
       ],
       config_fields: [
-        %{name: "category_filter", type: "string", default: "", description: "Optional category to filter by"}
+        %{
+          name: "category_filter",
+          type: "string",
+          default: "",
+          description: "Optional category to filter by"
+        }
       ]
     }
   end

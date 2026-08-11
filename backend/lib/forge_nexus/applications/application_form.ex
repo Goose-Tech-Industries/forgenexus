@@ -19,7 +19,15 @@ defmodule ForgeNexus.Applications.ApplicationForm do
 
   def changeset(form, attrs) do
     form
-    |> cast(attrs, [:title, :description, :fields, :target_group_id, :is_open, :min_posts, :min_days_member])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :fields,
+      :target_group_id,
+      :is_open,
+      :min_posts,
+      :min_days_member
+    ])
     |> validate_required([:title])
   end
 end

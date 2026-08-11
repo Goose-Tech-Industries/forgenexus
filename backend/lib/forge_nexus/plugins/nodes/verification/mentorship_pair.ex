@@ -53,7 +53,12 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.MentorshipPair do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "mentor_group_id", type: "string", default: "", description: "ID of the group to pick mentors from"}
+        %{
+          name: "mentor_group_id",
+          type: "string",
+          default: "",
+          description: "ID of the group to pick mentors from"
+        }
       ]
     }
   end

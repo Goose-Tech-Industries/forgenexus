@@ -21,7 +21,16 @@ defmodule ForgeNexus.Tournaments.Match do
 
   def changeset(match, attrs) do
     match
-    |> cast(attrs, [:tournament_id, :round, :position, :status, :scores, :player1_id, :player2_id, :winner_id])
+    |> cast(attrs, [
+      :tournament_id,
+      :round,
+      :position,
+      :status,
+      :scores,
+      :player1_id,
+      :player2_id,
+      :winner_id
+    ])
     |> validate_required([:tournament_id, :round, :position])
     |> validate_inclusion(:status, ~w(pending active completed bye))
   end

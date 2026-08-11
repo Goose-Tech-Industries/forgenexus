@@ -11,8 +11,16 @@ defmodule ForgeNexus.Repo.Migrations.CreateContentIgnores do
       timestamps()
     end
 
-    create unique_index(:content_ignores, [:user_id, :forum_id], where: "forum_id IS NOT NULL", name: :content_ignores_user_forum)
-    create unique_index(:content_ignores, [:user_id, :thread_id], where: "thread_id IS NOT NULL", name: :content_ignores_user_thread)
+    create unique_index(:content_ignores, [:user_id, :forum_id],
+             where: "forum_id IS NOT NULL",
+             name: :content_ignores_user_forum
+           )
+
+    create unique_index(:content_ignores, [:user_id, :thread_id],
+             where: "thread_id IS NOT NULL",
+             name: :content_ignores_user_thread
+           )
+
     create index(:content_ignores, [:user_id])
   end
 end

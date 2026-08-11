@@ -17,7 +17,13 @@ defmodule ForgeNexus.Federation.FederationPolicy do
 
   def changeset(policy, attrs) do
     policy
-    |> cast(attrs, [:mode, :allowed_domains, :blocked_domains, :auto_accept_follows, :share_user_profiles])
+    |> cast(attrs, [
+      :mode,
+      :allowed_domains,
+      :blocked_domains,
+      :auto_accept_follows,
+      :share_user_profiles
+    ])
     |> validate_required([:mode])
     |> validate_inclusion(:mode, ["open", "allowlist", "closed"])
   end

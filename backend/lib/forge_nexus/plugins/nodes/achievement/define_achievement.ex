@@ -41,7 +41,10 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.DefineAchievement do
 
         if ct in ~w(post_count thread_count reputation streak collection level custom),
           do: e,
-          else: ["criteria_type must be one of: post_count, thread_count, reputation, streak, collection, level, custom" | e]
+          else: [
+            "criteria_type must be one of: post_count, thread_count, reputation, streak, collection, level, custom"
+            | e
+          ]
       end)
 
     if errors == [], do: :ok, else: {:error, errors}
@@ -63,17 +66,45 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.DefineAchievement do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "icon", type: "string", default: "", description: "Icon identifier for the achievement"},
+        %{
+          name: "icon",
+          type: "string",
+          default: "",
+          description: "Icon identifier for the achievement"
+        },
         %{name: "category", type: "string", default: "", description: "Achievement category"},
-        %{name: "points", type: "number", default: 0, description: "Points awarded for earning this achievement"},
-        %{name: "criteria_type", type: "select", options: ~w(post_count thread_count reputation streak collection level custom), default: "custom", description: "Type of criteria to check"},
-        %{name: "criteria_value", type: "number", default: 0, description: "Target value for the criteria"},
-        %{name: "is_hidden", type: "boolean", default: false, description: "Whether this achievement is hidden until earned"}
+        %{
+          name: "points",
+          type: "number",
+          default: 0,
+          description: "Points awarded for earning this achievement"
+        },
+        %{
+          name: "criteria_type",
+          type: "select",
+          options: ~w(post_count thread_count reputation streak collection level custom),
+          default: "custom",
+          description: "Type of criteria to check"
+        },
+        %{
+          name: "criteria_value",
+          type: "number",
+          default: 0,
+          description: "Target value for the criteria"
+        },
+        %{
+          name: "is_hidden",
+          type: "boolean",
+          default: false,
+          description: "Whether this achievement is hidden until earned"
+        }
       ]
     }
   end
 
-  defp slugify(nil, ctx), do: "achievement-#{ctx.community_id || "global"}-#{System.unique_integer([:positive])}"
+  defp slugify(nil, ctx),
+    do: "achievement-#{ctx.community_id || "global"}-#{System.unique_integer([:positive])}"
+
   defp slugify(name, ctx) do
     base =
       name
@@ -86,11 +117,24 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.DefineAchievement do
   end
 
   defp build_criteria("custom", _value), do: %{"type" => "custom"}
-  defp build_criteria("post_count", value), do: %{"type" => "stat_threshold", "stat_key" => "post_count", "threshold" => value}
-  defp build_criteria("thread_count", value), do: %{"type" => "stat_threshold", "stat_key" => "thread_count", "threshold" => value}
-  defp build_criteria("reputation", value), do: %{"type" => "stat_threshold", "stat_key" => "reputation", "threshold" => value}
-  defp build_criteria("streak", value), do: %{"type" => "stat_threshold", "stat_key" => "streak", "threshold" => value}
-  defp build_criteria("level", value), do: %{"type" => "stat_threshold", "stat_key" => "level", "threshold" => value}
-  defp build_criteria("collection", value), do: %{"type" => "count", "stat_key" => "collection", "target" => value}
+
+  defp build_criteria("post_count", value),
+    do: %{"type" => "stat_threshold", "stat_key" => "post_count", "threshold" => value}
+
+  defp build_criteria("thread_count", value),
+    do: %{"type" => "stat_threshold", "stat_key" => "thread_count", "threshold" => value}
+
+  defp build_criteria("reputation", value),
+    do: %{"type" => "stat_threshold", "stat_key" => "reputation", "threshold" => value}
+
+  defp build_criteria("streak", value),
+    do: %{"type" => "stat_threshold", "stat_key" => "streak", "threshold" => value}
+
+  defp build_criteria("level", value),
+    do: %{"type" => "stat_threshold", "stat_key" => "level", "threshold" => value}
+
+  defp build_criteria("collection", value),
+    do: %{"type" => "count", "stat_key" => "collection", "target" => value}
+
   defp build_criteria(_, _), do: %{"type" => "custom"}
 end

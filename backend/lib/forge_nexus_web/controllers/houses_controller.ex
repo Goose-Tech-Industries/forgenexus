@@ -65,7 +65,10 @@ defmodule ForgeNexusWeb.HousesController do
 
           {:error, reason} ->
             Logger.error("[HousesController] found_house failed: #{inspect(reason)}")
-            conn |> put_status(:internal_server_error) |> json(%{error: "House provisioning failed"})
+
+            conn
+            |> put_status(:internal_server_error)
+            |> json(%{error: "House provisioning failed"})
         end
 
       {:error, missing} ->
@@ -131,7 +134,10 @@ defmodule ForgeNexusWeb.HousesController do
           """)
           |> Mailer.deliver()
         rescue
-          err -> Logger.warning("[HousesController] invite email to #{email} failed: #{Exception.message(err)}")
+          err ->
+            Logger.warning(
+              "[HousesController] invite email to #{email} failed: #{Exception.message(err)}"
+            )
         end
       end)
     end)

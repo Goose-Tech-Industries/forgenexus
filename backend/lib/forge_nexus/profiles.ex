@@ -176,9 +176,13 @@ defmodule ForgeNexus.Profiles do
     })
     |> Repo.insert()
     |> case do
-      {:ok, e} -> {:ok, e}
+      {:ok, e} ->
+        {:ok, e}
+
       {:error, cs} ->
-        if Enum.any?(cs.errors, fn {_, {msg, _}} -> String.contains?(msg, "already been taken") end) do
+        if Enum.any?(cs.errors, fn {_, {msg, _}} ->
+             String.contains?(msg, "already been taken")
+           end) do
           {:error, :already_endorsed}
         else
           {:error, cs}
@@ -188,7 +192,8 @@ defmodule ForgeNexus.Profiles do
 
   def revoke_endorsement(profile_user_id, sender_id, emoji) do
     from(e in ProfileEndorsement,
-      where: e.profile_user_id == ^profile_user_id and e.sender_id == ^sender_id and e.emoji == ^emoji
+      where:
+        e.profile_user_id == ^profile_user_id and e.sender_id == ^sender_id and e.emoji == ^emoji
     )
     |> Repo.delete_all()
     |> case do

@@ -33,7 +33,12 @@ defmodule ForgeNexus.Plugins.Nodes.Text.Contains do
       ],
       outputs: [%{name: "result", type: "boolean"}],
       config_fields: [
-        %{name: "case_sensitive", type: "boolean", default: true, description: "Case-sensitive search"}
+        %{
+          name: "case_sensitive",
+          type: "boolean",
+          default: true,
+          description: "Case-sensitive search"
+        }
       ]
     }
   end

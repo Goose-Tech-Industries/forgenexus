@@ -11,28 +11,31 @@ defmodule ForgeNexusWeb.Plugs.SecurityHeaders do
     frontend = frontend_origin()
     backend = backend_origin()
 
-    csp = [
-      "default-src 'self' #{frontend}",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: #{backend}",
-      "connect-src 'self' #{backend} #{ws_origin(backend)}",
-      "frame-src https://www.youtube.com",
-      "media-src 'self'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-      "upgrade-insecure-requests"
-    ] |> Enum.join("; ")
+    csp =
+      [
+        "default-src 'self' #{frontend}",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob: #{backend}",
+        "connect-src 'self' #{backend} #{ws_origin(backend)}",
+        "frame-src https://www.youtube.com",
+        "media-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "upgrade-insecure-requests"
+      ]
+      |> Enum.join("; ")
 
     conn
     |> put_resp_header("x-content-type-options", "nosniff")
     |> put_resp_header("x-frame-options", "DENY")
     |> put_resp_header("x-xss-protection", "0")
     |> put_resp_header("referrer-policy", "strict-origin-when-cross-origin")
-    |> put_resp_header("permissions-policy",
+    |> put_resp_header(
+      "permissions-policy",
       "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
     )
     |> put_resp_header("cross-origin-opener-policy", "same-origin")

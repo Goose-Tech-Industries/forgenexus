@@ -21,7 +21,17 @@ defmodule ForgeNexus.AI.Provider do
 
   def changeset(provider, attrs) do
     provider
-    |> cast(attrs, [:name, :display_name, :api_key_encrypted, :base_url, :default_model, :is_active, :priority, :max_tokens_per_request, :config])
+    |> cast(attrs, [
+      :name,
+      :display_name,
+      :api_key_encrypted,
+      :base_url,
+      :default_model,
+      :is_active,
+      :priority,
+      :max_tokens_per_request,
+      :config
+    ])
     |> validate_required([:name])
     |> validate_inclusion(:name, ["openai", "anthropic", "ollama", "custom"])
     |> unique_constraint(:name)

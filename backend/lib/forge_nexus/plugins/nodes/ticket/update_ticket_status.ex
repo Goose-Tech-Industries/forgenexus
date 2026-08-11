@@ -46,7 +46,13 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.UpdateTicketStatus do
         %{name: "previous_status", type: "string"}
       ],
       config_fields: [
-        %{name: "status", type: "select", options: ~w(open in_progress waiting resolved closed), default: "open", description: "New ticket status"}
+        %{
+          name: "status",
+          type: "select",
+          options: ~w(open in_progress waiting resolved closed),
+          default: "open",
+          description: "New ticket status"
+        }
       ]
     }
   end

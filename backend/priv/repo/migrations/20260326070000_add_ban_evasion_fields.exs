@@ -5,7 +5,10 @@ defmodule ForgeNexus.Repo.Migrations.AddBanEvasionFields do
     create table(:suspicious_accounts, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :linked_user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :linked_user_id, references(:users, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :match_type, :string, null: false
       add :confidence, :float, null: false, default: 0.0
       add :reviewed, :boolean, default: false
@@ -23,7 +26,10 @@ defmodule ForgeNexus.Repo.Migrations.AddBanEvasionFields do
     create table(:impersonation_logs, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :admin_id, references(:users, type: :binary_id, on_delete: :nilify_all), null: false
-      add :target_user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+
+      add :target_user_id, references(:users, type: :binary_id, on_delete: :delete_all),
+        null: false
+
       add :reason, :text, null: false
       add :started_at, :utc_datetime, null: false
       add :ended_at, :utc_datetime

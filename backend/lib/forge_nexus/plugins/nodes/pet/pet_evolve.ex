@@ -34,7 +34,12 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetEvolve do
         {:branch, "evolved",
          %{
            evolved: true,
-           pet: %{id: pet.id, nickname: pet.nickname, level: pet.level, template_id: pet.template_id}
+           pet: %{
+             id: pet.id,
+             nickname: pet.nickname,
+             level: pet.level,
+             template_id: pet.template_id
+           }
          }, ctx}
 
       {:error, reason} ->

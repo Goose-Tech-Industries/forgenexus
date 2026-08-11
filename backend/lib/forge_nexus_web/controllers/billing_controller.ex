@@ -33,20 +33,25 @@ defmodule ForgeNexusWeb.BillingController do
 
     with {:ok, community} <- fetch_community(community_id),
          :ok <- ensure_owner(community, user),
-         {:ok, %{url: url, session_id: session_id}} <- Billing.create_checkout_session(community, plan) do
+         {:ok, %{url: url, session_id: session_id}} <-
+           Billing.create_checkout_session(community, plan) do
       json(conn, %{checkout_url: url, session_id: session_id})
     else
       {:error, :not_found} ->
         conn |> put_status(:not_found) |> json(%{error: "Community not found"})
 
       {:error, :forbidden} ->
-        conn |> put_status(:forbidden) |> json(%{error: "Only the community owner can manage billing"})
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "Only the community owner can manage billing"})
 
       {:error, :invalid_plan} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: "Invalid plan"})
 
       {:error, {:price_not_configured, plan}} ->
-        conn |> put_status(:service_unavailable) |> json(%{error: "Plan #{plan} not configured yet"})
+        conn
+        |> put_status(:service_unavailable)
+        |> json(%{error: "Plan #{plan} not configured yet"})
 
       {:error, reason} ->
         require Logger
@@ -81,12 +86,17 @@ defmodule ForgeNexusWeb.BillingController do
     end
   end
 
-  defp ensure_owner(%Community{owner_id: owner_id}, %{id: user_id}) when owner_id == user_id, do: :ok
+  defp ensure_owner(%Community{owner_id: owner_id}, %{id: user_id}) when owner_id == user_id,
+    do: :ok
+
   defp ensure_owner(_, _), do: {:error, :forbidden}
 
   defp format_price(cents) when is_integer(cents) do
     dollars = div(cents, 100)
     rem = rem(cents, 100)
-    if rem == 0, do: "$#{dollars}", else: :io_lib.format("$~B.~2..0B", [dollars, rem]) |> IO.iodata_to_binary()
+
+    if rem == 0,
+      do: "$#{dollars}",
+      else: :io_lib.format("$~B.~2..0B", [dollars, rem]) |> IO.iodata_to_binary()
   end
 end

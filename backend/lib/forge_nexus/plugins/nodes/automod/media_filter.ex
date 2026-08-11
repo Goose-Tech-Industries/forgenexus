@@ -88,15 +88,34 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.MediaFilter do
       ],
       outputs: [
         %{name: "valid", type: "branch", fields: [%{name: "attachments", type: "list"}]},
-        %{name: "invalid", type: "branch", fields: [
-          %{name: "reason", type: "string"},
-          %{name: "violations", type: "list"}
-        ]}
+        %{
+          name: "invalid",
+          type: "branch",
+          fields: [
+            %{name: "reason", type: "string"},
+            %{name: "violations", type: "list"}
+          ]
+        }
       ],
       config_fields: [
-        %{name: "max_count", type: "number", default: 10, description: "Maximum number of attachments"},
-        %{name: "allowed_types", type: "string", default: "", description: "Comma-separated allowed MIME types (empty = allow all)"},
-        %{name: "max_size_mb", type: "number", default: 10, description: "Maximum file size in MB"}
+        %{
+          name: "max_count",
+          type: "number",
+          default: 10,
+          description: "Maximum number of attachments"
+        },
+        %{
+          name: "allowed_types",
+          type: "string",
+          default: "",
+          description: "Comma-separated allowed MIME types (empty = allow all)"
+        },
+        %{
+          name: "max_size_mb",
+          type: "number",
+          default: 10,
+          description: "Maximum file size in MB"
+        }
       ]
     }
   end

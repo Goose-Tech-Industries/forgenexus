@@ -28,7 +28,16 @@ defmodule ForgeNexus.Accounts.Theme do
 
   def changeset(theme, attrs) do
     theme
-    |> cast(attrs, [:name, :slug, :description, :is_default, :is_active, :position, :variables, :created_by_id])
+    |> cast(attrs, [
+      :name,
+      :slug,
+      :description,
+      :is_default,
+      :is_active,
+      :position,
+      :variables,
+      :created_by_id
+    ])
     |> validate_required([:name, :slug])
     |> unique_constraint(:slug)
     |> validate_variables()
@@ -46,7 +55,8 @@ defmodule ForgeNexus.Accounts.Theme do
         changeset
         |> then(fn cs ->
           if invalid_keys != [],
-            do: add_error(cs, :variables, "contains invalid keys: #{Enum.join(invalid_keys, ", ")}"),
+            do:
+              add_error(cs, :variables, "contains invalid keys: #{Enum.join(invalid_keys, ", ")}"),
             else: cs
         end)
         |> then(fn cs ->

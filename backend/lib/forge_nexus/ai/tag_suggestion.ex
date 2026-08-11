@@ -21,7 +21,16 @@ defmodule ForgeNexus.AI.TagSuggestion do
 
   def changeset(tag_suggestion, attrs) do
     tag_suggestion
-    |> cast(attrs, [:suggested_tags, :suggested_prefix, :content_type, :confidence, :was_applied, :thread_id, :suggested_forum_id, :reviewed_by_id])
+    |> cast(attrs, [
+      :suggested_tags,
+      :suggested_prefix,
+      :content_type,
+      :confidence,
+      :was_applied,
+      :thread_id,
+      :suggested_forum_id,
+      :reviewed_by_id
+    ])
     |> validate_required([:thread_id])
     |> foreign_key_constraint(:thread_id)
     |> foreign_key_constraint(:suggested_forum_id)

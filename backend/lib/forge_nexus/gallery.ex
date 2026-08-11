@@ -5,14 +5,23 @@ defmodule ForgeNexus.Gallery do
   alias ForgeNexus.Gallery.{Album, MediaItem}
 
   def list_user_albums(user_id) do
-    Album |> where([a], a.user_id == ^user_id) |> order_by(asc: :position) |> preload(:items) |> Repo.all()
+    Album
+    |> where([a], a.user_id == ^user_id)
+    |> order_by(asc: :position)
+    |> preload(:items)
+    |> Repo.all()
   end
 
   def list_public_albums(user_id) do
-    Album |> where([a], a.user_id == ^user_id and a.is_public == true) |> order_by(asc: :position) |> Repo.all()
+    Album
+    |> where([a], a.user_id == ^user_id and a.is_public == true)
+    |> order_by(asc: :position)
+    |> Repo.all()
   end
 
-  def get_album!(id), do: Album |> preload(items: ^from(i in MediaItem, order_by: [asc: :position])) |> Repo.get!(id)
+  def get_album!(id),
+    do:
+      Album |> preload(items: ^from(i in MediaItem, order_by: [asc: :position])) |> Repo.get!(id)
 
   def create_album(attrs), do: %Album{} |> Album.changeset(attrs) |> Repo.insert()
 
@@ -22,7 +31,8 @@ defmodule ForgeNexus.Gallery do
 
   def add_media(album_id, user_id, attrs) do
     Repo.transaction(fn ->
-      item = %MediaItem{}
+      item =
+        %MediaItem{}
         |> MediaItem.changeset(Map.merge(attrs, %{album_id: album_id, user_id: user_id}))
         |> Repo.insert!()
 
@@ -33,6 +43,7 @@ defmodule ForgeNexus.Gallery do
 
   def remove_media(item_id) do
     item = Repo.get!(MediaItem, item_id)
+
     Repo.transaction(fn ->
       Repo.delete!(item)
       from(a in Album, where: a.id == ^item.album_id) |> Repo.update_all(inc: [media_count: -1])

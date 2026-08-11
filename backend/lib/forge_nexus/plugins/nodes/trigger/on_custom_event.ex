@@ -30,7 +30,12 @@ defmodule ForgeNexus.Plugins.Nodes.Trigger.OnCustomEvent do
         %{name: "emitter_flow_id", type: "string"}
       ],
       config_fields: [
-        %{name: "event_name", type: "string", default: "", description: "Event name to listen for"}
+        %{
+          name: "event_name",
+          type: "string",
+          default: "",
+          description: "Event name to listen for"
+        }
       ]
     }
   end

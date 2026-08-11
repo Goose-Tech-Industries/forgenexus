@@ -21,9 +21,20 @@ defmodule ForgeNexus.Accounts.OAuthAccount do
 
   def changeset(oauth_account, attrs) do
     oauth_account
-    |> cast(attrs, [:user_id, :provider, :provider_uid, :provider_email, :provider_name, :provider_avatar, :access_token, :refresh_token])
+    |> cast(attrs, [
+      :user_id,
+      :provider,
+      :provider_uid,
+      :provider_email,
+      :provider_name,
+      :provider_avatar,
+      :access_token,
+      :refresh_token
+    ])
     |> validate_required([:user_id, :provider, :provider_uid])
-    |> unique_constraint([:provider, :provider_uid], name: :oauth_accounts_provider_provider_uid_index)
+    |> unique_constraint([:provider, :provider_uid],
+      name: :oauth_accounts_provider_provider_uid_index
+    )
     |> unique_constraint([:provider, :user_id], name: :oauth_accounts_provider_user_id_index)
     |> foreign_key_constraint(:user_id)
   end

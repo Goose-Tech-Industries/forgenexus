@@ -77,8 +77,18 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.CreateLotteryPool do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"},
-        %{name: "pool_key", type: "string", default: "", description: "Unique key identifying the lottery pool"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        },
+        %{
+          name: "pool_key",
+          type: "string",
+          default: "",
+          description: "Unique key identifying the lottery pool"
+        }
       ]
     }
   end

@@ -43,18 +43,28 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetPostbitStyle do
 
     errors =
       case Map.get(config, "background_opacity") do
-        nil -> errors
+        nil ->
+          errors
+
         val ->
           opacity = parse_opacity(val)
-          if opacity >= 0.0 and opacity <= 1.0, do: errors, else: ["background_opacity must be between 0.0 and 1.0" | errors]
+
+          if opacity >= 0.0 and opacity <= 1.0,
+            do: errors,
+            else: ["background_opacity must be between 0.0 and 1.0" | errors]
       end
 
     errors =
       case Map.get(config, "postbit_opacity") do
-        nil -> errors
+        nil ->
+          errors
+
         val ->
           opacity = parse_opacity(val)
-          if opacity >= 0.0 and opacity <= 1.0, do: errors, else: ["postbit_opacity must be between 0.0 and 1.0" | errors]
+
+          if opacity >= 0.0 and opacity <= 1.0,
+            do: errors,
+            else: ["postbit_opacity must be between 0.0 and 1.0" | errors]
       end
 
     if errors == [], do: :ok, else: {:error, errors}
@@ -74,10 +84,30 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetPostbitStyle do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "background_url", type: "string", default: "", description: "URL for the post background image"},
-        %{name: "background_opacity", type: "number", default: 0.3, description: "Post background opacity (0.0 to 1.0)"},
-        %{name: "postbit_url", type: "string", default: "", description: "URL for the postbit background image"},
-        %{name: "postbit_opacity", type: "number", default: 0.3, description: "Postbit background opacity (0.0 to 1.0)"}
+        %{
+          name: "background_url",
+          type: "string",
+          default: "",
+          description: "URL for the post background image"
+        },
+        %{
+          name: "background_opacity",
+          type: "number",
+          default: 0.3,
+          description: "Post background opacity (0.0 to 1.0)"
+        },
+        %{
+          name: "postbit_url",
+          type: "string",
+          default: "",
+          description: "URL for the postbit background image"
+        },
+        %{
+          name: "postbit_opacity",
+          type: "number",
+          default: 0.3,
+          description: "Postbit background opacity (0.0 to 1.0)"
+        }
       ]
     }
   end
@@ -88,11 +118,13 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetPostbitStyle do
 
   defp parse_opacity(val) when is_float(val), do: val
   defp parse_opacity(val) when is_integer(val), do: val / 1.0
+
   defp parse_opacity(val) when is_binary(val) do
     case Float.parse(val) do
       {f, _} -> f
       :error -> 0.3
     end
   end
+
   defp parse_opacity(_), do: 0.3
 end

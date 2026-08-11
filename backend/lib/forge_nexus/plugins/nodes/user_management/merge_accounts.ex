@@ -8,7 +8,9 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.MergeAccounts do
   def execute(_config, inputs, ctx) do
     Sandbox.check_db_limit!(ctx)
     primary_user_id = Map.get(inputs, :primary_user_id) || Map.get(inputs, "primary_user_id")
-    secondary_user_id = Map.get(inputs, :secondary_user_id) || Map.get(inputs, "secondary_user_id")
+
+    secondary_user_id =
+      Map.get(inputs, :secondary_user_id) || Map.get(inputs, "secondary_user_id")
 
     if primary_user_id == secondary_user_id do
       {:error, "primary and secondary user_ids must differ", ctx}
@@ -44,7 +46,8 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.MergeAccounts do
       type: "user_management/merge_accounts",
       category: "user_management",
       label: "Merge Accounts",
-      description: "Reassigns posts/threads from a secondary account to a primary account and marks the secondary as merged.",
+      description:
+        "Reassigns posts/threads from a secondary account to a primary account and marks the secondary as merged.",
       inputs: [
         %{name: "primary_user_id", type: "string", required: true},
         %{name: "secondary_user_id", type: "string", required: true}

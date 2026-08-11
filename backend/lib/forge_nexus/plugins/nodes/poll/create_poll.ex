@@ -26,10 +26,12 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
         {:error, "Poll must have at least 2 options", ctx}
 
       is_nil(thread_id) and (is_nil(forum_id) or is_nil(user_id)) ->
-        {:error, "Either thread_id, or both forum_id and user_id are required to create a poll", ctx}
+        {:error, "Either thread_id, or both forum_id and user_id are required to create a poll",
+         ctx}
 
       true ->
-        with {:ok, resolved_thread_id, ctx} <- resolve_thread(thread_id, forum_id, user_id, title, question, ctx) do
+        with {:ok, resolved_thread_id, ctx} <-
+               resolve_thread(thread_id, forum_id, user_id, title, question, ctx) do
           closes_at =
             DateTime.utc_now()
             |> DateTime.add(trunc(duration_hours * 3600), :second)
@@ -57,7 +59,8 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
   end
 
   # Auto-creates a host thread when no thread_id is provided.
-  defp resolve_thread(thread_id, _forum_id, _user_id, _title, _question, ctx) when not is_nil(thread_id) do
+  defp resolve_thread(thread_id, _forum_id, _user_id, _title, _question, ctx)
+       when not is_nil(thread_id) do
     {:ok, thread_id, ctx}
   end
 
@@ -123,10 +126,31 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
       description: "Creates a new poll attached to a thread with multiple choice options.",
       inputs: [
         %{name: "question", type: "string", required: true},
-        %{name: "thread_id", type: "string", required: false, description: "Existing thread to host the poll. If omitted, a new thread is auto-created."},
-        %{name: "forum_id", type: "string", required: false, description: "Forum for auto-created host thread (required if thread_id is omitted)."},
-        %{name: "user_id", type: "string", required: false, description: "Author for auto-created host thread (required if thread_id is omitted)."},
-        %{name: "title", type: "string", required: false, description: "Title for auto-created host thread. Defaults to the question."}
+        %{
+          name: "thread_id",
+          type: "string",
+          required: false,
+          description:
+            "Existing thread to host the poll. If omitted, a new thread is auto-created."
+        },
+        %{
+          name: "forum_id",
+          type: "string",
+          required: false,
+          description: "Forum for auto-created host thread (required if thread_id is omitted)."
+        },
+        %{
+          name: "user_id",
+          type: "string",
+          required: false,
+          description: "Author for auto-created host thread (required if thread_id is omitted)."
+        },
+        %{
+          name: "title",
+          type: "string",
+          required: false,
+          description: "Title for auto-created host thread. Defaults to the question."
+        }
       ],
       outputs: [
         %{name: "poll_id", type: "string"},
@@ -134,9 +158,24 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "options", type: "string", default: "", description: "Comma-separated poll options"},
-        %{name: "duration_hours", type: "number", default: 24, description: "How long the poll stays open (hours)"},
-        %{name: "allow_multiple", type: "boolean", default: false, description: "Allow users to vote for multiple options"}
+        %{
+          name: "options",
+          type: "string",
+          default: "",
+          description: "Comma-separated poll options"
+        },
+        %{
+          name: "duration_hours",
+          type: "number",
+          default: 24,
+          description: "How long the poll stays open (hours)"
+        },
+        %{
+          name: "allow_multiple",
+          type: "boolean",
+          default: false,
+          description: "Allow users to vote for multiple options"
+        }
       ]
     }
   end

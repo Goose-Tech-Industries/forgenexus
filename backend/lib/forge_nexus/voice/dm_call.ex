@@ -21,7 +21,16 @@ defmodule ForgeNexus.Voice.DmCall do
 
   def changeset(call, attrs) do
     call
-    |> cast(attrs, [:conversation_id, :caller_id, :status, :type, :started_at, :answered_at, :ended_at, :participant_ids])
+    |> cast(attrs, [
+      :conversation_id,
+      :caller_id,
+      :status,
+      :type,
+      :started_at,
+      :answered_at,
+      :ended_at,
+      :participant_ids
+    ])
     |> validate_required([:conversation_id, :caller_id])
     |> validate_inclusion(:status, ["ringing", "active", "ended", "missed", "declined"])
     |> validate_inclusion(:type, ["audio", "video"])

@@ -34,8 +34,18 @@ defmodule ForgeNexus.Social.WatchAlong do
 
   def changeset(wa, attrs) do
     wa
-    |> cast(attrs, [:community_id, :room_id, :created_by_id, :title, :description,
-                     :show_type, :starts_at, :status, :segments, :current_segment])
+    |> cast(attrs, [
+      :community_id,
+      :room_id,
+      :created_by_id,
+      :title,
+      :description,
+      :show_type,
+      :starts_at,
+      :status,
+      :segments,
+      :current_segment
+    ])
     |> validate_required([:title, :starts_at])
     |> validate_inclusion(:status, @statuses)
     |> validate_inclusion(:show_type, @show_types)
@@ -46,12 +56,24 @@ defmodule ForgeNexus.Social.WatchAlong do
   def example_wrestling_segments do
     [
       %{"name" => "Pre-Show Panel", "type" => "segment", "prediction_id" => nil},
-      %{"name" => "Match 1: Tag Team Championship", "type" => "match", "prediction_id" => nil,
-        "participants" => ["Team A", "Team B"]},
-      %{"name" => "Match 2: Women's Championship", "type" => "match", "prediction_id" => nil,
-        "participants" => ["Wrestler A", "Wrestler B"]},
-      %{"name" => "Main Event: World Championship", "type" => "match", "prediction_id" => nil,
-        "participants" => ["Champion", "Challenger"]}
+      %{
+        "name" => "Match 1: Tag Team Championship",
+        "type" => "match",
+        "prediction_id" => nil,
+        "participants" => ["Team A", "Team B"]
+      },
+      %{
+        "name" => "Match 2: Women's Championship",
+        "type" => "match",
+        "prediction_id" => nil,
+        "participants" => ["Wrestler A", "Wrestler B"]
+      },
+      %{
+        "name" => "Main Event: World Championship",
+        "type" => "match",
+        "prediction_id" => nil,
+        "participants" => ["Champion", "Challenger"]
+      }
     ]
   end
 end

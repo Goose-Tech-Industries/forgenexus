@@ -5,7 +5,6 @@ defmodule ForgeNexus.Plugins.Nodes.Data.SetUserField do
   alias ForgeNexus.Accounts.User
   alias ForgeNexus.Repo
 
-
   @writable_fields ~w(custom_title reputation)a
 
   @impl true
@@ -26,7 +25,9 @@ defmodule ForgeNexus.Plugins.Nodes.Data.SetUserField do
     cond do
       field not in @writable_fields ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Field '#{field_str}' is not writable. Allowed: #{inspect(@writable_fields)}", ctx}
+
+        {:error, "Field '#{field_str}' is not writable. Allowed: #{inspect(@writable_fields)}",
+         ctx}
 
       true ->
         case Repo.get(User, user_id) do
@@ -76,7 +77,13 @@ defmodule ForgeNexus.Plugins.Nodes.Data.SetUserField do
       ],
       outputs: [%{name: "updated", type: "boolean"}],
       config_fields: [
-        %{name: "field", type: "select", options: Enum.map(@writable_fields, &Atom.to_string/1), default: "custom_title", description: "User field to update"}
+        %{
+          name: "field",
+          type: "select",
+          options: Enum.map(@writable_fields, &Atom.to_string/1),
+          default: "custom_title",
+          description: "User field to update"
+        }
       ]
     }
   end

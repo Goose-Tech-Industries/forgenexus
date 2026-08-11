@@ -15,12 +15,14 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.DetectTrending do
 
   defp to_int(v) when is_integer(v), do: v
   defp to_int(v) when is_float(v), do: trunc(v)
+
   defp to_int(v) when is_binary(v) do
     case Integer.parse(v) do
       {n, _} -> n
       _ -> 0
     end
   end
+
   defp to_int(_), do: 0
 
   @impl true
@@ -36,8 +38,18 @@ defmodule ForgeNexus.Plugins.Nodes.Analytics.DetectTrending do
       inputs: [],
       outputs: [%{name: "trending_threads", type: "list"}],
       config_fields: [
-        %{name: "period_hours", type: "number", default: 24, description: "Hours to look back for trending calculation"},
-        %{name: "limit", type: "number", default: 10, description: "Maximum number of trending threads to return"}
+        %{
+          name: "period_hours",
+          type: "number",
+          default: 24,
+          description: "Hours to look back for trending calculation"
+        },
+        %{
+          name: "limit",
+          type: "number",
+          default: 10,
+          description: "Maximum number of trending threads to return"
+        }
       ]
     }
   end

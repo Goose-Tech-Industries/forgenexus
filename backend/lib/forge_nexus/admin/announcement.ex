@@ -27,8 +27,20 @@ defmodule ForgeNexus.Admin.Announcement do
 
   def changeset(announcement, attrs) do
     announcement
-    |> cast(attrs, [:title, :body, :body_html, :priority, :display_location, :forum_id,
-                    :target_group_ids, :is_dismissible, :is_active, :starts_at, :ends_at, :created_by_id])
+    |> cast(attrs, [
+      :title,
+      :body,
+      :body_html,
+      :priority,
+      :display_location,
+      :forum_id,
+      :target_group_ids,
+      :is_dismissible,
+      :is_active,
+      :starts_at,
+      :ends_at,
+      :created_by_id
+    ])
     |> validate_required([:title, :body])
     |> validate_inclusion(:display_location, @display_locations)
   end

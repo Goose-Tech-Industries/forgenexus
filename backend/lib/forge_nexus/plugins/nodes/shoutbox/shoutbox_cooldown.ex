@@ -40,7 +40,8 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.ShoutboxCooldown do
       type: "shoutbox/shoutbox_cooldown",
       category: "shoutbox",
       label: "Shoutbox Cooldown",
-      description: "Checks if a user is on shoutbox cooldown. Branches to 'allowed' or 'cooldown'.",
+      description:
+        "Checks if a user is on shoutbox cooldown. Branches to 'allowed' or 'cooldown'.",
       inputs: [
         %{name: "user_id", type: "string", required: true}
       ],
@@ -49,7 +50,12 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.ShoutboxCooldown do
         %{name: "cooldown", type: "any"}
       ],
       config_fields: [
-        %{name: "cooldown_seconds", type: "number", default: 5, description: "Cooldown duration in seconds between shouts"}
+        %{
+          name: "cooldown_seconds",
+          type: "number",
+          default: 5,
+          description: "Cooldown duration in seconds between shouts"
+        }
       ]
     }
   end

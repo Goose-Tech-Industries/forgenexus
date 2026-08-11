@@ -39,11 +39,28 @@ defmodule ForgeNexus.Subscriptions.SubscriptionTier do
   def changeset(tier, attrs) do
     tier
     |> cast(attrs, [
-      :name, :slug, :tier_level, :description, :price_monthly, :price_yearly,
-      :color, :icon, :is_active, :custom_username_color, :custom_username_effects,
-      :animated_avatar, :custom_banner, :larger_uploads, :upload_limit_mb,
-      :extended_bio, :bio_char_limit, :profile_music, :custom_emoji_slots,
-      :exclusive_frames, :badge_text, :priority_support
+      :name,
+      :slug,
+      :tier_level,
+      :description,
+      :price_monthly,
+      :price_yearly,
+      :color,
+      :icon,
+      :is_active,
+      :custom_username_color,
+      :custom_username_effects,
+      :animated_avatar,
+      :custom_banner,
+      :larger_uploads,
+      :upload_limit_mb,
+      :extended_bio,
+      :bio_char_limit,
+      :profile_music,
+      :custom_emoji_slots,
+      :exclusive_frames,
+      :badge_text,
+      :priority_support
     ])
     |> validate_required([:name, :slug, :tier_level])
     |> unique_constraint(:slug)

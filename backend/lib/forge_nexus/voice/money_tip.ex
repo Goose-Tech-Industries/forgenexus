@@ -36,12 +36,32 @@ defmodule ForgeNexus.Voice.MoneyTip do
 
   def changeset(tip, attrs) do
     tip
-    |> cast(attrs, [:sender_id, :recipient_id, :room_id, :amount_cents, :currency, :message,
-                     :is_anonymous, :platform_fee_cents, :creator_amount_cents, :creator_tier,
-                     :stripe_fee_cents, :community_kickback_cents, :community_owner_id,
-                     :community_plan, :platform_net_cents,
-                     :stripe_payment_intent_id, :stripe_transfer_id, :status])
-    |> validate_required([:recipient_id, :amount_cents, :platform_fee_cents, :creator_amount_cents])
+    |> cast(attrs, [
+      :sender_id,
+      :recipient_id,
+      :room_id,
+      :amount_cents,
+      :currency,
+      :message,
+      :is_anonymous,
+      :platform_fee_cents,
+      :creator_amount_cents,
+      :creator_tier,
+      :stripe_fee_cents,
+      :community_kickback_cents,
+      :community_owner_id,
+      :community_plan,
+      :platform_net_cents,
+      :stripe_payment_intent_id,
+      :stripe_transfer_id,
+      :status
+    ])
+    |> validate_required([
+      :recipient_id,
+      :amount_cents,
+      :platform_fee_cents,
+      :creator_amount_cents
+    ])
     |> validate_number(:amount_cents, greater_than: 0)
     |> validate_inclusion(:status, @statuses)
     |> validate_length(:message, max: 500)

@@ -42,11 +42,17 @@ defmodule ForgeNexus.Workers.StatsComputer do
   end
 
   defp compute_totals do
-    total_members = Read.one(from u in User, where: u.status == "active", select: count(u.id)) || 0
+    total_members =
+      Read.one(from u in User, where: u.status == "active", select: count(u.id)) || 0
+
     total_threads = Read.one(from t in Thread, select: count(t.id)) || 0
     total_posts = Read.one(from p in Post, select: count(p.id)) || 0
-    total_forums = Read.one(from f in Forum, where: f.is_visible == true, select: count(f.id)) || 0
-    total_categories = Read.one(from c in Category, where: c.is_visible == true, select: count(c.id)) || 0
+
+    total_forums =
+      Read.one(from f in Forum, where: f.is_visible == true, select: count(f.id)) || 0
+
+    total_categories =
+      Read.one(from c in Category, where: c.is_visible == true, select: count(c.id)) || 0
 
     StatsCache.put(:total_members, total_members)
     StatsCache.put(:total_threads, total_threads)
@@ -78,7 +84,8 @@ defmodule ForgeNexus.Workers.StatsComputer do
     most_active =
       from(p in Post,
         where: p.inserted_at >= ^cutoff,
-        join: u in User, on: u.id == p.user_id,
+        join: u in User,
+        on: u.id == p.user_id,
         group_by: [u.id, u.username, u.slug, u.display_name],
         select: %{
           user_id: u.id,
@@ -101,8 +108,10 @@ defmodule ForgeNexus.Workers.StatsComputer do
     trending =
       from(t in Thread,
         where: t.inserted_at >= ^cutoff or t.last_post_at >= ^cutoff,
-        join: u in User, on: u.id == t.user_id,
-        join: f in Forum, on: f.id == t.forum_id,
+        join: u in User,
+        on: u.id == t.user_id,
+        join: f in Forum,
+        on: f.id == t.forum_id,
         select: %{
           id: t.id,
           title: t.title,

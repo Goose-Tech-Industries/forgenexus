@@ -61,17 +61,36 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.LinkFilter do
         %{name: "content", type: "string", required: true}
       ],
       outputs: [
-        %{name: "has_links", type: "branch", fields: [
-          %{name: "links", type: "list"},
-          %{name: "content", type: "string"}
-        ]},
-        %{name: "clean", type: "branch", fields: [
-          %{name: "content", type: "string"}
-        ]}
+        %{
+          name: "has_links",
+          type: "branch",
+          fields: [
+            %{name: "links", type: "list"},
+            %{name: "content", type: "string"}
+          ]
+        },
+        %{
+          name: "clean",
+          type: "branch",
+          fields: [
+            %{name: "content", type: "string"}
+          ]
+        }
       ],
       config_fields: [
-        %{name: "mode", type: "select", options: ~w(whitelist blacklist), default: "blacklist", description: "Filter mode"},
-        %{name: "domains", type: "string", default: "", description: "Comma-separated list of domains"}
+        %{
+          name: "mode",
+          type: "select",
+          options: ~w(whitelist blacklist),
+          default: "blacklist",
+          description: "Filter mode"
+        },
+        %{
+          name: "domains",
+          type: "string",
+          default: "",
+          description: "Comma-separated list of domains"
+        }
       ]
     }
   end

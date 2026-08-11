@@ -19,7 +19,14 @@ defmodule ForgeNexus.Channels.ChannelMember do
 
   def changeset(member, attrs) do
     member
-    |> cast(attrs, [:channel_id, :user_id, :last_read_at, :last_read_message_id, :notification_level, :is_muted])
+    |> cast(attrs, [
+      :channel_id,
+      :user_id,
+      :last_read_at,
+      :last_read_message_id,
+      :notification_level,
+      :is_muted
+    ])
     |> validate_required([:channel_id, :user_id])
     |> validate_inclusion(:notification_level, ["all", "mentions", "none"])
     |> unique_constraint([:channel_id, :user_id])

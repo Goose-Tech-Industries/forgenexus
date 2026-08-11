@@ -68,7 +68,9 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.IfElse do
   def validate_config(config) do
     errors =
       []
-      |> then(fn e -> if Map.has_key?(config, "field"), do: e, else: ["field is required" | e] end)
+      |> then(fn e ->
+        if Map.has_key?(config, "field"), do: e, else: ["field is required" | e]
+      end)
       |> then(fn e ->
         if Map.get(config, "operator") in ~w(eq neq gt gte lt lte contains matches),
           do: e,
@@ -92,7 +94,13 @@ defmodule ForgeNexus.Plugins.Nodes.Logic.IfElse do
       ],
       config_fields: [
         %{name: "field", type: "string", default: "", description: "Field path to check"},
-        %{name: "operator", type: "select", options: ~w(eq neq gt gte lt lte contains matches), default: "eq", description: "Comparison operator"},
+        %{
+          name: "operator",
+          type: "select",
+          options: ~w(eq neq gt gte lt lte contains matches),
+          default: "eq",
+          description: "Comparison operator"
+        },
         %{name: "value", type: "string", default: "", description: "Value to compare against"}
       ]
     }

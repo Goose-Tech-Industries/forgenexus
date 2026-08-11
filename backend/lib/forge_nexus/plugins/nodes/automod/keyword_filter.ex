@@ -83,17 +83,36 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.KeywordFilter do
         %{name: "content", type: "string", required: true}
       ],
       outputs: [
-        %{name: "match", type: "branch", fields: [
-          %{name: "matched_word", type: "string"},
-          %{name: "content", type: "string"}
-        ]},
-        %{name: "no_match", type: "branch", fields: [
-          %{name: "content", type: "string"}
-        ]}
+        %{
+          name: "match",
+          type: "branch",
+          fields: [
+            %{name: "matched_word", type: "string"},
+            %{name: "content", type: "string"}
+          ]
+        },
+        %{
+          name: "no_match",
+          type: "branch",
+          fields: [
+            %{name: "content", type: "string"}
+          ]
+        }
       ],
       config_fields: [
-        %{name: "words", type: "string", default: "", description: "Comma-separated list of keywords to filter"},
-        %{name: "match_type", type: "select", options: ~w(exact contains regex), default: "contains", description: "How to match keywords"}
+        %{
+          name: "words",
+          type: "string",
+          default: "",
+          description: "Comma-separated list of keywords to filter"
+        },
+        %{
+          name: "match_type",
+          type: "select",
+          options: ~w(exact contains regex),
+          default: "contains",
+          description: "How to match keywords"
+        }
       ]
     }
   end

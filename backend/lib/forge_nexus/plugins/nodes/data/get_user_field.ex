@@ -67,7 +67,13 @@ defmodule ForgeNexus.Plugins.Nodes.Data.GetUserField do
       inputs: [%{name: "user_id", type: "string", required: true}],
       outputs: [%{name: "value", type: "any"}],
       config_fields: [
-        %{name: "field", type: "select", options: Enum.map(@allowed_fields, &Atom.to_string/1), default: "username", description: "User field to read"}
+        %{
+          name: "field",
+          type: "select",
+          options: Enum.map(@allowed_fields, &Atom.to_string/1),
+          default: "username",
+          description: "User field to read"
+        }
       ]
     }
   end

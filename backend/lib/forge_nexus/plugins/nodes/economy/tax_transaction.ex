@@ -81,8 +81,18 @@ defmodule ForgeNexus.Plugins.Nodes.Economy.TaxTransaction do
         %{name: "success", type: "boolean"}
       ],
       config_fields: [
-        %{name: "currency_slug", type: "string", default: "points", description: "Currency identifier slug"},
-        %{name: "tax_rate_percent", type: "number", default: 5.0, description: "Tax rate as a percentage"}
+        %{
+          name: "currency_slug",
+          type: "string",
+          default: "points",
+          description: "Currency identifier slug"
+        },
+        %{
+          name: "tax_rate_percent",
+          type: "number",
+          default: 5.0,
+          description: "Tax rate as a percentage"
+        }
       ]
     }
   end

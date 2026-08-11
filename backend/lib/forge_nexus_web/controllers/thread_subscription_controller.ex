@@ -20,8 +20,11 @@ defmodule ForgeNexusWeb.ThreadSubscriptionController do
     thread = Forums.get_thread_by_slug!(slug)
 
     case Forums.subscribe_thread(thread.id, user.id, level) do
-      {:ok, sub} -> conn |> json(%{subscription: %{notification_level: sub.notification_level}})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Invalid subscription"})
+      {:ok, sub} ->
+        conn |> json(%{subscription: %{notification_level: sub.notification_level}})
+
+      {:error, _} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "Invalid subscription"})
     end
   end
 

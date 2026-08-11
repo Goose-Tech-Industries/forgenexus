@@ -48,7 +48,8 @@ defmodule ForgeNexusWeb.AIController do
           translation: %{
             post_id: post_id,
             target_language: lang,
-            translated_text: Map.get(translation, :translated_text) || Map.get(translation, :content)
+            translated_text:
+              Map.get(translation, :translated_text) || Map.get(translation, :content)
           }
         })
     end

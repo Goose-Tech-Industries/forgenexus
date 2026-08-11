@@ -11,16 +11,19 @@ defmodule ForgeNexusWeb.ThreadController do
         conn |> json(%{summary: nil})
 
       summary ->
-        conn |> json(%{summary: %{
-          thread_id: summary.thread_id,
-          summary: summary.summary,
-          key_points: summary.key_points,
-          participant_count: summary.participant_count,
-          post_count_at_generation: summary.post_count_at_generation,
-          last_generated_at: summary.last_generated_at,
-          inserted_at: summary.inserted_at,
-          updated_at: summary.updated_at
-        }})
+        conn
+        |> json(%{
+          summary: %{
+            thread_id: summary.thread_id,
+            summary: summary.summary,
+            key_points: summary.key_points,
+            participant_count: summary.participant_count,
+            post_count_at_generation: summary.post_count_at_generation,
+            last_generated_at: summary.last_generated_at,
+            inserted_at: summary.inserted_at,
+            updated_at: summary.updated_at
+          }
+        })
     end
   end
 
@@ -28,19 +31,32 @@ defmodule ForgeNexusWeb.ThreadController do
     limit = parse_int(params["limit"], 20)
     threads = Forums.trending_threads("week", limit: limit)
 
-    conn |> json(%{threads: Enum.map(threads, fn t ->
-      %{id: t.id, title: t.title, slug: t.slug, reply_count: t.reply_count,
-        view_count: t.view_count, user_id: t.user_id, inserted_at: t.inserted_at}
-    end)})
+    conn
+    |> json(%{
+      threads:
+        Enum.map(threads, fn t ->
+          %{
+            id: t.id,
+            title: t.title,
+            slug: t.slug,
+            reply_count: t.reply_count,
+            view_count: t.view_count,
+            user_id: t.user_id,
+            inserted_at: t.inserted_at
+          }
+        end)
+    })
   end
 
   defp parse_int(nil, default), do: default
+
   defp parse_int(val, default) when is_binary(val) do
     case Integer.parse(val) do
       {n, _} -> n
       _ -> default
     end
   end
+
   defp parse_int(val, _) when is_integer(val), do: val
   defp parse_int(_, default), do: default
 
@@ -74,7 +90,9 @@ defmodule ForgeNexusWeb.ThreadController do
       # Resolve forum_slug to forum_id if needed
       thread_params =
         case Map.get(thread_params, "forum_slug") do
-          nil -> thread_params
+          nil ->
+            thread_params
+
           slug ->
             case Forums.get_forum_by_slug(slug) do
               nil -> thread_params
@@ -87,9 +105,10 @@ defmodule ForgeNexusWeb.ThreadController do
         |> Map.put("user_id", user.id)
         |> Map.put("ip_address", to_string(:inet.ntoa(conn.remote_ip)))
 
-    case Forums.create_thread(attrs) do
+      case Forums.create_thread(attrs) do
         {:ok, thread} ->
           thread = ForgeNexus.Repo.preload(thread, [:user, :forum])
+
           conn
           |> put_status(:created)
           |> json(%{thread: thread_json(thread)})
@@ -116,13 +135,13 @@ defmodule ForgeNexusWeb.ThreadController do
       thread = Forums.get_thread_by_slug!(slug)
 
       attrs =
-      post_params
-      |> Map.put("thread_id", thread.id)
-      |> Map.put("user_id", user.id)
-      |> Map.put("ip_address", to_string(:inet.ntoa(conn.remote_ip)))
+        post_params
+        |> Map.put("thread_id", thread.id)
+        |> Map.put("user_id", user.id)
+        |> Map.put("ip_address", to_string(:inet.ntoa(conn.remote_ip)))
 
-    case Forums.create_post(attrs) do
-      {:ok, post} ->
+      case Forums.create_post(attrs) do
+        {:ok, post} ->
           post = Forums.get_post!(post.id)
 
           # Realtime push to all clients viewing this thread. Endpoint.broadcast
@@ -131,8 +150,12 @@ defmodule ForgeNexusWeb.ThreadController do
           # Wrapped in Task so a slow PubSub node never blocks the HTTP response.
           require Logger
           payload = post_json(post)
+
           Task.start(fn ->
-            Logger.info("[thread_realtime] broadcasting new_post on thread:#{thread.id} (post #{post.id})")
+            Logger.info(
+              "[thread_realtime] broadcasting new_post on thread:#{thread.id} (post #{post.id})"
+            )
+
             ForgeNexusWeb.Endpoint.broadcast("thread:#{thread.id}", "new_post", payload)
           end)
 
@@ -140,14 +163,13 @@ defmodule ForgeNexusWeb.ThreadController do
           |> put_status(:created)
           |> json(%{post: payload})
 
-      {:error, _} ->
+        {:error, _} ->
           conn
           |> put_status(:unprocessable_entity)
           |> json(%{error: "Failed to create post"})
       end
     end
   end
-
 
   # PUT /posts/:id - edit own post (or any, if staff).
   # Edit window enforced by config :forge_nexus, :post_edit_window_minutes
@@ -204,7 +226,9 @@ defmodule ForgeNexusWeb.ThreadController do
                 conn |> json(%{post: payload})
 
               {:error, _} ->
-                conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to update post"})
+                conn
+                |> put_status(:unprocessable_entity)
+                |> json(%{error: "Failed to update post"})
             end
         end
     end
@@ -222,7 +246,9 @@ defmodule ForgeNexusWeb.ThreadController do
         conn |> put_status(:unauthorized) |> json(%{error: "Authentication required"})
 
       post.user_id != user.id and not is_staff ->
-        conn |> put_status(:forbidden) |> json(%{error: "You can only view edit history of your own posts"})
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "You can only view edit history of your own posts"})
 
       true ->
         edits =
@@ -235,21 +261,25 @@ defmodule ForgeNexusWeb.ThreadController do
               body_after: e.body_after,
               edit_reason: e.edit_reason,
               inserted_at: e.inserted_at,
-              editor: e.editor && %{
-                id: e.editor.id,
-                username: e.editor.username,
-                slug: e.editor.slug,
-                avatar_url: e.editor.avatar_url
-              }
+              editor:
+                e.editor &&
+                  %{
+                    id: e.editor.id,
+                    username: e.editor.username,
+                    slug: e.editor.slug,
+                    avatar_url: e.editor.avatar_url
+                  }
             }
           end)
 
         conn |> json(%{edits: edits})
     end
   end
+
   # GET /threads/scheduled - list user's scheduled threads
   def scheduled(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
+
     if is_nil(user) do
       conn |> put_status(:unauthorized) |> json(%{error: "Authentication required"})
     else

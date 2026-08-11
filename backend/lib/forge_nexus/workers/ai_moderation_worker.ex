@@ -14,40 +14,49 @@ defmodule ForgeNexus.Workers.AIModerationWorker do
     reported_user = if report.reported_user_id, do: Accounts.get_user!(report.reported_user_id)
 
     # Get user's history for context
-    history = if reported_user do
-      infractions = Moderation.user_infractions(reported_user.id)
-      "User has #{length(infractions)} prior infractions."
-    else
-      "No user history available."
-    end
+    history =
+      if reported_user do
+        infractions = Moderation.user_infractions(reported_user.id)
+        "User has #{length(infractions)} prior infractions."
+      else
+        "No user history available."
+      end
 
     # Check historical mod decisions for similar cases
     accuracy = AI.moderation_accuracy(days: 90)
-    accuracy_context = if accuracy && accuracy.total > 0 do
-      rate = round(accuracy.accepted / accuracy.total * 100)
-      "Historical AI accuracy: #{rate}% (#{accuracy.total} reviews)"
-    else
-      ""
-    end
+
+    accuracy_context =
+      if accuracy && accuracy.total > 0 do
+        rate = round(accuracy.accepted / accuracy.total * 100)
+        "Historical AI accuracy: #{rate}% (#{accuracy.total} reviews)"
+      else
+        ""
+      end
 
     messages = [
-      %{role: "system", content: """
-      You are a forum moderation assistant for ForgeNexus. Analyze reported content and suggest an action.
+      %{
+        role: "system",
+        content: """
+        You are a forum moderation assistant for ForgeNexus. Analyze reported content and suggest an action.
 
-      Available actions: dismiss (not a violation), warn (minor violation), temp_ban (serious violation), delete (remove content), cooling_off (lock thread temporarily).
+        Available actions: dismiss (not a violation), warn (minor violation), temp_ban (serious violation), delete (remove content), cooling_off (lock thread temporarily).
 
-      Respond in JSON format:
-      {"action": "...", "confidence": 0.0-1.0, "reasoning": "...", "context_summary": "..."}
+        Respond in JSON format:
+        {"action": "...", "confidence": 0.0-1.0, "reasoning": "...", "context_summary": "..."}
 
-      Consider: severity, user intent, community impact, prior history. Be fair and measured.
-      #{accuracy_context}
-      """},
-      %{role: "user", content: """
-      Report reason: #{report.reason}
-      #{if post, do: "Post content: #{post.body}", else: ""}
-      #{if thread, do: "Thread title: #{thread.title}", else: ""}
-      #{history}
-      """}
+        Consider: severity, user intent, community impact, prior history. Be fair and measured.
+        #{accuracy_context}
+        """
+      },
+      %{
+        role: "user",
+        content: """
+        Report reason: #{report.reason}
+        #{if post, do: "Post content: #{post.body}", else: ""}
+        #{if thread, do: "Thread title: #{thread.title}", else: ""}
+        #{history}
+        """
+      }
     ]
 
     case Client.complete(:moderation, messages, metadata: %{report_id: report_id}) do
@@ -63,9 +72,14 @@ defmodule ForgeNexus.Workers.AIModerationWorker do
               reasoning: parsed["reasoning"],
               context_summary: parsed["context_summary"]
             })
-          _ -> :ok # Failed to parse, skip silently
+
+          # Failed to parse, skip silently
+          _ ->
+            :ok
         end
-      {:error, _} -> :ok
+
+      {:error, _} ->
+        :ok
     end
 
     :ok

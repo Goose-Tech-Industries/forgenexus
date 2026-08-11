@@ -81,6 +81,7 @@ defmodule ForgeNexus.Plugins.JsRuntime.Runner do
   end
 
   defp net_flags([]), do: ["--deny-net"]
+
   defp net_flags(domains) when is_list(domains) do
     ["--allow-net=#{Enum.join(domains, ",")}"]
   end
