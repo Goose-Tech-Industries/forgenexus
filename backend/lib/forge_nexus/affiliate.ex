@@ -77,23 +77,25 @@ defmodule ForgeNexus.Affiliate do
   # ---- count helpers ---------------------------------------------------
 
   defp follower_count(user_id) do
-    from(f in UserFollow, where: f.followee_id == ^user_id, select: count(f.id))
+    from(f in UserFollow, where: f.followed_id == ^user_id, select: count(f.id))
     |> Repo.one()
   end
 
   # Activity = any day with a post, thread, or voice room hosted. Counting
   # DISTINCT calendar days (UTC) gives the creator credit for sustained
-  # presence regardless of how busy a single day was.
+  # presence regardless of how busy a single day was. Hidden (moderated)
+  # posts/threads don't count -- otherwise spam that gets moderated away
+  # would still earn affiliate-gate credit.
   defp days_active_count(user_id) do
     posts_days =
       from(p in "posts",
-        where: p.user_id == type(^user_id, :binary_id),
+        where: p.user_id == type(^user_id, :binary_id) and p.is_hidden == false,
         select: fragment("DATE(?)", p.inserted_at)
       )
 
     threads_days =
       from(t in "threads",
-        where: t.user_id == type(^user_id, :binary_id),
+        where: t.user_id == type(^user_id, :binary_id) and t.is_hidden == false,
         select: fragment("DATE(?)", t.inserted_at)
       )
 
