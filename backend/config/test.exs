@@ -29,6 +29,16 @@ config :forge_nexus, ForgeNexusWeb.Endpoint,
 # In test we don't send emails
 config :forge_nexus, ForgeNexus.Mailer, adapter: Swoosh.Adapters.Test
 
+# Oban's queues/plugins (Stager, Cron, Pruner) otherwise run for real during
+# tests, on their own timers, in their own processes -- which fight over
+# Ecto Sandbox's per-test-owned DB connections and crash with
+# DBConnection.OwnershipError as soon as a test's sandboxed connection gets
+# checked back in. Left unconfigured, this eventually exceeds Oban's
+# supervisor's restart intensity and takes the whole app (and Repo) down
+# mid-suite. :manual is Oban's own recommended test setting: nothing runs
+# automatically; use Oban.Testing to assert jobs were enqueued instead.
+config :forge_nexus, Oban, testing: :manual
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
