@@ -210,9 +210,18 @@ defmodule ForgeNexus.AffiliateTest do
   end
 
   defp insert_post!(user, forum, opts) do
-    thread = insert_thread!(user, forum, inserted_at: Keyword.fetch!(opts, :inserted_at))
-    inserted_at = Keyword.fetch!(opts, :inserted_at) |> DateTime.to_naive()
     is_hidden = Keyword.get(opts, :is_hidden, false)
+
+    # The companion thread a post needs for its FK must match the post's own
+    # visibility here, or a "hidden post" test still has a visible thread
+    # quietly counting as an active day on its own.
+    thread =
+      insert_thread!(user, forum,
+        inserted_at: Keyword.fetch!(opts, :inserted_at),
+        is_hidden: is_hidden
+      )
+
+    inserted_at = Keyword.fetch!(opts, :inserted_at) |> DateTime.to_naive()
 
     %Post{
       body: "post body",
