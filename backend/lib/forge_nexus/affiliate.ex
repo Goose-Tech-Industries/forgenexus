@@ -87,26 +87,27 @@ defmodule ForgeNexus.Affiliate do
   # posts/threads don't count -- otherwise spam that gets moderated away
   # would still earn affiliate-gate credit.
   defp days_active_count(user_id) do
-    # A bare fragment() can't be a subquery's select target -- Ecto requires
-    # a source, a field, or a map there. selected_as/2 gives the computed
-    # column a name (:date) so the outer query can reference it as d.date;
-    # every branch of the union needs the same alias.
+    # A bare fragment() -- even wrapped in selected_as/2 alone -- can't be a
+    # subquery's select target; Ecto requires a source, a field, or a map.
+    # Wrapping it in a map with an explicit :date key is what actually
+    # satisfies that and lets the outer query reference it as d.date; every
+    # branch of the union needs the same map shape.
     posts_days =
       from(p in "posts",
         where: p.user_id == type(^user_id, :binary_id) and p.is_hidden == false,
-        select: selected_as(fragment("DATE(?)", p.inserted_at), :date)
+        select: %{date: fragment("DATE(?)", p.inserted_at)}
       )
 
     threads_days =
       from(t in "threads",
         where: t.user_id == type(^user_id, :binary_id) and t.is_hidden == false,
-        select: selected_as(fragment("DATE(?)", t.inserted_at), :date)
+        select: %{date: fragment("DATE(?)", t.inserted_at)}
       )
 
     voice_days =
       from(cl in "voice_call_logs",
         where: cl.host_user_id == type(^user_id, :binary_id),
-        select: selected_as(fragment("DATE(?)", cl.inserted_at), :date)
+        select: %{date: fragment("DATE(?)", cl.inserted_at)}
       )
 
     union_sql =

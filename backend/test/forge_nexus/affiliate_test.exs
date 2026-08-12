@@ -189,9 +189,12 @@ defmodule ForgeNexus.AffiliateTest do
     |> Repo.insert!()
   end
 
+  # Thread/Post use the plain timestamps() default (:naive_datetime), unlike
+  # CallLog's explicitly-typed :utc_datetime started_at/ended_at -- accept a
+  # DateTime at the call site (reads naturally) and convert here.
   defp insert_thread!(user, forum, opts) do
     n = System.unique_integer([:positive])
-    inserted_at = Keyword.fetch!(opts, :inserted_at)
+    inserted_at = Keyword.fetch!(opts, :inserted_at) |> DateTime.to_naive()
     is_hidden = Keyword.get(opts, :is_hidden, false)
 
     %Thread{
@@ -208,7 +211,7 @@ defmodule ForgeNexus.AffiliateTest do
 
   defp insert_post!(user, forum, opts) do
     thread = insert_thread!(user, forum, inserted_at: Keyword.fetch!(opts, :inserted_at))
-    inserted_at = Keyword.fetch!(opts, :inserted_at)
+    inserted_at = Keyword.fetch!(opts, :inserted_at) |> DateTime.to_naive()
     is_hidden = Keyword.get(opts, :is_hidden, false)
 
     %Post{
