@@ -11,8 +11,7 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.KarmaCheck do
 
     karma =
       case ForgeNexus.Reputation.get_reputation(user_id) do
-        {:ok, n} when is_number(n) -> n
-        n when is_number(n) -> n
+        {:ok, %{total: n}} when is_number(n) -> n
         _ -> 0
       end
 

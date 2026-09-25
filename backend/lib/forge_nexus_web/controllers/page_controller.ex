@@ -84,6 +84,4 @@ defmodule ForgeNexusWeb.PageController do
   rescue
     _ -> attrs
   end
-
-  defp atomize_keys(attrs), do: attrs
 end

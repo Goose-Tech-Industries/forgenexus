@@ -3,8 +3,6 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.PostToSocial do
 
   alias ForgeNexus.Plugins.Engine.Sandbox
 
-  require Logger
-
   @impl true
   def execute(config, inputs, ctx) do
     Sandbox.check_http_limit!(ctx)

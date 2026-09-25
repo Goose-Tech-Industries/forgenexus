@@ -3,8 +3,6 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.YoutubeCheck do
 
   alias ForgeNexus.Plugins.Engine.Sandbox
 
-  require Logger
-
   @impl true
   def execute(config, _inputs, ctx) do
     Sandbox.check_http_limit!(ctx)

@@ -23,20 +23,16 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.CreateMilestone do
       end)
       |> Enum.reject(&is_nil/1)
 
-    case ForgeNexus.Achievements.create_milestones(%{
-           stat_type: stat_type,
-           milestones: milestones,
-           reward_points_per: reward_points_per,
-           community_id: ctx.community_id
-         }) do
-      {:ok, count} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{milestones_created: count, success: true}, ctx}
+    {:ok, count} =
+      ForgeNexus.Achievements.create_milestones(%{
+        stat_type: stat_type,
+        milestones: milestones,
+        reward_points_per: reward_points_per,
+        community_id: ctx.community_id
+      })
 
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to create milestones: #{inspect(reason)}", ctx}
-    end
+    ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, %{milestones_created: count, success: true}, ctx}
   end
 
   @impl true

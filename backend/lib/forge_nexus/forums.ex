@@ -185,6 +185,7 @@ defmodule ForgeNexus.Forums do
           thread_id: thread.id,
           user_id: thread.user_id,
           is_first_post: true,
+          position: 1,
           ip_address: attrs["ip_address"] || attrs[:ip_address]
         })
         |> Repo.insert!()
@@ -329,9 +330,13 @@ defmodule ForgeNexus.Forums do
     body = attrs["body"] || attrs[:body]
     existing_html = attrs["body_html"] || attrs[:body_html]
 
+    is_atom_map = Enum.all?(Map.keys(attrs), &is_atom/1)
+    html_key = if is_atom_map, do: :body_html, else: "body_html"
+    pos_key = if is_atom_map, do: :position, else: "position"
+
     attrs =
       if body && (is_nil(existing_html) or existing_html == "") do
-        Map.put(attrs, "body_html", ForgeNexus.BBCode.to_html(body))
+        Map.put(attrs, html_key, ForgeNexus.BBCode.to_html(body))
       else
         attrs
       end
@@ -347,7 +352,7 @@ defmodule ForgeNexus.Forums do
 
         post =
           %Post{}
-          |> Post.changeset(Map.put(attrs, "position", position))
+          |> Post.changeset(Map.put(attrs, pos_key, position))
           |> Repo.insert!()
 
         now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -377,19 +382,33 @@ defmodule ForgeNexus.Forums do
 
     case tx_result do
       {:ok, {post, forum_id, now, user_id}} ->
-        Task.start(fn -> Search.index_post(post) end)
-        Task.start(fn -> process_mentions(post, user_id) end)
-        Task.start(fn -> process_quotes(post, user_id) end)
-        Task.start(fn -> notify_thread_watchers(post.thread_id, user_id, post) end)
+        if Application.get_env(:forge_nexus, :async_forum_tasks, true) do
+          Task.start(fn -> Search.index_post(post) end)
+          Task.start(fn -> process_mentions(post, user_id) end)
+          Task.start(fn -> process_quotes(post, user_id) end)
+          Task.start(fn -> notify_thread_watchers(post.thread_id, user_id, post) end)
 
-        Task.start(fn ->
+          Task.start(fn ->
+            ForgeNexusWeb.Endpoint.broadcast("forums:index", "forum_updated", %{
+              forum_id: forum_id,
+              delta: %{post_count: 1},
+              last_post_at: now,
+              last_post_user_id: user_id
+            })
+          end)
+        else
+          Search.index_post(post)
+          process_mentions(post, user_id)
+          process_quotes(post, user_id)
+          notify_thread_watchers(post.thread_id, user_id, post)
+
           ForgeNexusWeb.Endpoint.broadcast("forums:index", "forum_updated", %{
             forum_id: forum_id,
             delta: %{post_count: 1},
             last_post_at: now,
             last_post_user_id: user_id
           })
-        end)
+        end
 
         {:ok, post}
 
@@ -1034,7 +1053,7 @@ defmodule ForgeNexus.Forums do
 
         has_unread =
           is_nil(last_read) or
-            (!is_nil(thread.last_post_at) and !is_nil(last_read) and
+            (!is_nil(thread.last_post_at) and
                DateTime.compare(thread.last_post_at, last_read) == :gt)
 
         new_post_count =
@@ -1303,51 +1322,57 @@ defmodule ForgeNexus.Forums do
   # === Thread Watcher Notifications ===
 
   defp notify_thread_watchers(thread_id, post_author_id, post) do
-    thread = Repo.get(Thread, thread_id) |> Repo.preload(:user)
+    try do
+      thread = Repo.get(Thread, thread_id) |> Repo.preload(:user)
 
-    if thread do
-      # Find all users watching this thread, excluding the post author
-      watchers =
-        from(s in ThreadSubscription,
-          where:
-            s.thread_id == ^thread_id and s.user_id != ^post_author_id and
-              s.notification_level == "watching",
-          select: s.user_id
-        )
-        |> Repo.all()
+      if thread do
+        # Find all users watching this thread, excluding the post author
+        watchers =
+          from(s in ThreadSubscription,
+            where:
+              s.thread_id == ^thread_id and s.user_id != ^post_author_id and
+                s.notification_level == "watching",
+            select: s.user_id
+          )
+          |> Repo.all()
 
-      post_author = Repo.get(ForgeNexus.Accounts.User, post_author_id)
-      actor_name = if post_author, do: post_author.username, else: "Someone"
+        post_author = Repo.get(ForgeNexus.Accounts.User, post_author_id)
+        actor_name = if post_author, do: post_author.username, else: "Someone"
 
-      for watcher_id <- watchers do
-        attrs = %{
-          type: "reply",
-          title: actor_name <> " replied to \"" <> thread.title <> "\"",
-          body: String.slice(post.body || "", 0, 200),
-          link: "/threads/" <> thread.slug,
-          target_type: "thread",
-          target_id: thread.id,
-          user_id: watcher_id,
-          actor_id: post_author_id,
-          metadata: %{thread_id: thread.id, thread_slug: thread.slug, post_id: post.id}
-        }
+        for watcher_id <- watchers do
+          attrs = %{
+            type: "reply",
+            title: actor_name <> " replied to \"" <> thread.title <> "\"",
+            body: String.slice(post.body || "", 0, 200),
+            link: "/threads/" <> thread.slug,
+            target_type: "thread",
+            target_id: thread.id,
+            user_id: watcher_id,
+            actor_id: post_author_id,
+            metadata: %{thread_id: thread.id, thread_slug: thread.slug, post_id: post.id}
+          }
 
-        case Notifications.create_notification(attrs) do
-          {:ok, notification} ->
-            Notifications.broadcast_notification(notification, post_author)
+          case Notifications.create_notification(attrs) do
+            {:ok, notification} ->
+              Notifications.broadcast_notification(notification, post_author)
 
-          _ ->
-            :ok
+            _ ->
+              :ok
+          end
+
+          # Enqueue email notification
+          NotificationEmailer.enqueue_reply_notification(
+            watcher_id,
+            actor_name,
+            thread.title,
+            thread.slug
+          )
         end
-
-        # Enqueue email notification
-        NotificationEmailer.enqueue_reply_notification(
-          watcher_id,
-          actor_name,
-          thread.title,
-          thread.slug
-        )
       end
+    rescue
+      _ -> :ok
+    catch
+      :exit, _ -> :ok
     end
   end
 

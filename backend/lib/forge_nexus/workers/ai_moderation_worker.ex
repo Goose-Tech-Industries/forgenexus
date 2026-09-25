@@ -17,7 +17,8 @@ defmodule ForgeNexus.Workers.AIModerationWorker do
     history =
       if reported_user do
         infractions = Moderation.user_infractions(reported_user.id)
-        "User has #{length(infractions)} prior infractions."
+        count = length(infractions.warnings) + length(infractions.bans)
+        "User has #{count} prior infractions."
       else
         "No user history available."
       end

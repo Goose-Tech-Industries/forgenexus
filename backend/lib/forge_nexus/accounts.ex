@@ -442,9 +442,12 @@ defmodule ForgeNexus.Accounts do
     |> Repo.one()
   end
 
-  # --- Permissions ---
+  def user_has_permission?(nil, _permission), do: false
 
-  def user_has_permission?(_user, _permission), do: true
+  def user_has_permission?(%User{status: status}, _permission) when status != "active",
+    do: false
+
+  def user_has_permission?(%User{}, _permission), do: true
 
   # --- Stats ---
 

@@ -17,6 +17,7 @@ defmodule ForgeNexus.BBCode do
     |> escape_html()
     |> convert_bbcode()
     |> apply_custom_bbcodes()
+    |> convert_smilies()
     |> String.trim()
   end
 
@@ -215,5 +216,38 @@ defmodule ForgeNexus.BBCode do
       "7" -> "2.5em"
       _ -> "1em"
     end
+  end
+
+  @smilies [
+    {":smile:", "😊"},
+    {":biggrin:", "😀"},
+    {":wink:", "😉"},
+    {":tongue:", "😛"},
+    {":cool:", "😎"},
+    {":rolleyes:", "🙄"},
+    {":roll:", "🙄"},
+    {":mad:", "😡"},
+    {":eek:", "😲"},
+    {":confused:", "😕"},
+    {":oops:", "😳"},
+    {":embarrassed:", "😳"},
+    {":cry:", "😢"},
+    {":lol:", "🤣"},
+    {":rofl:", "🤣"},
+    {":thumbsup:", "👍"},
+    {":thumbsdown:", "👎"},
+    {":beer:", "🍻"},
+    {":cheers:", "🍻"},
+    {":heart:", "❤️"},
+    {":fire:", "🔥"},
+    {":ninja:", "🥷"},
+    {":facepalm:", "🤦"},
+    {":shrug:", "🤷"}
+  ]
+
+  defp convert_smilies(text) do
+    Enum.reduce(@smilies, text, fn {code, emoji}, acc ->
+      String.replace(acc, code, ~s(<span class="forum-smilie" title="#{code}">#{emoji}</span>))
+    end)
   end
 end

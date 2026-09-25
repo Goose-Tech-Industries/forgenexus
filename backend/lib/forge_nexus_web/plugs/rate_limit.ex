@@ -8,7 +8,6 @@ defmodule ForgeNexusWeb.Plugs.RateLimit do
     plug RateLimit, max: 60, window: 60_000, by: :user  # 60 req/min by user
   """
   import Plug.Conn
-  require Logger
 
   @table :forge_nexus_rate_limits
 

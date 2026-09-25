@@ -11,23 +11,19 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.GetProgress do
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     set_id = Map.get(inputs, :set_id) || Map.get(inputs, "set_id")
 
-    case Collections.get_progress(user_id, set_id) do
-      {:ok, %{collected: collected, total: total, items: items}} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        percentage = if total > 0, do: Float.round(collected / total * 100, 1), else: 0.0
+    {:ok, %{collected: collected, total: total, items: items}} =
+      Collections.get_progress(user_id, set_id)
 
-        {:ok,
-         %{
-           collected: collected,
-           total: total,
-           percentage: percentage,
-           items: items
-         }, ctx}
+    ctx = Sandbox.increment_db_ops(ctx)
+    percentage = if total > 0, do: Float.round(collected / total * 100, 1), else: 0.0
 
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, reason, ctx}
-    end
+    {:ok,
+     %{
+       collected: collected,
+       total: total,
+       percentage: percentage,
+       items: items
+     }, ctx}
   end
 
   @impl true

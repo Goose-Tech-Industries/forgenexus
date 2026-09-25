@@ -71,7 +71,6 @@ defmodule ForgeNexusWeb.FeedController do
     case Social.toggle_like(post_id, user.id) do
       {:ok, action} -> conn |> json(%{action: action})
       {:error, :not_found} -> conn |> put_status(:not_found) |> json(%{error: "Post not found"})
-      {:error, _} -> conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed"})
     end
   end
 

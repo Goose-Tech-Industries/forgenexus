@@ -3,8 +3,6 @@ defmodule ForgeNexus.Plugins.Nodes.Action.HttpRequest do
 
   alias ForgeNexus.Plugins.Engine.Sandbox
 
-  require Logger
-
   @max_response_bytes 1_048_576
   @request_timeout 10_000
 

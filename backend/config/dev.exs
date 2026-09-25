@@ -5,10 +5,10 @@ config :forge_nexus, :slow_query_threshold_ms, 200
 
 # Configure your database
 config :forge_nexus, ForgeNexus.Repo,
-  username: "forge_nexus",
-  password: "forge_nexus_dev",
-  hostname: "localhost",
-  database: "forge_nexus_dev",
+  username: System.get_env("PGUSER") || "postgres",
+  password: System.get_env("PGPASSWORD") || "postgres",
+  hostname: System.get_env("PGHOST") || "localhost",
+  database: System.get_env("PGDATABASE") || "forge_nexus_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10

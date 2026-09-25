@@ -439,10 +439,8 @@ defmodule ForgeNexus.Setup do
   defp setup_search_indexes do
     if Code.ensure_loaded?(ForgeNexus.Search) and
          function_exported?(ForgeNexus.Search, :setup_indexes, 0) do
-      case ForgeNexus.Search.setup_indexes() do
-        {:ok, _} -> {:ok, :search_indexes_created}
-        _ -> {:ok, :search_skipped}
-      end
+      :ok = ForgeNexus.Search.setup_indexes()
+      {:ok, :search_indexes_created}
     else
       {:ok, :search_skipped}
     end

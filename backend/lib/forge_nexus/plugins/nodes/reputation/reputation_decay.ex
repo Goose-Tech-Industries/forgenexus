@@ -10,19 +10,15 @@ defmodule ForgeNexus.Plugins.Nodes.Reputation.ReputationDecay do
     decay_percent = Map.get(config, "decay_percent", 1.0)
     inactive_days = Map.get(config, "inactive_days", 30)
 
-    case ForgeNexus.Reputation.apply_decay(%{
-           decay_percent: decay_percent,
-           inactive_days: inactive_days,
-           community_id: ctx.community_id
-         }) do
-      {:ok, %{users_affected: users_affected, total_decayed: total_decayed}} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{users_affected: users_affected, total_decayed: total_decayed}, ctx}
+    {:ok, %{users_affected: users_affected, total_decayed: total_decayed}} =
+      ForgeNexus.Reputation.apply_decay(%{
+        decay_percent: decay_percent,
+        inactive_days: inactive_days,
+        community_id: ctx.community_id
+      })
 
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to apply reputation decay: #{inspect(reason)}", ctx}
-    end
+    ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, %{users_affected: users_affected, total_decayed: total_decayed}, ctx}
   end
 
   @impl true

@@ -108,7 +108,7 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
     balance = Economy.get_points(user_id)
 
     if balance >= cost do
-      Economy.deduct_points(user_id, "redemption", amount: cost)
+      Economy.deduct_points(user_id, cost, "redemption")
       :ok
     else
       {:error, :insufficient_points}

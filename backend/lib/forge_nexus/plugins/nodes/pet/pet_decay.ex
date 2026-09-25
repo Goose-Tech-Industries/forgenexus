@@ -7,15 +7,9 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetDecay do
   def execute(_config, _inputs, ctx) do
     Sandbox.check_db_limit!(ctx)
 
-    case ForgeNexus.Pets.decay_stats() do
-      {:ok, count} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{pets_affected: count}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to apply pet decay: #{inspect(reason)}", ctx}
-    end
+    {:ok, count} = ForgeNexus.Pets.decay_stats()
+    ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, %{pets_affected: count}, ctx}
   end
 
   @impl true

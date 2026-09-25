@@ -15,7 +15,6 @@ defmodule ForgeNexus.Houses do
   alias ForgeNexus.Houses.HouseInvitation
 
   import Ecto.Query
-  require Logger
 
   @invite_ttl_seconds 14 * 86400
   # Houses base price + per-additional-creator add-on, in cents.

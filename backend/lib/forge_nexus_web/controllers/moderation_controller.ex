@@ -609,21 +609,17 @@ defmodule ForgeNexusWeb.ModerationController do
   def scan_suspicious(conn, %{"user_id" => user_id}) do
     user = Guardian.Plug.current_resource(conn)
 
-    case Moderation.detect_suspicious_accounts(user_id) do
-      {:ok, results} ->
-        Moderation.log_action(user, "scan_suspicious", "user", user_id, %{
-          matches_found: length(results)
-        })
+    {:ok, results} = Moderation.detect_suspicious_accounts(user_id)
 
-        conn
-        |> json(%{
-          matches: length(results),
-          suspicious_accounts: Enum.map(results, &suspicious_account_json/1)
-        })
+    Moderation.log_action(user, "scan_suspicious", "user", user_id, %{
+      matches_found: length(results)
+    })
 
-      {:error, reason} ->
-        conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})
-    end
+    conn
+    |> json(%{
+      matches: length(results),
+      suspicious_accounts: Enum.map(results, &suspicious_account_json/1)
+    })
   end
 
   def review_suspicious(conn, %{"id" => id}) do
@@ -1026,7 +1022,4 @@ defmodule ForgeNexusWeb.ModerationController do
       :error -> default
     end
   end
-
-  defp safe_to_integer(val, _default) when is_integer(val), do: val
-  defp safe_to_integer(_, default), do: default
 end

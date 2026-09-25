@@ -15,15 +15,11 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.AiContentClassify do
     case ForgeNexus.Moderation.ai_flag_content(content, categories: categories) do
       {:ok, %{flagged: true, reason: reason}} ->
         scores = Enum.into(categories, %{}, fn c -> {c, if(c == reason, do: 1.0, else: 0.0)} end)
-        {:ok, %{classification: reason || "flagged", confidence: 1.0, scores: scores}, ctx}
+        {:ok, %{classification: reason, confidence: 1.0, scores: scores}, ctx}
 
       {:ok, %{flagged: false}} ->
         scores = Enum.into(categories, %{}, fn c -> {c, 0.0} end)
         {:ok, %{classification: "safe", confidence: 1.0, scores: scores}, ctx}
-
-      _ ->
-        scores = Enum.into(categories, %{}, fn c -> {c, 0.0} end)
-        {:ok, %{classification: "unknown", confidence: 0.0, scores: scores}, ctx}
     end
   end
 

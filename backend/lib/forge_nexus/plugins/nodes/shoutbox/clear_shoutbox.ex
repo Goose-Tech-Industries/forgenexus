@@ -8,17 +8,11 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.ClearShoutbox do
   def execute(_config, _inputs, ctx) do
     Sandbox.check_db_limit!(ctx)
 
-    case Chat.clear_shoutbox() do
-      {:ok, count} ->
-        ForgeNexusWeb.Endpoint.broadcast("shoutbox:lobby", "shoutbox_cleared", %{})
+    {:ok, count} = Chat.clear_shoutbox()
+    ForgeNexusWeb.Endpoint.broadcast("shoutbox:lobby", "shoutbox_cleared", %{})
 
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{messages_cleared: count, success: true}, ctx}
-
-      {:error, _reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{messages_cleared: 0, success: false}, ctx}
-    end
+    ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, %{messages_cleared: count, success: true}, ctx}
   end
 
   @impl true

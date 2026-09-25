@@ -12,7 +12,7 @@ defmodule ForgeNexus.Plugins.Nodes.Shoutbox.ShoutboxCooldown do
     cooldown_seconds = Map.get(config, "cooldown_seconds", 5)
 
     case Cooldowns.check_cooldown(user_id, "shoutbox") do
-      :ok ->
+      {:ok, :ready} ->
         Cooldowns.set_cooldown(user_id, "shoutbox", cooldown_seconds)
         ctx = Sandbox.increment_db_ops(ctx)
         {:branch, "allowed", inputs, ctx}

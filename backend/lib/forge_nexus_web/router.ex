@@ -112,6 +112,7 @@ defmodule ForgeNexusWeb.Router do
     get "/forums/:slug/threads", ForumController, :threads
     get "/threads/trending", ThreadController, :trending
     get "/threads/similar", FeaturesController, :similar_threads
+    get "/threads/:thread_id/rating", ThreadRatingController, :show
     get "/threads/:slug", ThreadController, :show
 
     # Profiles (public read)
@@ -423,7 +424,7 @@ defmodule ForgeNexusWeb.Router do
 
     # Thread ratings (1-5 stars)
     post "/threads/:thread_id/rate", ThreadRatingController, :rate
-    get "/threads/:thread_id/rating", ThreadRatingController, :show
+    post "/threads/:thread_id/rating", ThreadRatingController, :rate
 
     # Thread participants
     get "/threads/:slug/participants", ThreadParticipantController, :index

@@ -102,7 +102,7 @@ defmodule ForgeNexus.Analytics do
       engagement_score = min(avg_active / 10, 1.0) * 20
       growth_score = min(avg_new_members / 3, 1.0) * 20
       content_score = min(avg_threads / 3, 1.0) * 20
-      response_score = (avg_response_rate || 0) * 20
+      response_score = avg_response_rate * 20
 
       total =
         round(activity_score + engagement_score + growth_score + content_score + response_score)

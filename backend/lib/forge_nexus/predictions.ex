@@ -35,7 +35,7 @@ defmodule ForgeNexus.Predictions do
       {:error, :prediction_not_open}
     else
       Repo.transaction(fn ->
-        case ForgeNexus.Economy.deduct_points(user_id, amount, "prediction_bet") do
+        case ForgeNexus.Economy.deduct_points(user_id, amount, "prediction_bet", []) do
           {:ok, _} ->
             bet =
               %PredictionBet{}

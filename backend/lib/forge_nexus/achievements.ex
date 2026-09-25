@@ -191,8 +191,17 @@ defmodule ForgeNexus.Achievements do
     achievement = Repo.get(Achievement, achievement_id)
 
     if achievement do
-      progress = evaluate_criteria(user_id, achievement.criteria)
-      {:ok, %{complete: progress, achievement: achievement}}
+      complete = evaluate_criteria(user_id, achievement.criteria)
+
+      {:ok,
+       %{
+         complete: complete,
+         earned: complete,
+         progress: if(complete, do: 1, else: 0),
+         target: 1,
+         percentage: if(complete, do: 100.0, else: 0.0),
+         achievement: achievement
+       }}
     else
       {:error, :not_found}
     end

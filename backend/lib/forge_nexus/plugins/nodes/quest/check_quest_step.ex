@@ -25,24 +25,20 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.CheckQuestStep do
           0
       end
 
-    case ForgeNexus.Quests.check_step_progress(user_quest_id, %{progress: progress_value}) do
-      {:ok, status} ->
-        ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, status} =
+      ForgeNexus.Quests.check_step_progress(user_quest_id, %{progress: progress_value})
 
-        case status do
-          :all_steps_complete ->
-            {:branch, "complete", %{status: :all_steps_complete}, ctx}
+    ctx = Sandbox.increment_db_ops(ctx)
 
-          :step_complete ->
-            {:branch, "complete", %{status: :step_complete}, ctx}
+    case status do
+      :all_steps_complete ->
+        {:branch, "complete", %{status: :all_steps_complete}, ctx}
 
-          :in_progress ->
-            {:branch, "incomplete", %{status: :in_progress}, ctx}
-        end
+      :step_complete ->
+        {:branch, "complete", %{status: :step_complete}, ctx}
 
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to check quest step: #{inspect(reason)}", ctx}
+      :in_progress ->
+        {:branch, "incomplete", %{status: :in_progress}, ctx}
     end
   end
 

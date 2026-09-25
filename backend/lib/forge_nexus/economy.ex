@@ -203,6 +203,10 @@ defmodule ForgeNexus.Economy do
     end
   end
 
+  def deduct_points(user_id, amount, reason) when is_binary(reason) do
+    deduct_legacy_points(user_id, amount, reason, [])
+  end
+
   def deduct_points(user_id, currency_id, amount) when is_integer(amount) and amount > 0 do
     Repo.transaction(fn ->
       case from(ub in UserBalance,
@@ -378,6 +382,8 @@ defmodule ForgeNexus.Economy do
 
     {:ok, length(bals)}
   end
+
+  def apply_interest(_currency_id, _rate_pct), do: {:error, :invalid_rate}
 
   def get_currency_by_slug(slug) do
     Repo.one(from c in Currency, where: c.slug == ^slug and c.is_active == true)

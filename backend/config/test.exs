@@ -51,3 +51,6 @@ config :phoenix, :plug_init_mode, :runtime
 # Sort query params output of verified routes for robust url comparisons
 config :phoenix,
   sort_verified_routes_query_params: true
+
+# In test, run forum background tasks synchronously to avoid DBConnection.OwnershipError
+config :forge_nexus, async_forum_tasks: false

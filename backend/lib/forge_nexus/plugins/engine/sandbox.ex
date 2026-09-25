@@ -50,20 +50,20 @@ defmodule ForgeNexus.Plugins.Engine.Sandbox do
     :ok
   end
 
-  def increment_nodes(%Context{} = ctx) do
-    %{ctx | nodes_executed: ctx.nodes_executed + 1}
+  def increment_nodes(%{nodes_executed: n} = ctx) do
+    %{ctx | nodes_executed: n + 1}
   end
 
-  def increment_db_ops(%Context{} = ctx) do
-    %{ctx | db_operations: ctx.db_operations + 1}
+  def increment_db_ops(%{db_operations: n} = ctx) do
+    %{ctx | db_operations: n + 1}
   end
 
-  def increment_http_requests(%Context{} = ctx) do
-    %{ctx | http_requests: ctx.http_requests + 1}
+  def increment_http_requests(%{http_requests: n} = ctx) do
+    %{ctx | http_requests: n + 1}
   end
 
-  def increment_loop_iterations(%Context{} = ctx) do
-    %{ctx | loop_iterations: ctx.loop_iterations + 1}
+  def increment_loop_iterations(%{loop_iterations: n} = ctx) do
+    %{ctx | loop_iterations: n + 1}
   end
 
   def check_rate_limit!(flow_id) do

@@ -4,7 +4,6 @@ defmodule ForgeNexus.AI.ModQueueTriage do
   severity and type before mods see them. Uses Claude Haiku for cost efficiency.
   """
 
-  require Logger
   alias ForgeNexus.Settings
 
   @severity_levels ~w(critical high medium low info)

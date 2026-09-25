@@ -7,7 +7,6 @@ defmodule ForgeNexus.AI.LiveTranslator do
   Pipeline: LiveKit audio → Whisper transcription → Claude translation → Channel broadcast
   """
 
-  require Logger
   alias ForgeNexus.{Repo, Settings}
 
   @supported_languages ~w(en es fr de ja ko zh pt ru ar hi it nl pl sv tr)

@@ -11,18 +11,12 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.CheckCompletion do
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     set_id = Map.get(inputs, :set_id) || Map.get(inputs, "set_id")
 
-    case Collections.get_progress(user_id, set_id) do
-      {:ok, %{collected: collected, total: total}} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        percentage = if total > 0, do: Float.round(collected / total * 100, 1), else: 0.0
-        port = if collected >= total and total > 0, do: "complete", else: "incomplete"
+    {:ok, %{collected: collected, total: total}} = Collections.get_progress(user_id, set_id)
+    ctx = Sandbox.increment_db_ops(ctx)
+    percentage = if total > 0, do: Float.round(collected / total * 100, 1), else: 0.0
+    port = if collected >= total and total > 0, do: "complete", else: "incomplete"
 
-        {:branch, port, %{collected: collected, total: total, percentage: percentage}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, reason, ctx}
-    end
+    {:branch, port, %{collected: collected, total: total, percentage: percentage}, ctx}
   end
 
   @impl true

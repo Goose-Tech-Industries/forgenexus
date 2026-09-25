@@ -5,7 +5,6 @@ defmodule ForgeNexus.AI.ThreadSummarizer do
   count changes significantly.
   """
 
-  require Logger
   import Ecto.Query
   alias ForgeNexus.{Repo, Settings}
 

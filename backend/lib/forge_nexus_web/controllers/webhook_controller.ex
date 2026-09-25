@@ -66,30 +66,27 @@ defmodule ForgeNexusWeb.WebhookController do
         if String.trim(body) == "" do
           conn |> put_status(:unprocessable_entity) |> json(%{error: "Body is required"})
         else
-          case Channels.execute_webhook(webhook, body, params["username"], params["avatar_url"]) do
-            {:ok, message} ->
-              # Broadcast to channel
-              ForgeNexusWeb.Endpoint.broadcast("chat:#{webhook.channel_id}", "new_message", %{
-                id: message.id,
-                body: message.body,
-                channel_id: message.channel_id,
-                user: nil,
-                embeds: message.embeds,
-                inserted_at: message.inserted_at,
-                is_edited: false,
-                is_pinned: false,
-                is_deleted: false,
-                reply_to: nil,
-                reactions: [],
-                attachments: [],
-                thread: nil
-              })
+          {:ok, message} =
+            Channels.execute_webhook(webhook, body, params["username"], params["avatar_url"])
 
-              conn |> put_status(:created) |> json(%{ok: true, message_id: message.id})
+          # Broadcast to channel
+          ForgeNexusWeb.Endpoint.broadcast("chat:#{webhook.channel_id}", "new_message", %{
+            id: message.id,
+            body: message.body,
+            channel_id: message.channel_id,
+            user: nil,
+            embeds: message.embeds,
+            inserted_at: message.inserted_at,
+            is_edited: false,
+            is_pinned: false,
+            is_deleted: false,
+            reply_to: nil,
+            reactions: [],
+            attachments: [],
+            thread: nil
+          })
 
-            {:error, _} ->
-              conn |> put_status(:unprocessable_entity) |> json(%{error: "Failed to send"})
-          end
+          conn |> put_status(:created) |> json(%{ok: true, message_id: message.id})
         end
     end
   end

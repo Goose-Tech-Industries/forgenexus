@@ -53,7 +53,7 @@ defmodule ForgeNexus.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       # Auth
-      {:bcrypt_elixir, "~> 3.0"},
+      {:bcrypt_elixir, "~> 3.0", compile: false, app: false},
       {:guardian, "~> 2.3"},
       # CORS for SvelteKit frontend
       {:corsica, "~> 2.1"},

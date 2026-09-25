@@ -267,13 +267,10 @@ defmodule ForgeNexusWeb.AdminDashboardController do
     conn |> json(%{result: result})
   end
 
-  defp safe_to_integer(val, default) when is_binary(val) do
+  defp safe_to_integer(val, default) do
     case Integer.parse(val) do
       {int, _} -> int
       :error -> default
     end
   end
-
-  defp safe_to_integer(val, _default) when is_integer(val), do: val
-  defp safe_to_integer(_, default), do: default
 end

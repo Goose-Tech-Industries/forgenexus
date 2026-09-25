@@ -32,7 +32,7 @@ defmodule ForgeNexus.TOTP do
     msg = <<time_step::unsigned-big-integer-size(64)>>
     hmac = :crypto.mac(:hmac, :sha, key, msg)
     offset = :binary.at(hmac, byte_size(hmac) - 1) &&& 0x0F
-    <<_::binary-size(offset), code::unsigned-big-integer-size(32), _::binary>> = hmac
+    <<_::binary-size(^offset), code::unsigned-big-integer-size(32), _::binary>> = hmac
     truncated = (code &&& 0x7FFFFFFF) |> rem(round(:math.pow(10, @digits)))
     truncated |> Integer.to_string() |> String.pad_leading(@digits, "0")
   end

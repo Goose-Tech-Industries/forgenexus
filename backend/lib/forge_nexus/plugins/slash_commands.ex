@@ -7,8 +7,6 @@ defmodule ForgeNexus.Plugins.SlashCommands do
   alias ForgeNexus.Plugins.Engine.Executor
   alias ForgeNexus.Economy
 
-  require Logger
-
   # -- Queries ---------------------------------------------------------------
 
   def list_commands do
@@ -124,9 +122,6 @@ defmodule ForgeNexus.Plugins.SlashCommands do
       {:ok, expires_at} ->
         remaining = DateTime.diff(expires_at, DateTime.utc_now())
         if remaining > 0, do: {:error, {:cooldown, remaining}}, else: :ok
-
-      _ ->
-        :ok
     end
   end
 

@@ -9,15 +9,9 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.GetBadges do
 
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
 
-    case ForgeNexus.Achievements.get_user_badges(user_id) do
-      {:ok, badges} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{badges: badges, count: length(badges)}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to get badges: #{inspect(reason)}", ctx}
-    end
+    {:ok, badges} = ForgeNexus.Achievements.get_user_badges(user_id)
+    ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, %{badges: badges, count: length(badges)}, ctx}
   end
 
   @impl true

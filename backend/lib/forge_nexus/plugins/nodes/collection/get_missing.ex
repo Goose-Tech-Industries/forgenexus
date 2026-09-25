@@ -11,15 +11,9 @@ defmodule ForgeNexus.Plugins.Nodes.Collection.GetMissing do
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     set_id = Map.get(inputs, :set_id) || Map.get(inputs, "set_id")
 
-    case Collections.get_missing(user_id, set_id) do
-      {:ok, missing_items} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{missing_items: missing_items, count: length(missing_items)}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, reason, ctx}
-    end
+    {:ok, missing_items} = Collections.get_missing(user_id, set_id)
+    ctx = Sandbox.increment_db_ops(ctx)
+    {:ok, %{missing_items: missing_items, count: length(missing_items)}, ctx}
   end
 
   @impl true

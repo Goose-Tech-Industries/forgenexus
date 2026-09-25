@@ -10,8 +10,6 @@ defmodule ForgeNexus.Plugins.Engine.Executor do
 
   import Ecto.Query
 
-  require Logger
-
   @doc """
   Main entry point. Loads a flow and executes it with the given trigger data.
   """
