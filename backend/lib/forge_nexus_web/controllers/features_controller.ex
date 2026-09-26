@@ -26,6 +26,11 @@ defmodule ForgeNexusWeb.FeaturesController do
         my_ratings = Forums.get_user_ratings_for_post(post_id, user.id)
         conn |> json(%{ratings: ratings, my_ratings: my_ratings})
 
+      {:error, :self_rating} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "You cannot rate your own post"})
+
       {:error, %Ecto.Changeset{} = cs} ->
         conn
         |> put_status(:unprocessable_entity)
@@ -220,6 +225,9 @@ defmodule ForgeNexusWeb.FeaturesController do
     user = Guardian.Plug.current_resource(conn)
 
     case Forums.toggle_post_bookmark(user.id, post_id, params["note"]) do
+      {:ok, %{__meta__: %{state: :deleted}}} ->
+        conn |> json(%{bookmarked: false})
+
       {:ok, bookmark} ->
         conn |> json(%{bookmarked: true, id: bookmark.id})
 
@@ -292,6 +300,11 @@ defmodule ForgeNexusWeb.FeaturesController do
         counts = Forums.reaction_counts(post_id)
         my_reactions = Forums.user_reactions_for_post(post_id, user.id)
         conn |> json(%{counts: counts, my_reactions: my_reactions})
+
+      {:error, :self_reaction} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "You cannot react to your own post"})
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{error: format_errors(changeset)})

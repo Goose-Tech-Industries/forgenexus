@@ -376,6 +376,8 @@ defmodule ForgeNexus.Channels do
     end)
   end
 
+  def can_view_channel?(nil, %Channel{} = channel), do: not channel.is_private
+
   def can_view_channel?(%User{} = user, %Channel{} = channel) do
     cond do
       Moderation.is_admin?(user.id) -> true
@@ -383,6 +385,8 @@ defmodule ForgeNexus.Channels do
       true -> Enum.any?(channel.allowed_group_ids, fn gid -> gid in user_group_ids(user.id) end)
     end
   end
+
+  def can_post_in_channel?(nil, _channel), do: false
 
   def can_post_in_channel?(%User{} = user, %Channel{} = channel) do
     cond do

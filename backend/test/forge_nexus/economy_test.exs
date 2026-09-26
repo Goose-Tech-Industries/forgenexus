@@ -157,9 +157,22 @@ defmodule ForgeNexus.EconomyTest do
 
     test "transaction_history/2 returns user point transactions in descending order" do
       user = create_user()
+      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
       Economy.award_points(user.id, "tx1", amount: 10)
       Economy.award_points(user.id, "tx2", amount: 20)
       Economy.award_points(user.id, "tx3", amount: 30)
+
+      # Ensure distinct timestamps so order_by(desc: :inserted_at) is completely deterministic
+      Repo.all(
+        from(t in PointTransaction, where: t.user_id == ^user.id, order_by: t.balance_after)
+      )
+      |> Enum.with_index()
+      |> Enum.each(fn {tx, idx} ->
+        Repo.update_all(
+          from(t in PointTransaction, where: t.id == ^tx.id),
+          set: [inserted_at: NaiveDateTime.add(now, idx, :second)]
+        )
+      end)
 
       history = Economy.transaction_history(user.id, limit: 2)
       assert length(history) == 2

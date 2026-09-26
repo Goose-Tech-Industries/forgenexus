@@ -511,6 +511,8 @@ defmodule ForgeNexus.Accounts do
     )
   end
 
+  def toggle_follow(id, id), do: {:error, :cannot_follow_self}
+
   def toggle_follow(follower_id, followed_id) do
     case Repo.get_by(UserFollow, follower_id: follower_id, followed_id: followed_id) do
       nil ->

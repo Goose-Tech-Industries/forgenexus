@@ -160,104 +160,120 @@ defmodule ForgeNexus.Forums do
   end
 
   defp do_create_thread(attrs) do
-    Repo.transaction(fn ->
-      thread =
-        %Thread{}
-        |> Thread.changeset(attrs)
-        |> Repo.insert!()
+    thread_changeset = Thread.changeset(%Thread{}, attrs)
+    body = attrs["body"] || attrs[:body]
 
-      # Create the first post — auto-convert BBCode to HTML if the caller
-      # didn't ship pre-rendered HTML. The frontend submits body only.
-      body = attrs["body"] || attrs[:body]
-
-      body_html =
-        case attrs["body_html"] || attrs[:body_html] do
-          nil -> if body, do: ForgeNexus.BBCode.to_html(body), else: nil
-          "" -> if body, do: ForgeNexus.BBCode.to_html(body), else: ""
-          html -> html
-        end
-
-      first_post =
-        %Post{}
-        |> Post.changeset(%{
-          body: body,
-          body_html: body_html,
-          thread_id: thread.id,
-          user_id: thread.user_id,
-          is_first_post: true,
-          position: 1,
-          ip_address: attrs["ip_address"] || attrs[:ip_address]
-        })
-        |> Repo.insert!()
-
-      # Update forum counters: thread_count + post_count (OP counts as a post).
-      # Track it as the latest post too so forum listings don't lag behind.
-      now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-      from(f in Forum, where: f.id == ^thread.forum_id)
-      |> Repo.update_all(
-        inc: [thread_count: 1, post_count: 1],
-        set: [last_post_at: now, last_post_user_id: thread.user_id]
-      )
-
-      # Forum-index counters refresh broadcast happens AFTER the transaction
-      # commits — see the case clause at the bottom of this function.
-
-      # Mirror onto the thread itself so reply_count = posts - 1 stays correct
-      # without waiting on the reconciler.
-      from(t in Thread, where: t.id == ^thread.id)
-      |> Repo.update_all(set: [last_post_at: now, last_post_user_id: thread.user_id])
-
-      # Update user counter: thread_count + post_count for the OP
-      from(u in ForgeNexus.Accounts.User, where: u.id == ^thread.user_id)
-      |> Repo.update_all(inc: [thread_count: 1, post_count: 1], set: [last_post_at: now])
-
-      # Extract thumbnail from first post body
-      body = attrs["body"] || attrs[:body] || ""
-      thumbnail_url = extract_first_image(body)
-
-      thread =
-        if thumbnail_url do
-          thread
-          |> Ecto.Changeset.change(thumbnail_url: thumbnail_url)
-          |> Repo.update!()
-        else
-          thread
-        end
-
-      # Index in search (async, don't fail transaction)
-      Task.start(fn -> Search.index_thread(thread) end)
-
-      # Process @mentions in the first post and notify mentioned users
-      Task.start(fn -> process_mentions(first_post, thread.user_id) end)
-      # Process [quote=author] references the same way
-      Task.start(fn -> process_quotes(first_post, thread.user_id) end)
-
-      # Log reputation event for thread creation (only for published threads)
-      if thread.status == "published" do
-        Task.start(fn ->
-          log_reputation_event(thread.user_id, "thread_created", 2, "thread", thread.id)
-        end)
+    body_html =
+      case attrs["body_html"] || attrs[:body_html] do
+        nil -> if body, do: ForgeNexus.BBCode.to_html(body), else: nil
+        "" -> if body, do: ForgeNexus.BBCode.to_html(body), else: ""
+        html -> html
       end
 
-      {thread, now}
-    end)
-    |> case do
-      {:ok, {thread, now}} ->
-        # Broadcast counters AFTER transaction commits.
-        Task.start(fn ->
-          ForgeNexusWeb.Endpoint.broadcast("forums:index", "forum_updated", %{
-            forum_id: thread.forum_id,
-            delta: %{thread_count: 1, post_count: 1},
-            last_post_at: now,
-            last_post_user_id: thread.user_id
-          })
+    first_post_changeset =
+      Post.changeset(%Post{}, %{
+        body: body,
+        body_html: body_html,
+        thread_id: "00000000-0000-0000-0000-000000000000",
+        user_id: attrs["user_id"] || attrs[:user_id],
+        is_first_post: true,
+        position: 1,
+        ip_address: attrs["ip_address"] || attrs[:ip_address]
+      })
+
+    cond do
+      not thread_changeset.valid? ->
+        {:error, thread_changeset}
+
+      not first_post_changeset.valid? ->
+        {:error, first_post_changeset}
+
+      true ->
+        Repo.transaction(fn ->
+          thread =
+            case Repo.insert(thread_changeset) do
+              {:ok, t} -> t
+              {:error, cs} -> Repo.rollback(cs)
+            end
+
+          first_post =
+            first_post_changeset
+            |> Ecto.Changeset.put_change(:thread_id, thread.id)
+            |> Repo.insert()
+            |> case do
+              {:ok, p} -> p
+              {:error, cs} -> Repo.rollback(cs)
+            end
+
+          # Update forum counters: thread_count + post_count (OP counts as a post).
+          # Track it as the latest post too so forum listings don't lag behind.
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+          from(f in Forum, where: f.id == ^thread.forum_id)
+          |> Repo.update_all(
+            inc: [thread_count: 1, post_count: 1],
+            set: [last_post_at: now, last_post_user_id: thread.user_id]
+          )
+
+          # Forum-index counters refresh broadcast happens AFTER the transaction
+          # commits — see the case clause at the bottom of this function.
+
+          # Mirror onto the thread itself so reply_count = posts - 1 stays correct
+          # without waiting on the reconciler.
+          from(t in Thread, where: t.id == ^thread.id)
+          |> Repo.update_all(set: [last_post_at: now, last_post_user_id: thread.user_id])
+
+          # Update user counter: thread_count + post_count for the OP
+          from(u in ForgeNexus.Accounts.User, where: u.id == ^thread.user_id)
+          |> Repo.update_all(inc: [thread_count: 1, post_count: 1], set: [last_post_at: now])
+
+          # Extract thumbnail from first post body
+          body = attrs["body"] || attrs[:body] || ""
+          thumbnail_url = extract_first_image(body)
+
+          thread =
+            if thumbnail_url do
+              thread
+              |> Ecto.Changeset.change(thumbnail_url: thumbnail_url)
+              |> Repo.update!()
+            else
+              thread
+            end
+
+          # Index in search (async, don't fail transaction)
+          Task.start(fn -> Search.index_thread(thread) end)
+
+          # Process @mentions in the first post and notify mentioned users
+          Task.start(fn -> process_mentions(first_post, thread.user_id) end)
+          # Process [quote=author] references the same way
+          Task.start(fn -> process_quotes(first_post, thread.user_id) end)
+
+          # Log reputation event for thread creation (only for published threads)
+          if thread.status == "published" do
+            Task.start(fn ->
+              log_reputation_event(thread.user_id, "thread_created", 2, "thread", thread.id)
+            end)
+          end
+
+          {thread, now}
         end)
+        |> case do
+          {:ok, {thread, now}} ->
+            # Broadcast counters AFTER transaction commits.
+            Task.start(fn ->
+              ForgeNexusWeb.Endpoint.broadcast("forums:index", "forum_updated", %{
+                forum_id: thread.forum_id,
+                delta: %{thread_count: 1, post_count: 1},
+                last_post_at: now,
+                last_post_user_id: thread.user_id
+              })
+            end)
 
-        {:ok, thread}
+            {:ok, thread}
 
-      other ->
-        other
+          other ->
+            other
+        end
     end
   end
 
@@ -1789,23 +1805,29 @@ defmodule ForgeNexus.Forums do
   end
 
   def fire_webhook_event(event, payload) when is_binary(event) and is_map(payload) do
-    webhooks =
-      ForumWebhook
-      |> where([w], w.is_active == true)
-      |> Repo.all()
-      |> Enum.filter(fn w ->
-        events = w.events || []
-        # Empty events list means "subscribe to all events"
-        events == [] or event in events
+    try do
+      webhooks =
+        ForumWebhook
+        |> where([w], w.is_active == true)
+        |> Repo.all()
+        |> Enum.filter(fn w ->
+          events = w.events || []
+          # Empty events list means "subscribe to all events"
+          events == [] or event in events
+        end)
+
+      Enum.each(webhooks, fn webhook ->
+        %{webhook_id: webhook.id, event: event, payload: payload}
+        |> ForgeNexus.Workers.ForumWebhookWorker.new()
+        |> Oban.insert()
       end)
 
-    Enum.each(webhooks, fn webhook ->
-      %{webhook_id: webhook.id, event: event, payload: payload}
-      |> ForgeNexus.Workers.ForumWebhookWorker.new()
-      |> Oban.insert()
-    end)
-
-    :ok
+      :ok
+    rescue
+      _ -> :ok
+    catch
+      :exit, _ -> :ok
+    end
   end
 
   # --- Forum Permissions ---

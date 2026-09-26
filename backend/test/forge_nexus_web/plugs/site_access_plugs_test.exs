@@ -33,6 +33,15 @@ defmodule ForgeNexusWeb.Plugs.SiteAccessPlugsTest do
   # MaintenanceMode
   # =========================================================================
   describe "MaintenanceMode plug" do
+    setup do
+      on_exit(fn ->
+        Settings.set("maintenance_mode", "false")
+      end)
+
+      Settings.set("maintenance_mode", "false")
+      :ok
+    end
+
     test "init/1 returns options unchanged" do
       assert MaintenanceMode.init([]) == []
     end
@@ -59,6 +68,8 @@ defmodule ForgeNexusWeb.Plugs.SiteAccessPlugsTest do
         refute conn.halted
         assert conn.status == nil
       end
+
+      Settings.set("maintenance_mode", "false")
     end
 
     test "allows staff users through when maintenance_mode is enabled", %{conn: conn} do
@@ -82,6 +93,7 @@ defmodule ForgeNexusWeb.Plugs.SiteAccessPlugsTest do
 
       refute conn.halted
       assert conn.status == nil
+      Settings.set("maintenance_mode", "false")
     end
 
     test "halts with 503 service_unavailable for regular user when maintenance_mode is enabled",
@@ -102,6 +114,8 @@ defmodule ForgeNexusWeb.Plugs.SiteAccessPlugsTest do
                "error" => "maintenance",
                "message" => "Scheduled maintenance in progress."
              }
+
+      Settings.set("maintenance_mode", "false")
     end
 
     test "halts with 503 and default message for unauthenticated user when message is default", %{
@@ -121,6 +135,8 @@ defmodule ForgeNexusWeb.Plugs.SiteAccessPlugsTest do
                "error" => "maintenance",
                "message" => "We'll be back soon."
              }
+
+      Settings.set("maintenance_mode", "false")
     end
   end
 

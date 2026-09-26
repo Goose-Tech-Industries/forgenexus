@@ -39,7 +39,7 @@ defmodule ForgeNexusWeb.HealthController do
   defp check_meilisearch do
     url = Application.get_env(:forge_nexus, :meilisearch_url, "http://localhost:7700")
 
-    case Req.get("#{url}/health", receive_timeout: 2_000) do
+    case Req.get("#{url}/health", receive_timeout: 500, retry: false) do
       {:ok, %{status: 200}} -> %{status: "ok"}
       _ -> %{status: "unavailable", detail: "Falling back to PostgreSQL search"}
     end

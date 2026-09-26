@@ -46,11 +46,13 @@ defmodule ForgeNexusWeb.BookmarkController do
     user = Guardian.Plug.current_resource(conn)
 
     case Channels.toggle_bookmark(message_id, user.id, params["note"]) do
+      {:ok, %{__meta__: %{state: :deleted}}} ->
+        conn |> json(%{bookmarked: false})
+
       {:ok, bookmark} ->
         conn |> json(%{bookmarked: true, id: bookmark.id})
 
-      {:error, _} ->
-        # toggle_bookmark deletes and returns {:error, _} is unlikely; deletion returns {:ok, _}
+      _ ->
         conn |> json(%{bookmarked: false})
     end
   end

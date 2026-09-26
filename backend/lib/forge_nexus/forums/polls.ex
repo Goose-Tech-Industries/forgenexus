@@ -30,16 +30,29 @@ defmodule ForgeNexus.Forums.Polls do
     end)
   end
 
+  def poll_closed?(%Poll{} = poll) do
+    case poll.closes_at do
+      nil ->
+        false
+
+      closes_at ->
+        now = DateTime.utc_now()
+
+        case closes_at do
+          %DateTime{} = dt ->
+            DateTime.compare(now, dt) in [:gt, :eq]
+
+          %NaiveDateTime{} = ndt ->
+            NaiveDateTime.compare(DateTime.to_naive(now), ndt) in [:gt, :eq]
+        end
+    end
+  end
+
   def vote(poll_id, user_id, option_ids) when is_list(option_ids) do
     poll = Repo.get!(Poll, poll_id) |> Repo.preload(:options)
 
     cond do
-      poll.is_closed ->
-        {:error, :poll_closed}
-
-      poll.closes_at && DateTime.compare(DateTime.utc_now(), poll.closes_at) == :gt ->
-        # Auto-close expired poll
-        poll |> Ecto.Changeset.change(is_closed: true) |> Repo.update()
+      poll_closed?(poll) ->
         {:error, :poll_closed}
 
       has_voted?(poll_id, user_id) ->
@@ -66,7 +79,7 @@ defmodule ForgeNexus.Forums.Polls do
           end
 
           from(p in Poll, where: p.id == ^poll_id)
-          |> Repo.update_all(inc: [total_votes: 1])
+          |> Repo.update_all(inc: [voter_count: 1])
         end)
     end
   end
@@ -85,38 +98,38 @@ defmodule ForgeNexus.Forums.Polls do
   end
 
   def close_poll(poll_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     Repo.get!(Poll, poll_id)
-    |> Ecto.Changeset.change(is_closed: true)
+    |> Ecto.Changeset.change(closes_at: now)
     |> Repo.update()
   end
 
   def reopen_poll(poll_id) do
     Repo.get!(Poll, poll_id)
-    |> Ecto.Changeset.change(is_closed: false)
+    |> Ecto.Changeset.change(closes_at: nil)
     |> Repo.update()
   end
 
   def get_results(poll_id, user_id) do
     options_query = from(o in PollOption, order_by: [asc: :position])
     poll = Repo.get!(Poll, poll_id) |> Repo.preload(options: options_query)
-    voted = has_voted?(poll_id, user_id)
+    voted = if user_id, do: has_voted?(poll_id, user_id), else: false
     user_option_ids = if voted, do: user_votes(poll_id, user_id), else: []
+    closed = poll_closed?(poll)
 
-    # If hide_results_until_voted and user hasn't voted, mask vote counts
-    show_results = !poll.hide_results_until_voted || voted || poll.is_closed
+    show_results = poll.is_public || voted || closed
 
     %{
       id: poll.id,
       question: poll.question,
       is_multiple_choice: poll.is_multiple_choice,
       max_choices: poll.max_choices,
-      is_anonymous: poll.is_anonymous,
-      hide_results_until_voted: poll.hide_results_until_voted,
-      is_closed:
-        poll.is_closed ||
-          (poll.closes_at && DateTime.compare(DateTime.utc_now(), poll.closes_at) == :gt),
+      is_public: poll.is_public,
+      is_closed: closed,
       closes_at: poll.closes_at,
-      total_votes: if(show_results, do: poll.total_votes, else: nil),
+      total_votes: if(show_results, do: poll.voter_count, else: nil),
+      voter_count: poll.voter_count,
       has_voted: voted,
       user_votes: user_option_ids,
       options:
@@ -126,9 +139,9 @@ defmodule ForgeNexus.Forums.Polls do
             text: opt.text,
             vote_count: if(show_results, do: opt.vote_count, else: nil),
             percentage:
-              if(show_results && poll.total_votes > 0,
-                do: Float.round(opt.vote_count / poll.total_votes * 100, 1),
-                else: nil
+              if(show_results && poll.voter_count > 0,
+                do: Float.round(opt.vote_count / poll.voter_count * 100, 1),
+                else: 0.0
               ),
             voted: opt.id in user_option_ids
           }

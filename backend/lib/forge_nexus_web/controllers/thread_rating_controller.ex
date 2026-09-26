@@ -23,7 +23,7 @@ defmodule ForgeNexusWeb.ThreadRatingController do
   def show(conn, %{"thread_id" => thread_id}) do
     user = Guardian.Plug.current_resource(conn)
     stats = Forums.get_thread_rating_stats(thread_id)
-    user_rating = Forums.get_user_thread_rating(thread_id, user.id)
+    user_rating = if user, do: Forums.get_user_thread_rating(thread_id, user.id), else: nil
 
     conn
     |> json(%{

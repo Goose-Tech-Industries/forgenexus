@@ -192,11 +192,17 @@ defmodule ForgeNexusWeb.ThreadController do
         window_minutes =
           Application.get_env(:forge_nexus, :post_edit_window_minutes, 60)
 
-        # By the time we reach this check, we know either is_staff OR
-        # post.user_id == user.id (the cond branch below this guards otherwise).
+        diff_minutes =
+          case post.inserted_at do
+            %DateTime{} = dt ->
+              DateTime.diff(DateTime.utc_now(), dt, :minute)
+
+            %NaiveDateTime{} = ndt ->
+              NaiveDateTime.diff(DateTime.to_naive(DateTime.utc_now()), ndt, :minute)
+          end
+
         edit_window_open? =
-          is_staff or window_minutes <= 0 or
-            DateTime.diff(DateTime.utc_now(), post.inserted_at, :minute) <= window_minutes
+          is_staff or window_minutes <= 0 or diff_minutes <= window_minutes
 
         cond do
           post.user_id != user.id and not is_staff ->
@@ -259,7 +265,7 @@ defmodule ForgeNexusWeb.ThreadController do
               id: e.id,
               body_before: e.body_before,
               body_after: e.body_after,
-              edit_reason: e.edit_reason,
+              edit_reason: e.reason,
               inserted_at: e.inserted_at,
               editor:
                 e.editor &&
