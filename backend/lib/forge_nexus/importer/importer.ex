@@ -104,9 +104,15 @@ defmodule ForgeNexus.Importer do
         import_id = Ecto.UUID.generate()
         Progress.start_import(import_id)
 
-        Task.start(fn ->
+        task_fn = fn ->
           do_import(import_id, config, opts)
-        end)
+        end
+
+        if Map.get(opts, :async, true) != false and Map.get(opts, "async", true) != false do
+          Task.start(task_fn)
+        else
+          task_fn.()
+        end
 
         {:ok, import_id}
 
@@ -130,7 +136,7 @@ defmodule ForgeNexus.Importer do
   defp do_import(import_id, config, opts) do
     source = config["source"]
     data = config["data"]
-    adapter = @adapters[source]
+    adapter = Map.get(opts, :adapter) || Map.get(opts, "adapter") || @adapters[source]
 
     import_users? = Map.get(opts, "import_users", true)
     import_posts? = Map.get(opts, "import_posts", true)
@@ -214,9 +220,17 @@ defmodule ForgeNexus.Importer do
       }
 
       Progress.complete(import_id, stats)
+
+      if notify_pid = Map.get(opts, :notify_pid) do
+        send(notify_pid, {:import_completed, import_id})
+      end
     rescue
       e ->
         Progress.fail(import_id, Exception.message(e))
+
+        if notify_pid = Map.get(opts, :notify_pid) do
+          send(notify_pid, {:import_failed, import_id, Exception.message(e)})
+        end
     end
   end
 
@@ -246,8 +260,10 @@ defmodule ForgeNexus.Importer do
 
       changes =
         if last_post do
+          last_post_at = DateTime.from_naive!(last_post.inserted_at, "Etc/UTC")
+
           Map.merge(changes, %{
-            last_post_at: last_post.inserted_at,
+            last_post_at: last_post_at,
             last_post_user_id: last_post.user_id
           })
         else

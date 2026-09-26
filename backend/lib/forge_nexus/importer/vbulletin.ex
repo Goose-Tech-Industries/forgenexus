@@ -46,7 +46,9 @@ defmodule ForgeNexus.Importer.VBulletin do
               case DateTime.from_iso8601(user_data["joined_at"]) do
                 {:ok, dt, _} ->
                   user
-                  |> Ecto.Changeset.change(inserted_at: DateTime.truncate(dt, :second))
+                  |> Ecto.Changeset.change(
+                    inserted_at: DateTime.to_naive(dt) |> NaiveDateTime.truncate(:second)
+                  )
                   |> Repo.update()
 
                 _ ->
@@ -91,7 +93,8 @@ defmodule ForgeNexus.Importer.VBulletin do
             Map.put(acc, cat_data["source_id"], category.id)
 
           {:error, _} ->
-            attrs_with_slug = Map.put(attrs, :slug, Slug.slugify(cat_data["name"]) <> "-imported")
+            slug_base = Slug.slugify(cat_data["name"] || "") || "category"
+            attrs_with_slug = Map.put(attrs, :slug, "#{slug_base}-imported")
 
             case %Category{} |> Category.changeset(attrs_with_slug) |> Repo.insert() do
               {:ok, category} -> Map.put(acc, cat_data["source_id"], category.id)
@@ -133,8 +136,8 @@ defmodule ForgeNexus.Importer.VBulletin do
               Map.put(acc, forum_data["source_id"], forum.id)
 
             {:error, _} ->
-              attrs_with_slug =
-                Map.put(attrs, :slug, Slug.slugify(forum_data["name"]) <> "-imported")
+              slug_base = Slug.slugify(forum_data["name"] || "") || "forum"
+              attrs_with_slug = Map.put(attrs, :slug, "#{slug_base}-imported")
 
               case %Forum{} |> Forum.changeset(attrs_with_slug) |> Repo.insert() do
                 {:ok, forum} -> Map.put(acc, forum_data["source_id"], forum.id)
@@ -179,9 +182,11 @@ defmodule ForgeNexus.Importer.VBulletin do
               if thread_data["created_at"] do
                 case DateTime.from_iso8601(thread_data["created_at"]) do
                   {:ok, dt, _} ->
+                    naive_dt = DateTime.to_naive(dt) |> NaiveDateTime.truncate(:second)
+
                     thread
                     |> Ecto.Changeset.change(
-                      inserted_at: DateTime.truncate(dt, :second),
+                      inserted_at: naive_dt,
                       last_post_at: DateTime.truncate(dt, :second)
                     )
                     |> Repo.update()
@@ -237,7 +242,9 @@ defmodule ForgeNexus.Importer.VBulletin do
                 case DateTime.from_iso8601(post_data["created_at"]) do
                   {:ok, dt, _} ->
                     post
-                    |> Ecto.Changeset.change(inserted_at: DateTime.truncate(dt, :second))
+                    |> Ecto.Changeset.change(
+                      inserted_at: DateTime.to_naive(dt) |> NaiveDateTime.truncate(:second)
+                    )
                     |> Repo.update()
 
                   _ ->
@@ -288,23 +295,20 @@ defmodule ForgeNexus.Importer.VBulletin do
   defp find_existing_user(user_data) do
     import Ecto.Query
 
-    cond do
-      user_data["email"] ->
-        case Repo.one(from u in User, where: u.email == ^user_data["email"], select: u.id) do
-          nil -> :not_found
-          id -> {:ok, id}
-        end
+    by_email =
+      if user_data["email"] do
+        Repo.one(from u in User, where: u.email == ^user_data["email"], select: u.id)
+      end
 
-      user_data["username"] ->
+    by_username =
+      if is_nil(by_email) and user_data["username"] do
         slug = Slug.slugify(user_data["username"])
+        Repo.one(from u in User, where: u.slug == ^slug, select: u.id)
+      end
 
-        case Repo.one(from u in User, where: u.slug == ^slug, select: u.id) do
-          nil -> :not_found
-          id -> {:ok, id}
-        end
-
-      true ->
-        :not_found
+    case by_email || by_username do
+      nil -> :not_found
+      id -> {:ok, id}
     end
   end
 end
