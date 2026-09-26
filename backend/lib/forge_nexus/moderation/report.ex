@@ -14,6 +14,10 @@ defmodule ForgeNexus.Moderation.Report do
     field :reportable_id, :binary_id
     field :resolution_note, :string
     field :priority, :integer, default: 0
+    field :ai_severity, :string
+    field :ai_category, :string
+    field :ai_confidence, :float
+    field :ai_reason, :string
 
     belongs_to :reporter, ForgeNexus.Accounts.User
     belongs_to :resolver, ForgeNexus.Accounts.User
@@ -24,7 +28,17 @@ defmodule ForgeNexus.Moderation.Report do
 
   def changeset(report, attrs) do
     report
-    |> cast(attrs, [:reason, :description, :reportable_type, :reportable_id, :reporter_id])
+    |> cast(attrs, [
+      :reason,
+      :description,
+      :reportable_type,
+      :reportable_id,
+      :reporter_id,
+      :ai_severity,
+      :ai_category,
+      :ai_confidence,
+      :ai_reason
+    ])
     |> validate_required([:reason, :reportable_type, :reportable_id, :reporter_id])
     |> validate_inclusion(:reason, ["spam", "harassment", "inappropriate", "off_topic", "other"])
   end

@@ -84,8 +84,15 @@ defmodule ForgeNexus.Moderation.SoftBlockFlow do
       %SoftBlock{status: "pending"} = sb ->
         post = Repo.get(Post, sb.post_id)
         if post, do: Repo.delete(post)
-        sb |> SoftBlock.changeset(%{status: "expired"}) |> Repo.update()
-        {:ok, :deleted}
+
+        case Repo.get(SoftBlock, soft_block_id) do
+          nil ->
+            {:ok, :deleted}
+
+          still_sb ->
+            still_sb |> SoftBlock.changeset(%{status: "expired"}) |> Repo.update()
+            {:ok, :deleted}
+        end
 
       _ ->
         :ok

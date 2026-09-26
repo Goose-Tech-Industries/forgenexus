@@ -7,7 +7,7 @@ defmodule ForgeNexus.AI.PostSentiment do
 
   schema "post_sentiments" do
     field :sentiment, :float
-    field :emotion_tags, :map, default: %{}
+    field :emotion_tags, {:array, :string}, default: []
 
     belongs_to :post, ForgeNexus.Forums.Post
     belongs_to :thread, ForgeNexus.Forums.Thread

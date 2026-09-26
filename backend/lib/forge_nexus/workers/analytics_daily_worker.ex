@@ -58,18 +58,19 @@ defmodule ForgeNexus.Workers.AnalyticsDailyWorker do
     response_rate =
       if threads_created > 0, do: threads_with_replies / threads_created * 100, else: 0.0
 
-    %CommunityStats{}
-    |> CommunityStats.changeset(%{
-      date: yesterday,
-      new_members: new_members,
-      active_members: active_members,
-      posts_created: posts_created,
-      threads_created: threads_created,
-      response_rate: response_rate,
-      top_topics: []
-    })
-    |> Repo.insert(on_conflict: :replace_all, conflict_target: :date)
-
-    :ok
+    case %CommunityStats{}
+         |> CommunityStats.changeset(%{
+           date: yesterday,
+           new_members: new_members,
+           active_members: active_members,
+           posts_created: posts_created,
+           threads_created: threads_created,
+           response_rate: response_rate,
+           top_topics: %{}
+         })
+         |> Repo.insert(on_conflict: :replace_all, conflict_target: :date) do
+      {:ok, _} -> :ok
+      {:error, changeset} -> {:error, changeset}
+    end
   end
 end

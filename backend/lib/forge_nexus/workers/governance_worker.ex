@@ -7,7 +7,7 @@ defmodule ForgeNexus.Workers.GovernanceWorker do
 
   @impl Oban.Worker
   def perform(_job) do
-    now = DateTime.utc_now()
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     # Transition discussion -> voting
     from(p in Proposal,

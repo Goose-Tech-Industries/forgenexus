@@ -15,8 +15,9 @@ defmodule ForgeNexus.Workers.RoomAutoThreadWorker do
     if not Settings.get_bool("voice_auto_thread_enabled") do
       :ok
     else
-      case {Repo.get(CallLog, call_log_id), Voice.get_room!(room_id)} do
+      case {Repo.get(CallLog, call_log_id), Voice.get_room(room_id)} do
         {nil, _} -> :ok
+        {_, nil} -> :ok
         {call_log, room} -> create_or_update_thread(room, call_log)
       end
     end
