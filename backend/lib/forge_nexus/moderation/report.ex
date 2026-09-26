@@ -19,6 +19,10 @@ defmodule ForgeNexus.Moderation.Report do
     field :ai_confidence, :float
     field :ai_reason, :string
 
+    field :post_id, :binary_id, virtual: true
+    field :thread_id, :binary_id, virtual: true
+    field :reported_user_id, :binary_id, virtual: true
+
     belongs_to :reporter, ForgeNexus.Accounts.User
     belongs_to :resolver, ForgeNexus.Accounts.User
     belongs_to :assigned_to, ForgeNexus.Accounts.User

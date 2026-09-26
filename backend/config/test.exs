@@ -54,3 +54,4 @@ config :phoenix,
 
 # In test, run forum background tasks synchronously to avoid DBConnection.OwnershipError
 config :forge_nexus, async_forum_tasks: false
+config :forge_nexus, mass_email_throttle_ms: 0

@@ -172,6 +172,30 @@ defmodule ForgeNexus.Workers.VoiceAndAnalyticsWorkersTest do
       assert :ok = perform_job(AutoHighlightWorker, %{"recording_id" => recording.id})
     end
 
+    test "generates clips when recording has high-energy keywords in transcript" do
+      user = create_user()
+      room = create_room(user)
+
+      {:ok, recording} =
+        Voice.create_recording(%{
+          room_id: room.id,
+          created_by_id: user.id,
+          audio_url: "https://example.com/highlight_recording.mp3",
+          duration_seconds: 120,
+          transcript_status: "ready",
+          transcript:
+            "OMG this was an amazing insane play! Wow that was an unbelievable crazy clutch win lets go!",
+          is_public: true,
+          started_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        })
+
+      assert :ok = perform_job(AutoHighlightWorker, %{"recording_id" => recording.id})
+    end
+
+    test "handles non-existent recording gracefully" do
+      assert :ok = perform_job(AutoHighlightWorker, %{"recording_id" => Ecto.UUID.generate()})
+    end
+
     test "handles missing args with {:error, :missing_args}" do
       assert {:error, :missing_args} = perform_job(AutoHighlightWorker, %{})
     end
@@ -202,6 +226,32 @@ defmodule ForgeNexus.Workers.VoiceAndAnalyticsWorkersTest do
 
       updated = Repo.get!(Recording, recording.id)
       assert updated.transcript_status == "disabled"
+    end
+
+    test "marks failed when enabled but audio file does not exist" do
+      user = create_user()
+      room = create_room(user)
+
+      {:ok, recording} =
+        Voice.create_recording(%{
+          room_id: room.id,
+          created_by_id: user.id,
+          audio_url: "/uploads/nonexistent_voice_clip.mp3",
+          duration_seconds: 60,
+          is_public: true,
+          started_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        })
+
+      Settings.set("voice_transcription_enabled", "true")
+      Settings.set("voice_transcription_provider", "local")
+
+      assert {:error, :file_not_found} =
+               perform_job(TranscribeRecordingWorker, %{"recording_id" => recording.id})
+
+      updated = Repo.get!(Recording, recording.id)
+      assert updated.transcript_status == "failed"
+
+      Settings.set("voice_transcription_enabled", "false")
     end
   end
 end

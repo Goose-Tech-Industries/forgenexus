@@ -35,7 +35,8 @@ defmodule ForgeNexus.Workers.MassEmailer do
       end)
 
       # Brief pause between batches to avoid overwhelming the mailer
-      Process.sleep(1_000)
+      throttle = Application.get_env(:forge_nexus, :mass_email_throttle_ms, 1_000)
+      if throttle > 0, do: Process.sleep(throttle)
     end)
 
     :ok
