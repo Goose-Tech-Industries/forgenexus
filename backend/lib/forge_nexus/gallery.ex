@@ -30,10 +30,17 @@ defmodule ForgeNexus.Gallery do
   def delete_album(id), do: Repo.get!(Album, id) |> Repo.delete()
 
   def add_media(album_id, user_id, attrs) do
+    params =
+      if Enum.any?(Map.keys(attrs), &is_binary/1) do
+        Map.merge(attrs, %{"album_id" => album_id, "user_id" => user_id})
+      else
+        Map.merge(attrs, %{album_id: album_id, user_id: user_id})
+      end
+
     Repo.transaction(fn ->
       item =
         %MediaItem{}
-        |> MediaItem.changeset(Map.merge(attrs, %{album_id: album_id, user_id: user_id}))
+        |> MediaItem.changeset(params)
         |> Repo.insert!()
 
       from(a in Album, where: a.id == ^album_id) |> Repo.update_all(inc: [media_count: 1])

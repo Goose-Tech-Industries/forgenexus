@@ -98,7 +98,11 @@ defmodule ForgeNexusWeb.WebhookController do
       avatar_url: webhook.avatar_url,
       token: webhook.token,
       channel_id: webhook.channel_id,
-      channel_name: webhook.channel && webhook.channel.name,
+      channel_name:
+        if(Ecto.assoc_loaded?(webhook.channel) and not is_nil(webhook.channel),
+          do: webhook.channel.name,
+          else: nil
+        ),
       is_active: webhook.is_active,
       url: "/api/webhooks/#{webhook.token}",
       inserted_at: webhook.inserted_at

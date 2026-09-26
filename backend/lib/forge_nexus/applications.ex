@@ -22,7 +22,17 @@ defmodule ForgeNexus.Applications do
   def delete_form(id), do: Repo.get!(ApplicationForm, id) |> Repo.delete()
 
   def can_apply?(form, user) do
-    days_member = DateTime.diff(DateTime.utc_now(), user.inserted_at, :second) / 86400
+    days_member =
+      case user.inserted_at do
+        %NaiveDateTime{} = ndt ->
+          NaiveDateTime.diff(NaiveDateTime.utc_now(), ndt, :second) / 86400
+
+        %DateTime{} = dt ->
+          DateTime.diff(DateTime.utc_now(), dt, :second) / 86400
+
+        _ ->
+          0
+      end
 
     cond do
       not form.is_open -> {:error, :form_closed}

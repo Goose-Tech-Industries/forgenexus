@@ -91,7 +91,10 @@ defmodule ForgeNexusWeb.ApplicationController do
       is_open: f.is_open,
       min_posts: f.min_posts,
       min_days_member: f.min_days_member,
-      target_group: f.target_group && %{id: f.target_group.id, name: f.target_group.name}
+      target_group:
+        if(Ecto.assoc_loaded?(f.target_group) and not is_nil(f.target_group),
+          do: %{id: f.target_group.id, name: f.target_group.name}
+        )
     }
   end
 
@@ -103,9 +106,18 @@ defmodule ForgeNexusWeb.ApplicationController do
       review_note: a.review_note,
       reviewed_at: a.reviewed_at,
       inserted_at: a.inserted_at,
-      user: a.user && %{id: a.user.id, username: a.user.username},
-      form: a.form && %{id: a.form.id, title: a.form.title},
-      reviewer: a.reviewer && %{id: a.reviewer.id, username: a.reviewer.username}
+      user:
+        if(Ecto.assoc_loaded?(a.user) and not is_nil(a.user),
+          do: %{id: a.user.id, username: a.user.username}
+        ),
+      form:
+        if(Ecto.assoc_loaded?(a.form) and not is_nil(a.form),
+          do: %{id: a.form.id, title: a.form.title}
+        ),
+      reviewer:
+        if(Ecto.assoc_loaded?(a.reviewer) and not is_nil(a.reviewer),
+          do: %{id: a.reviewer.id, username: a.reviewer.username}
+        )
     }
   end
 

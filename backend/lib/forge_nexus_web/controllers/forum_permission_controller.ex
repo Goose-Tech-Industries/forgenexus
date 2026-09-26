@@ -5,7 +5,7 @@ defmodule ForgeNexusWeb.ForumPermissionController do
 
   def index(conn, %{"id" => forum_id}) do
     permissions = Forums.list_forum_permissions(forum_id)
-    conn |> json(%{permissions: permissions})
+    conn |> json(%{permissions: Enum.map(permissions, &permission_json/1)})
   end
 
   def update(conn, %{"id" => forum_id, "permissions" => permissions_list}) do
@@ -34,11 +34,27 @@ defmodule ForgeNexusWeb.ForumPermissionController do
       })
 
       permissions = Forums.list_forum_permissions(forum_id)
-      conn |> json(%{ok: true, permissions: permissions})
+      conn |> json(%{ok: true, permissions: Enum.map(permissions, &permission_json/1)})
     else
       conn
       |> put_status(:unprocessable_entity)
       |> json(%{error: "Failed to update some permissions"})
     end
+  end
+
+  defp permission_json(p) do
+    %{
+      id: p.id,
+      forum_id: p.forum_id,
+      group_id: p.group_id,
+      can_view: p.can_view,
+      can_post: p.can_post,
+      can_create_threads: p.can_create_threads,
+      group:
+        if(Ecto.assoc_loaded?(p.group) and not is_nil(p.group),
+          do: %{id: p.group.id, name: p.group.name, color: p.group.color},
+          else: nil
+        )
+    }
   end
 end

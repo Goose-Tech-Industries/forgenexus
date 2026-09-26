@@ -9,7 +9,8 @@ defmodule ForgeNexusWeb.AIController do
         conn |> put_status(:not_found) |> json(%{error: "no summary available"})
 
       summary ->
-        conn |> json(%{summary: Map.from_struct(summary) |> Map.drop([:__meta__, :thread])})
+        conn
+        |> json(%{summary: Map.from_struct(summary) |> Map.drop([:__meta__, :thread, :provider])})
     end
   end
 

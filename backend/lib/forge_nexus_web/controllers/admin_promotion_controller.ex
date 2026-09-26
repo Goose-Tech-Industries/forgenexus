@@ -45,8 +45,14 @@ defmodule ForgeNexusWeb.AdminPromotionController do
       criteria: r.criteria,
       is_active: r.is_active,
       position: r.position,
-      from_group: r.from_group && %{id: r.from_group.id, name: r.from_group.name},
-      to_group: r.to_group && %{id: r.to_group.id, name: r.to_group.name}
+      from_group:
+        if(Ecto.assoc_loaded?(r.from_group) and not is_nil(r.from_group),
+          do: %{id: r.from_group.id, name: r.from_group.name}
+        ),
+      to_group:
+        if(Ecto.assoc_loaded?(r.to_group) and not is_nil(r.to_group),
+          do: %{id: r.to_group.id, name: r.to_group.name}
+        )
     }
   end
 

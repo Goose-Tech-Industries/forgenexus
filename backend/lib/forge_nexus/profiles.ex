@@ -37,7 +37,7 @@ defmodule ForgeNexus.Profiles do
       |> Repo.delete_all()
 
       # Insert new ones
-      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
       entries =
         friend_ids

@@ -184,7 +184,7 @@ defmodule ForgeNexus.Plugins.DataManager do
       |> offset(^offset)
       |> Repo.all()
 
-    count = Repo.one(from r in query, select: count(r.id))
+    count = Repo.one(from r in exclude(query, :order_by), select: count(r.id))
 
     %{rows: rows, count: count}
   end

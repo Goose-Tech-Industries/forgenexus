@@ -51,8 +51,15 @@ defmodule ForgeNexusWeb.BackupController do
       |> Enum.sort(:desc)
       |> Enum.map(fn f ->
         path = Path.join(backup_dir, f)
-        %{size: size} = File.stat!(path)
-        %{filename: f, size: size, created_at: File.stat!(path).mtime}
+        stat = File.stat!(path)
+
+        mtime =
+          case NaiveDateTime.from_erl(stat.mtime) do
+            {:ok, ndt} -> NaiveDateTime.to_iso8601(ndt)
+            _ -> nil
+          end
+
+        %{filename: f, size: stat.size, created_at: mtime}
       end)
 
     conn |> json(%{backups: backups})

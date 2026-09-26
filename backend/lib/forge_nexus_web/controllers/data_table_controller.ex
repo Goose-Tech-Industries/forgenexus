@@ -18,7 +18,7 @@ defmodule ForgeNexusWeb.DataTableController do
 
   def create_table(conn, %{"table" => params}) do
     user = Guardian.Plug.current_resource(conn)
-    slug = params |> Map.get("name", "") |> Slug.slugify()
+    slug = params |> Map.get("name", "") |> slugify()
 
     attrs = %{
       name: Map.fetch!(params, "name"),
@@ -35,7 +35,7 @@ defmodule ForgeNexusWeb.DataTableController do
         columns = Map.get(params, "columns", [])
 
         for {col, i} <- Enum.with_index(columns) do
-          col_slug = col |> Map.get("name", "") |> Slug.slugify()
+          col_slug = col |> Map.get("name", "") |> slugify()
 
           DataManager.add_column(%{
             table_id: table.id,
@@ -83,7 +83,7 @@ defmodule ForgeNexusWeb.DataTableController do
   # Columns
 
   def add_column(conn, %{"table_id" => table_id, "column" => params}) do
-    slug = params |> Map.get("name", "") |> Slug.slugify()
+    slug = params |> Map.get("name", "") |> slugify()
     attrs = params |> atomize_keys() |> Map.merge(%{table_id: table_id, slug: slug})
 
     case DataManager.add_column(attrs) do
@@ -251,4 +251,14 @@ defmodule ForgeNexusWeb.DataTableController do
       :error -> default
     end
   end
+
+  defp slugify(str) when is_binary(str) do
+    str
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9\s-]/, "")
+    |> String.replace(~r/\s+/, "-")
+    |> String.trim("-")
+  end
+
+  defp slugify(_), do: ""
 end

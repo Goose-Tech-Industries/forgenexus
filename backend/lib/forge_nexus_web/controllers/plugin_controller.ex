@@ -128,20 +128,24 @@ defmodule ForgeNexusWeb.PluginController do
               for node <- flow_loaded.nodes, do: Plugins.delete_node(node.id)
 
               new_nodes =
-                Plugins.bulk_create_nodes(
-                  flow.id,
-                  Enum.map(nodes_attrs, fn n ->
-                    %{
-                      type: Map.get(n, "type"),
-                      category: Map.get(n, "category"),
-                      label: Map.get(n, "label"),
-                      config: Map.get(n, "config", %{}),
-                      position_x: Map.get(n, "position_x", 0.0),
-                      position_y: Map.get(n, "position_y", 0.0),
-                      position: Map.get(n, "position", 0)
-                    }
-                  end)
-                )
+                case Plugins.bulk_create_nodes(
+                       flow.id,
+                       Enum.map(nodes_attrs, fn n ->
+                         %{
+                           type: Map.get(n, "type"),
+                           category: Map.get(n, "category"),
+                           label: Map.get(n, "label"),
+                           config: Map.get(n, "config", %{}),
+                           position_x: Map.get(n, "position_x", 0.0),
+                           position_y: Map.get(n, "position_y", 0.0),
+                           position: Map.get(n, "position", 0)
+                         }
+                       end)
+                     ) do
+                  {:ok, nodes} -> nodes
+                  nodes when is_list(nodes) -> nodes
+                  _ -> []
+                end
 
               # Map client-provided IDs to newly created IDs by position order
               nodes_attrs
@@ -232,8 +236,14 @@ defmodule ForgeNexusWeb.PluginController do
 
       true ->
         case Executor.execute_flow(id, trigger_params, user.id) do
+          {:completed, result} ->
+            conn |> json(%{status: "completed", result: result})
+
           {:ok, execution} ->
             conn |> json(%{execution: execution_json(execution)})
+
+          {:failed, reason} ->
+            conn |> put_status(:unprocessable_entity) |> json(%{error: reason})
 
           {:error, reason} ->
             conn |> put_status(:unprocessable_entity) |> json(%{error: inspect(reason)})

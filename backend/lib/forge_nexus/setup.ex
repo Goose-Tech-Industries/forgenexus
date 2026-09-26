@@ -44,7 +44,7 @@ defmodule ForgeNexus.Setup do
   defp check_meilisearch do
     url = Application.get_env(:forge_nexus, :meilisearch_url, "http://localhost:7700")
 
-    case Req.get("#{url}/health", receive_timeout: 3_000) do
+    case Req.get("#{url}/health", receive_timeout: 500, retry: false) do
       {:ok, %{status: 200}} ->
         %{
           name: "Meilisearch",
