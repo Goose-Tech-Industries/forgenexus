@@ -164,27 +164,38 @@ defmodule ForgeNexus.Channels do
       |> Repo.get!(id)
 
   def create_message(channel_id, user_id, attrs) do
-    Repo.transaction(fn ->
-      # Auto-generate link embeds if body contains URLs
-      body = attrs[:body] || attrs["body"] || ""
-      existing_embeds = attrs[:embeds] || attrs["embeds"] || []
-      link_embeds = generate_link_embeds(body)
+    # Auto-generate link embeds if body contains URLs
+    body = attrs[:body] || attrs["body"] || ""
+    existing_embeds = attrs[:embeds] || attrs["embeds"] || []
+    link_embeds = generate_link_embeds(body)
 
-      message_attrs =
-        attrs
-        |> Map.put(:channel_id, channel_id)
-        |> Map.put(:user_id, user_id)
-        |> Map.put(:embeds, Enum.take(existing_embeds ++ link_embeds, 5))
+    message_attrs =
+      attrs
+      |> Map.put(:channel_id, channel_id)
+      |> Map.put(:user_id, user_id)
+      |> Map.put(:embeds, Enum.take(existing_embeds ++ link_embeds, 5))
 
-      message = %ChannelMessage{} |> ChannelMessage.changeset(message_attrs) |> Repo.insert!()
-      now = DateTime.utc_now() |> DateTime.truncate(:second)
+    changeset = ChannelMessage.changeset(%ChannelMessage{}, message_attrs)
 
-      from(c in Channel, where: c.id == ^channel_id)
-      |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
+    if changeset.valid? do
+      Repo.transaction(fn ->
+        case Repo.insert(changeset) do
+          {:ok, message} ->
+            now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      message
-      |> Repo.preload([:reactions, reply_to: [user: :primary_group], user: :primary_group])
-    end)
+            from(c in Channel, where: c.id == ^channel_id)
+            |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
+
+            message
+            |> Repo.preload([:reactions, reply_to: [user: :primary_group], user: :primary_group])
+
+          {:error, cs} ->
+            Repo.rollback(cs)
+        end
+      end)
+    else
+      {:error, %{changeset | action: :insert}}
+    end
   end
 
   defp generate_link_embeds(body) do

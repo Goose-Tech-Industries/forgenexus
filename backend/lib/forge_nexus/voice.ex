@@ -21,6 +21,7 @@ defmodule ForgeNexus.Voice do
   end
 
   def get_room!(id), do: Room |> preload(:category) |> Repo.get!(id)
+  def get_room(id), do: Room |> preload(:category) |> Repo.get(id)
 
   def get_room_by_slug(slug),
     do: Room |> where([r], r.slug == ^slug) |> preload(:category) |> Repo.one()

@@ -41,5 +41,6 @@ defmodule ForgeNexus.Voice.CallLog do
       :host_user_id
     ])
     |> validate_required([:started_at])
+    |> foreign_key_constraint(:room_id)
   end
 end

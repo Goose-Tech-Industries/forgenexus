@@ -43,8 +43,10 @@ defmodule ForgeNexus.Voice.RoomServer do
   end
 
   def join(room_id, user) do
-    ensure_started(room_id)
-    GenServer.call(via(room_id), {:join, user})
+    case ensure_started(room_id) do
+      :ok -> GenServer.call(via(room_id), {:join, user})
+      error -> error
+    end
   end
 
   def leave(room_id, user_id) do
@@ -301,6 +303,7 @@ defmodule ForgeNexus.Voice.RoomServer do
         if target.role != new_role do
           case new_role do
             :speaker -> %{total_promotions: state.total_promotions + 1}
+            :co_host -> %{total_promotions: state.total_promotions + 1}
             :audience -> %{total_demotions: state.total_demotions + 1}
           end
         else
@@ -576,31 +579,40 @@ defmodule ForgeNexus.Voice.RoomServer do
           end
 
         if map_size(new_participants) == 0 do
-          {:ok, call_log} =
-            Voice.log_call(%{
-              room_id: state.room_id,
-              room_type: state.room_type,
-              started_at: state.started_at,
-              ended_at: DateTime.utc_now() |> DateTime.truncate(:second),
-              peak_participants: state.peak_count,
-              peak_audience: state.peak_audience,
-              peak_speakers: state.peak_speakers,
-              total_hand_raises: state.total_hand_raises,
-              total_promotions: state.total_promotions,
-              total_demotions: state.total_demotions,
-              host_user_id: state.host_id,
-              participant_ids: MapSet.to_list(state.seen_user_ids)
-            })
+          try do
+            case Voice.log_call(%{
+                   room_id: state.room_id,
+                   room_type: state.room_type,
+                   started_at: state.started_at,
+                   ended_at: DateTime.utc_now() |> DateTime.truncate(:second),
+                   peak_participants: state.peak_count,
+                   peak_audience: state.peak_audience,
+                   peak_speakers: state.peak_speakers,
+                   total_hand_raises: state.total_hand_raises,
+                   total_promotions: state.total_promotions,
+                   total_demotions: state.total_demotions,
+                   host_user_id: state.host_id,
+                   participant_ids: MapSet.to_list(state.seen_user_ids)
+                 }) do
+              {:ok, call_log} ->
+                Voice.award_participation_points(
+                  MapSet.to_list(state.seen_user_ids),
+                  state.started_at,
+                  DateTime.utc_now() |> DateTime.truncate(:second)
+                )
 
-          Voice.award_participation_points(
-            MapSet.to_list(state.seen_user_ids),
-            state.started_at,
-            DateTime.utc_now() |> DateTime.truncate(:second)
-          )
+                %{call_log_id: call_log.id, room_id: state.room_id}
+                |> ForgeNexus.Workers.RoomAutoThreadWorker.new()
+                |> Oban.insert()
 
-          %{call_log_id: call_log.id, room_id: state.room_id}
-          |> ForgeNexus.Workers.RoomAutoThreadWorker.new()
-          |> Oban.insert()
+              {:error, _} ->
+                :ok
+            end
+          rescue
+            _ -> :ok
+          catch
+            :exit, _ -> :ok
+          end
 
           {:stop, :normal, state}
         else
@@ -616,16 +628,24 @@ defmodule ForgeNexus.Voice.RoomServer do
   defp ensure_started(room_id) do
     case GenServer.whereis(via(room_id)) do
       nil ->
-        room = ForgeNexus.Voice.get_room!(room_id)
+        case ForgeNexus.Voice.get_room(room_id) do
+          nil ->
+            {:error, :not_found}
 
-        DynamicSupervisor.start_child(
-          ForgeNexus.Voice.RoomSupervisor,
-          {__MODULE__,
-           room_id: room_id,
-           room_type: room.type,
-           max_participants: room.max_participants,
-           created_by_id: room.created_by_id}
-        )
+          room ->
+            case DynamicSupervisor.start_child(
+                   ForgeNexus.Voice.RoomSupervisor,
+                   {__MODULE__,
+                    room_id: room_id,
+                    room_type: room.type,
+                    max_participants: room.max_participants,
+                    created_by_id: room.created_by_id}
+                 ) do
+              {:ok, _pid} -> :ok
+              {:error, {:already_started, _pid}} -> :ok
+              {:error, reason} -> {:error, reason}
+            end
+        end
 
       _pid ->
         :ok
