@@ -31,7 +31,14 @@ defmodule ForgeNexus.AI.ThreadSummarizer do
   end
 
   defp get_cached(thread_id) do
-    from(s in "thread_summaries_ai", where: s.thread_id == ^thread_id)
+    from(s in "thread_summaries_ai",
+      where: s.thread_id == type(^thread_id, :binary_id),
+      select: %{
+        id: s.id,
+        summary: s.summary,
+        post_count_at_generation: s.post_count_at_generation
+      }
+    )
     |> Repo.one()
   end
 

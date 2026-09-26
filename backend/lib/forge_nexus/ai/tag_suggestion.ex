@@ -6,7 +6,7 @@ defmodule ForgeNexus.AI.TagSuggestion do
   @foreign_key_type :binary_id
 
   schema "ai_tag_suggestions" do
-    field :suggested_tags, :map, default: %{}
+    field :suggested_tags, {:array, :string}, default: []
     field :suggested_prefix, :string
     field :content_type, :string
     field :confidence, :float

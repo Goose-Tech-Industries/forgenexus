@@ -7,7 +7,7 @@ defmodule ForgeNexus.AI.ThreadSummary do
 
   schema "thread_summaries" do
     field :summary, :string
-    field :key_points, :map, default: %{}
+    field :key_points, {:array, :string}, default: []
     field :participant_count, :integer
     field :post_count_at_generation, :integer
     field :last_generated_at, :utc_datetime
