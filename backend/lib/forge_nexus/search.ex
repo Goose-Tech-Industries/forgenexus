@@ -162,8 +162,8 @@ defmodule ForgeNexus.Search do
             is_locked: t.is_locked,
             reply_count: t.reply_count,
             view_count: t.view_count,
-            inserted_at: t.inserted_at && DateTime.to_unix(t.inserted_at),
-            last_post_at: t.last_post_at && DateTime.to_unix(t.last_post_at)
+            inserted_at: to_unix_timestamp(t.inserted_at),
+            last_post_at: to_unix_timestamp(t.last_post_at)
           }
         end)
 
@@ -184,7 +184,7 @@ defmodule ForgeNexus.Search do
             thread_id: p.thread_id,
             user_id: p.user_id,
             position: p.position,
-            inserted_at: p.inserted_at && DateTime.to_unix(p.inserted_at)
+            inserted_at: to_unix_timestamp(p.inserted_at)
           }
         end)
 
@@ -193,6 +193,14 @@ defmodule ForgeNexus.Search do
 
     :ok
   end
+
+  defp to_unix_timestamp(%DateTime{} = dt), do: DateTime.to_unix(dt)
+
+  defp to_unix_timestamp(%NaiveDateTime{} = ndt) do
+    DateTime.from_naive!(ndt, "Etc/UTC") |> DateTime.to_unix()
+  end
+
+  defp to_unix_timestamp(_), do: nil
 
   # === HTTP Helpers ===
 
