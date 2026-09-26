@@ -112,12 +112,13 @@ defmodule ForgeNexusWeb.CallController do
       conversation_id: call.conversation_id,
       caller_id: call.caller_id,
       caller:
-        call.caller &&
-          %{
+        if(Ecto.assoc_loaded?(call.caller) and not is_nil(call.caller),
+          do: %{
             id: call.caller.id,
             username: call.caller.username,
             avatar_url: call.caller.avatar_url
-          },
+          }
+        ),
       status: call.status,
       type: call.type,
       started_at: call.started_at,
