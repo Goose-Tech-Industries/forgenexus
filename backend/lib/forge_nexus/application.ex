@@ -36,6 +36,7 @@ defmodule ForgeNexus.Application do
           {Task.Supervisor, name: ForgeNexus.PluginTaskSupervisor},
           ForgeNexus.Cache,
           ForgeNexus.RateLimitCleaner,
+          ForgeNexus.RateLimiter,
           ForgeNexus.SettingsCache,
           ForgeNexus.StatsCache,
           ForgeNexus.PresenceTracker,

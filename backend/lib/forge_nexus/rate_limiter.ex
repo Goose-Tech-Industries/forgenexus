@@ -74,7 +74,13 @@ defmodule ForgeNexus.RateLimiter do
 
   @impl true
   def init(_) do
-    table = :ets.new(@table, [:named_table, :public, :set])
+    table =
+      if :ets.whereis(@table) == :undefined do
+        :ets.new(@table, [:named_table, :public, :set])
+      else
+        @table
+      end
+
     # Schedule periodic cleanup every 5 minutes
     Process.send_after(self(), :cleanup, 300_000)
     {:ok, %{table: table}}
