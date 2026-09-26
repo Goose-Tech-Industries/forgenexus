@@ -30,6 +30,6 @@ defmodule ForgeNexus.Predictions.Suggestion do
       :user_id
     ])
     |> validate_required([:title, :description, :user_id])
-    |> validate_inclusion(:status, ~w(pending under_review accepted rejected completed))
+    |> validate_inclusion(:status, ~w(pending under_review accepted approved rejected completed))
   end
 end

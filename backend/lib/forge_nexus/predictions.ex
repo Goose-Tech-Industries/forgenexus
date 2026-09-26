@@ -20,11 +20,14 @@ defmodule ForgeNexus.Predictions do
   def list_predictions(status \\ nil) do
     query = Prediction |> order_by(desc: :inserted_at) |> preload(:options)
 
-    if status,
-      do: where(query, [p], p.status == ^status),
-      else:
+    query =
+      if status do
+        where(query, [p], p.status == ^status)
+      else
         query
-        |> Repo.all()
+      end
+
+    Repo.all(query)
   end
 
   def place_bet(user_id, option_id, amount) do
@@ -61,39 +64,43 @@ defmodule ForgeNexus.Predictions do
 
   def resolve_prediction(prediction_id, winning_option_label) do
     prediction = get_prediction!(prediction_id)
-    winning_option = Enum.find(prediction.options, fn o -> o.label == winning_option_label end)
-    if is_nil(winning_option), do: {:error, :invalid_option}
 
-    total_pool = Enum.reduce(prediction.options, 0, fn o, acc -> acc + o.total_amount end)
-    winning_pool = winning_option.total_amount
+    case Enum.find(prediction.options, fn o -> o.label == winning_option_label end) do
+      nil ->
+        {:error, :invalid_option}
 
-    Repo.transaction(fn ->
-      if winning_pool > 0 do
-        winning_bets =
-          Repo.all(
-            from b in PredictionBet,
-              where: b.prediction_id == ^prediction_id and b.option_id == ^winning_option.id
-          )
+      winning_option ->
+        total_pool = Enum.reduce(prediction.options, 0, fn o, acc -> acc + o.total_amount end)
+        winning_pool = winning_option.total_amount
 
-        Enum.each(winning_bets, fn bet ->
-          payout = trunc(bet.amount / winning_pool * total_pool)
+        Repo.transaction(fn ->
+          if winning_pool > 0 do
+            winning_bets =
+              Repo.all(
+                from b in PredictionBet,
+                  where: b.prediction_id == ^prediction_id and b.option_id == ^winning_option.id
+              )
 
-          if payout > 0 do
-            ForgeNexus.Economy.award_points(bet.user_id, "prediction_payout", amount: payout)
+            Enum.each(winning_bets, fn bet ->
+              payout = trunc(bet.amount / winning_pool * total_pool)
+
+              if payout > 0 do
+                ForgeNexus.Economy.award_points(bet.user_id, "prediction_payout", amount: payout)
+              end
+            end)
           end
+
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+          prediction
+          |> Prediction.changeset(%{
+            status: "resolved",
+            winning_option: winning_option_label,
+            resolved_at: now
+          })
+          |> Repo.update!()
         end)
-      end
-
-      now = DateTime.utc_now() |> DateTime.truncate(:second)
-
-      prediction
-      |> Prediction.changeset(%{
-        status: "resolved",
-        winning_option: winning_option_label,
-        resolved_at: now
-      })
-      |> Repo.update!()
-    end)
+    end
   end
 
   def cancel_prediction(prediction_id) do

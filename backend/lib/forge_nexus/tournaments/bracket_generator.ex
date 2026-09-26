@@ -5,13 +5,24 @@ defmodule ForgeNexus.Tournaments.BracketGenerator do
   """
 
   @doc "Generate a bracket from a list of seeded participant IDs."
-  def generate(participant_ids, format \\ "single_elimination") do
+  def generate(participant_ids, format \\ "single_elimination", opts \\ []) do
     case format do
-      "single_elimination" -> single_elimination(participant_ids)
-      "double_elimination" -> double_elimination(participant_ids)
-      "round_robin" -> round_robin(participant_ids)
-      "swiss" -> swiss_round(participant_ids, 1, %{})
-      _ -> {:error, :unknown_format}
+      "single_elimination" ->
+        single_elimination(participant_ids)
+
+      "double_elimination" ->
+        double_elimination(participant_ids)
+
+      "round_robin" ->
+        round_robin(participant_ids)
+
+      "swiss" ->
+        round = Keyword.get(opts, :round, 1)
+        standings = Keyword.get(opts, :standings, %{})
+        swiss_round(participant_ids, round, standings)
+
+      _ ->
+        {:error, :unknown_format}
     end
   end
 
