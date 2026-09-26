@@ -39,6 +39,7 @@ defmodule ForgeNexus.Application do
           ForgeNexus.SettingsCache,
           ForgeNexus.StatsCache,
           ForgeNexus.PresenceTracker,
+          ForgeNexus.LinkPreview,
           ForgeNexus.Plugins.Hooks,
           ForgeNexus.Importer.Progress,
           {Registry, keys: :unique, name: ForgeNexus.Voice.RoomRegistry},

@@ -91,8 +91,11 @@ defmodule ForgeNexusWeb.Router do
     post "/auth/logout", AuthController, :logout
 
     # OAuth
+    get "/auth/oauth/accounts", OAuthController, :linked_accounts
     get "/auth/oauth/:provider", OAuthController, :redirect_to_provider
     get "/auth/oauth/:provider/callback", OAuthController, :callback
+    post "/auth/oauth/:provider/link", OAuthController, :link
+    delete "/auth/oauth/:provider/unlink", OAuthController, :unlink
 
     # Public settings
     get "/settings/public", SettingsController, :public

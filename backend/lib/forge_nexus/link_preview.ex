@@ -39,7 +39,10 @@ defmodule ForgeNexus.LinkPreview do
 
   @impl true
   def init(_) do
-    :ets.new(@cache_table, [:named_table, :public, read_concurrency: true])
+    if :ets.whereis(@cache_table) == :undefined do
+      :ets.new(@cache_table, [:named_table, :public, read_concurrency: true])
+    end
+
     {:ok, %{}}
   end
 

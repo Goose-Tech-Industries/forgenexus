@@ -626,7 +626,10 @@ defmodule ForgeNexus.Accounts do
       user_id: user_id,
       provider: provider,
       provider_uid:
-        to_string(user_info[:id] || user_info["id"] || user_info[:uid] || user_info["uid"]),
+        to_string(
+          user_info[:provider_uid] || user_info["provider_uid"] || user_info[:id] ||
+            user_info["id"] || user_info[:uid] || user_info["uid"] || ""
+        ),
       provider_email: user_info[:email] || user_info["email"],
       provider_name: user_info[:name] || user_info["name"],
       provider_avatar:
@@ -684,7 +687,10 @@ defmodule ForgeNexus.Accounts do
   """
   def find_or_create_oauth_user(provider, user_info) do
     provider_uid =
-      to_string(user_info[:id] || user_info["id"] || user_info[:uid] || user_info["uid"] || "")
+      to_string(
+        user_info[:provider_uid] || user_info["provider_uid"] || user_info[:id] ||
+          user_info["id"] || user_info[:uid] || user_info["uid"] || ""
+      )
 
     email = normalize_email(user_info[:email] || user_info["email"])
     name = user_info[:name] || user_info["name"]

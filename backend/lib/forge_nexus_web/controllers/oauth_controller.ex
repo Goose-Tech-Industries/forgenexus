@@ -65,75 +65,90 @@ defmodule ForgeNexusWeb.OAuthController do
 
   # POST /auth/oauth/:provider/link — link provider to logged-in user
   def link(conn, %{"provider" => provider}) do
-    user = Guardian.Plug.current_resource(conn)
+    case Guardian.Plug.current_resource(conn) do
+      nil ->
+        conn |> put_status(:unauthorized) |> json(%{error: "Authentication required"})
 
-    if !OAuth.valid_provider?(provider) do
-      conn |> put_status(:bad_request) |> json(%{error: "Unsupported provider"})
-    else
-      state = OAuth.generate_state()
+      user ->
+        if !OAuth.valid_provider?(provider) do
+          conn |> put_status(:bad_request) |> json(%{error: "Unsupported provider"})
+        else
+          state = OAuth.generate_state()
 
-      case OAuth.authorize_url(provider, state) do
-        {:ok, url} ->
-          conn
-          |> put_resp_cookie(@state_cookie, state,
-            http_only: true,
-            secure: Mix.env() == :prod,
-            same_site: "Lax",
-            max_age: @state_max_age,
-            path: "/"
-          )
-          |> put_resp_cookie("oauth_link_user", user.id,
-            http_only: true,
-            secure: Mix.env() == :prod,
-            same_site: "Lax",
-            max_age: @state_max_age,
-            path: "/"
-          )
-          |> json(%{redirect_url: url})
+          case OAuth.authorize_url(provider, state) do
+            {:ok, url} ->
+              conn
+              |> put_resp_cookie(@state_cookie, state,
+                http_only: true,
+                secure: Mix.env() == :prod,
+                same_site: "Lax",
+                max_age: @state_max_age,
+                path: "/"
+              )
+              |> put_resp_cookie("oauth_link_user", user.id,
+                http_only: true,
+                secure: Mix.env() == :prod,
+                same_site: "Lax",
+                max_age: @state_max_age,
+                path: "/"
+              )
+              |> json(%{redirect_url: url})
 
-        {:error, reason} ->
-          conn
-          |> put_status(:internal_server_error)
-          |> json(%{error: "Config error: #{inspect(reason)}"})
-      end
+            {:error, reason} ->
+              conn
+              |> put_status(:internal_server_error)
+              |> json(%{error: "Config error: #{inspect(reason)}"})
+          end
+        end
     end
   end
 
   # DELETE /auth/oauth/:provider/unlink — remove linked provider
   def unlink(conn, %{"provider" => provider}) do
-    user = Guardian.Plug.current_resource(conn)
+    case Guardian.Plug.current_resource(conn) do
+      nil ->
+        conn |> put_status(:unauthorized) |> json(%{error: "Authentication required"})
 
-    case Accounts.unlink_oauth_account(user.id, provider) do
-      {:ok, _} ->
-        json(conn, %{message: "#{String.capitalize(provider)} account unlinked"})
+      user ->
+        case Accounts.unlink_oauth_account(user.id, provider) do
+          {:ok, _} ->
+            json(conn, %{message: "#{String.capitalize(provider)} account unlinked"})
 
-      {:error, :last_auth_method} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{error: "Cannot unlink your only login method. Set a password first."})
+          {:error, :last_auth_method} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Cannot unlink your only login method. Set a password first."})
 
-      {:error, :not_found} ->
-        conn |> put_status(:not_found) |> json(%{error: "No linked #{provider} account found"})
+          {:error, :not_found} ->
+            conn
+            |> put_status(:not_found)
+            |> json(%{error: "No linked #{provider} account found"})
+        end
     end
   end
 
   # GET /auth/oauth/accounts — list linked providers
   def linked_accounts(conn, _params) do
-    user = Guardian.Plug.current_resource(conn)
-    accounts = Accounts.list_oauth_accounts(user.id)
+    case Guardian.Plug.current_resource(conn) do
+      nil ->
+        conn |> put_status(:unauthorized) |> json(%{error: "Authentication required"})
 
-    json(conn, %{
-      accounts:
-        Enum.map(accounts, fn a ->
-          %{
-            provider: a.provider,
-            provider_email: a.provider_email,
-            provider_name: a.provider_name,
-            provider_avatar: a.provider_avatar,
-            linked_at: a.inserted_at
-          }
-        end)
-    })
+      user ->
+        accounts = Accounts.list_oauth_accounts(user.id)
+
+        json(conn, %{
+          accounts:
+            Enum.map(accounts, fn a ->
+              %{
+                provider: a.provider,
+                provider_email: a.provider_email,
+                provider_name: a.provider_name,
+                provider_avatar: a.provider_avatar,
+                linked_at: a.inserted_at
+              }
+            end)
+        })
+    end
   end
 
   # --- Private ---

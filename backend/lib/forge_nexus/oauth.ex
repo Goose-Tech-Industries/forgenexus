@@ -71,8 +71,14 @@ defmodule ForgeNexus.OAuth do
         {:ok, %{status: 200, body: %{"access_token" => token} = resp}} ->
           {:ok, %{access_token: token, refresh_token: resp["refresh_token"]}}
 
-        {:ok, %{body: body}} ->
+        {:ok, %{body: body}} when is_map(body) ->
           {:error, body["error_description"] || body["error"] || "Token exchange failed"}
+
+        {:ok, %{body: body}} when is_binary(body) and body != "" ->
+          {:error, body}
+
+        {:ok, _} ->
+          {:error, "Token exchange failed"}
 
         {:error, reason} ->
           {:error, "HTTP error: #{inspect(reason)}"}

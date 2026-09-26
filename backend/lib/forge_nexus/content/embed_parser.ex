@@ -57,8 +57,12 @@ defmodule ForgeNexus.Content.EmbedParser do
 
   defp resolve("poll", id) do
     case ForgeNexus.Repo.get(ForgeNexus.Forums.Poll, id) do
-      nil -> %{error: "poll not found"}
-      poll -> %{question: poll.question, status: poll.status}
+      nil ->
+        %{error: "poll not found"}
+
+      poll ->
+        status = if ForgeNexus.Forums.Polls.poll_closed?(poll), do: "closed", else: "open"
+        %{question: poll.question, status: status}
     end
   end
 
