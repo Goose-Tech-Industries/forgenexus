@@ -124,6 +124,8 @@ defmodule ForgeNexusWeb.AdminThemeController do
           :is_active,
           :is_default,
           :position,
+          :created_by,
+          :created_by_id,
           :inserted_at,
           :updated_at
         ]),

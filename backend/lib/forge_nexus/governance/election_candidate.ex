@@ -4,6 +4,18 @@ defmodule ForgeNexus.Governance.ElectionCandidate do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :platform,
+             :is_accepted,
+             :vote_count,
+             :election_id,
+             :user_id,
+             :nominated_by_id,
+             :inserted_at,
+             :updated_at
+           ]}
 
   schema "election_candidates" do
     field :platform, :string

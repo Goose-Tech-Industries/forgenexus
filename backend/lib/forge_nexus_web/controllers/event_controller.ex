@@ -104,7 +104,10 @@ defmodule ForgeNexusWeb.EventController do
       max_attendees: e.max_attendees,
       is_published: e.is_published,
       is_cancelled: e.is_cancelled,
-      created_by: e.created_by && %{id: e.created_by.id, username: e.created_by.username},
+      created_by:
+        if(Ecto.assoc_loaded?(e.created_by) and not is_nil(e.created_by),
+          do: %{id: e.created_by.id, username: e.created_by.username}
+        ),
       inserted_at: e.inserted_at
     }
   end
