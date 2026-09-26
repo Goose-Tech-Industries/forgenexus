@@ -423,9 +423,12 @@ defmodule ForgeNexus.Forums do
     editor_id = attrs["editor_id"] || attrs[:editor_id] || post.user_id
     edit_reason = attrs["edit_reason"] || attrs[:edit_reason]
 
+    is_atom_map = Enum.all?(Map.keys(attrs), &is_atom/1)
+    html_key = if is_atom_map, do: :body_html, else: "body_html"
+
     attrs =
       if body do
-        Map.put(attrs, "body_html", ForgeNexus.BBCode.to_html(body))
+        Map.put(attrs, html_key, ForgeNexus.BBCode.to_html(body))
       else
         attrs
       end
@@ -437,10 +440,10 @@ defmodule ForgeNexus.Forums do
           %PostEdit{}
           |> Ecto.Changeset.change(%{
             post_id: updated.id,
-            edited_by_id: editor_id,
+            user_id: editor_id,
             body_before: body_before,
             body_after: body,
-            edit_reason: edit_reason
+            reason: edit_reason
           })
           |> Repo.insert!()
 
@@ -649,6 +652,8 @@ defmodule ForgeNexus.Forums do
       require Logger
       Logger.error("notify_post_liked failed: #{inspect(e)}")
       :ok
+  catch
+    :exit, _ -> :ok
   end
 
   def get_post_ratings(post_id) do
@@ -752,6 +757,8 @@ defmodule ForgeNexus.Forums do
       require Logger
       Logger.error("notify_post_reaction failed: #{inspect(e)}")
       :ok
+  catch
+    :exit, _ -> :ok
   end
 
   def list_reactions(post_id) do
@@ -806,6 +813,7 @@ defmodule ForgeNexus.Forums do
     |> where([r], r.reactable_type == "post" and r.reactable_id == ^post_id)
     |> group_by([r], r.type)
     |> having([r], count(r.id) >= ^threshold)
+    |> select([r], r.type)
     |> limit(1)
     |> Repo.one()
     |> is_nil()
@@ -941,8 +949,14 @@ defmodule ForgeNexus.Forums do
   def delete_prefix(id), do: Repo.get!(ThreadPrefix, id) |> Repo.delete()
 
   def set_thread_prefix(thread_id, prefix_id) do
+    prefix_name =
+      case Repo.get(ThreadPrefix, prefix_id) do
+        nil -> prefix_id
+        tp -> tp.name
+      end
+
     Repo.get!(Thread, thread_id)
-    |> Ecto.Changeset.change(prefix_id: prefix_id)
+    |> Ecto.Changeset.change(prefix: prefix_name)
     |> Repo.update()
   end
 
@@ -1193,8 +1207,18 @@ defmodule ForgeNexus.Forums do
     )
     |> Repo.one()
     |> then(fn
-      nil -> %{average: 0, count: 0}
-      stats -> %{average: Float.round((stats.average || 0) / 1, 1), count: stats.count}
+      nil ->
+        %{average: 0.0, count: 0}
+
+      stats ->
+        avg =
+          case stats.average do
+            %Decimal{} = d -> Decimal.to_float(d)
+            n when is_number(n) -> n / 1.0
+            _ -> 0.0
+          end
+
+        %{average: Float.round(avg, 1), count: stats.count}
     end)
   end
 
@@ -2035,7 +2059,7 @@ defmodule ForgeNexus.Forums do
         reactions =
           from(r in Reaction,
             join: p in Post,
-            on: p.id == r.post_id,
+            on: p.id == r.reactable_id and r.reactable_type == "post",
             where: p.thread_id == ^thread_id,
             select: count(r.id)
           )
@@ -2100,7 +2124,7 @@ defmodule ForgeNexus.Forums do
     reactions_received =
       from(r in Reaction,
         join: p in Post,
-        on: p.id == r.post_id,
+        on: p.id == r.reactable_id and r.reactable_type == "post",
         where: p.user_id == ^user_id and r.inserted_at >= ^cutoff,
         select: count(r.id)
       )

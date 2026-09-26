@@ -34,11 +34,17 @@ defmodule ForgeNexus.Moderation do
   def is_staff?(%User{} = user), do: is_staff?(user.id)
 
   def is_staff?(user_id) when is_binary(user_id) do
-    Repo.exists?(
-      from m in UserGroupMembership,
-        join: g in assoc(m, :group),
-        where: m.user_id == ^user_id and g.is_staff == true
-    )
+    case Ecto.UUID.cast(user_id) do
+      {:ok, valid_uuid} ->
+        Repo.exists?(
+          from m in UserGroupMembership,
+            join: g in assoc(m, :group),
+            where: m.user_id == ^valid_uuid and g.is_staff == true
+        )
+
+      :error ->
+        false
+    end
   end
 
   def is_staff?(_), do: false
@@ -969,13 +975,21 @@ defmodule ForgeNexus.Moderation do
   # Impersonation (Login-As-User)
   # =====================
 
-  def is_admin?(user_id) do
-    Repo.exists?(
-      from m in UserGroupMembership,
-        join: g in assoc(m, :group),
-        where: m.user_id == ^user_id and g.name == "Administrators"
-    )
+  def is_admin?(user_id) when is_binary(user_id) do
+    case Ecto.UUID.cast(user_id) do
+      {:ok, valid_uuid} ->
+        Repo.exists?(
+          from m in UserGroupMembership,
+            join: g in assoc(m, :group),
+            where: m.user_id == ^valid_uuid and g.name == "Administrators"
+        )
+
+      :error ->
+        false
+    end
   end
+
+  def is_admin?(_), do: false
 
   def start_impersonation(admin_id, target_user_id, reason) do
     # Check no active impersonation session

@@ -23,6 +23,7 @@ defmodule ForgeNexus.Forums.Post do
     belongs_to :user, ForgeNexus.Accounts.User
     belongs_to :edited_by, ForgeNexus.Accounts.User
     belongs_to :reply_to, __MODULE__
+    belongs_to :merged_from_thread, ForgeNexus.Forums.Thread
 
     timestamps()
   end

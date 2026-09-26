@@ -337,9 +337,10 @@ defmodule ForgeNexus.Forums.ForumsRemainingSchemasTest do
     end
 
     test "PostEdit struct" do
-      edit = %PostEdit{body_before: "before", body_after: "after", edit_reason: "typo"}
+      edit = %PostEdit{body_before: "before", body_after: "after", reason: "typo"}
       assert edit.body_before == "before"
       assert edit.body_after == "after"
+      assert edit.reason == "typo"
     end
 
     test "PostRating" do

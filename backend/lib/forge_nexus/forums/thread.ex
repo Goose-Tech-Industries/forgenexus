@@ -52,7 +52,8 @@ defmodule ForgeNexus.Forums.Thread do
       :forum_id,
       :user_id,
       :scheduled_at,
-      :status
+      :status,
+      :is_private
     ])
     |> validate_required([:title, :forum_id, :user_id])
     |> validate_length(:title, min: 3, max: 200)
