@@ -5,7 +5,7 @@ defmodule ForgeNexus.UserStats.UserStat do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  schema "user_stats" do
+  schema "user_custom_stats" do
     field :stat_key, :string
     field :value, :float, default: 0.0
     field :min_value, :float

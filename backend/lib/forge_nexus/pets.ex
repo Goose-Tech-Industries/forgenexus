@@ -41,38 +41,42 @@ defmodule ForgeNexus.Pets do
 
   def pet_action(pet_id, action_type, user_id) do
     pet = Repo.get!(Pet, pet_id)
-    if pet.user_id != user_id, do: {:error, :not_owner}
-    cooldown_key = "pet_action:" <> action_type <> ":" <> pet_id
 
-    case Cooldowns.check_cooldown(user_id, cooldown_key) do
-      {:error, remaining} ->
-        {:error, {:cooldown, remaining}}
+    if pet.user_id != user_id do
+      {:error, :not_owner}
+    else
+      cooldown_key = "pet_action:" <> action_type <> ":" <> pet_id
 
-      {:ok, :ready} ->
-        changes =
-          case action_type do
-            "feed" ->
-              %{hunger: min(pet.hunger + 25, 100), experience: pet.experience + 5}
+      case Cooldowns.check_cooldown(user_id, cooldown_key) do
+        {:error, remaining} ->
+          {:error, {:cooldown, remaining}}
 
-            "play" ->
-              %{
-                happiness: min(pet.happiness + 20, 100),
-                energy: max(pet.energy - 10, 0),
-                experience: pet.experience + 10
-              }
+        {:ok, :ready} ->
+          changes =
+            case action_type do
+              "feed" ->
+                %{hunger: min(pet.hunger + 25, 100), experience: pet.experience + 5}
 
-            "clean" ->
-              %{happiness: min(pet.happiness + 10, 100), experience: pet.experience + 3}
+              "play" ->
+                %{
+                  happiness: min(pet.happiness + 20, 100),
+                  energy: max(pet.energy - 10, 0),
+                  experience: pet.experience + 10
+                }
 
-            "rest" ->
-              %{energy: min(pet.energy + 30, 100), experience: pet.experience + 2}
+              "clean" ->
+                %{happiness: min(pet.happiness + 10, 100), experience: pet.experience + 3}
 
-            _ ->
-              %{}
-          end
+              "rest" ->
+                %{energy: min(pet.energy + 30, 100), experience: pet.experience + 2}
 
-        Cooldowns.set_cooldown(user_id, cooldown_key, 300)
-        pet |> Pet.changeset(changes) |> Repo.update()
+              _ ->
+                %{}
+            end
+
+          Cooldowns.set_cooldown(user_id, cooldown_key, 300)
+          pet |> Pet.changeset(changes) |> Repo.update()
+      end
     end
   end
 
@@ -102,23 +106,27 @@ defmodule ForgeNexus.Pets do
   def breed_pets(pet1_id, pet2_id, user_id) do
     pet1 = Repo.get!(Pet, pet1_id) |> Repo.preload(:pet_template)
     pet2 = Repo.get!(Pet, pet2_id) |> Repo.preload(:pet_template)
-    if pet1.user_id != user_id or pet2.user_id != user_id, do: {:error, :not_owner}
-    avg_hunger = div(pet1.hunger + pet2.hunger, 2)
-    avg_happiness = div(pet1.happiness + pet2.happiness, 2)
-    avg_energy = div(pet1.energy + pet2.energy, 2)
-    parent_template = Enum.random([pet1.pet_template, pet2.pet_template])
-    nickname = parent_template.name <> " Jr."
 
-    %Pet{}
-    |> Pet.changeset(%{
-      user_id: user_id,
-      pet_template_id: parent_template.id,
-      nickname: nickname,
-      hunger: avg_hunger,
-      happiness: avg_happiness,
-      energy: avg_energy
-    })
-    |> Repo.insert()
+    if pet1.user_id != user_id or pet2.user_id != user_id do
+      {:error, :not_owner}
+    else
+      avg_hunger = div(pet1.hunger + pet2.hunger, 2)
+      avg_happiness = div(pet1.happiness + pet2.happiness, 2)
+      avg_energy = div(pet1.energy + pet2.energy, 2)
+      parent_template = Enum.random([pet1.pet_template, pet2.pet_template])
+      nickname = parent_template.name <> " Jr."
+
+      %Pet{}
+      |> Pet.changeset(%{
+        user_id: user_id,
+        pet_template_id: parent_template.id,
+        nickname: nickname,
+        hunger: avg_hunger,
+        happiness: avg_happiness,
+        energy: avg_energy
+      })
+      |> Repo.insert()
+    end
   end
 
   def decay_stats do
