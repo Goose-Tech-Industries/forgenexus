@@ -19,16 +19,14 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.MentorshipPair do
 
     ctx = Sandbox.increment_db_ops(ctx)
 
-    case Enum.random(members -- [new_user_id]) do
-      nil ->
+    case members -- [new_user_id] do
+      [] ->
         {:error, "No active mentors found in group #{mentor_group_id}", ctx}
 
-      mentor_id ->
+      candidates ->
+        mentor_id = Enum.random(candidates)
         {:ok, %{mentor_user_id: mentor_id, success: true}, ctx}
     end
-  rescue
-    Enum.EmptyError ->
-      {:error, "No active mentors found", Map.update(ctx, :db_ops, 1, &(&1 + 0))}
   end
 
   @impl true

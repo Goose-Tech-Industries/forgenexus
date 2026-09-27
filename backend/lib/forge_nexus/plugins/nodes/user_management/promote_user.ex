@@ -19,7 +19,7 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.PromoteUser do
 
       user ->
         user
-        |> Ecto.Changeset.change(%{group_id: target_group_id})
+        |> Ecto.Changeset.change(%{primary_group_id: target_group_id})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

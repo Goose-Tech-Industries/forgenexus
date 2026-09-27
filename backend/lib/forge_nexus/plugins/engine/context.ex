@@ -12,6 +12,7 @@ defmodule ForgeNexus.Plugins.Engine.Context do
     :community_id,
     :trigger_data,
     :triggered_by_id,
+    flow_data: %{},
     variables: %{},
     node_trace: [],
     nodes_executed: 0,

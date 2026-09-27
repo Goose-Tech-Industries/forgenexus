@@ -8,11 +8,13 @@ defmodule ForgeNexus.Verification.Challenge do
   schema "verification_challenges" do
     field :challenge_type, :string
     field :challenge_data, :map, default: %{}
-    field :expected_answer, :string
     field :status, :string, default: "pending"
-    field :attempts, :integer, default: 0
-    field :max_attempts, :integer, default: 3
     field :expires_at, :utc_datetime
+    field :completed_at, :utc_datetime
+
+    field :expected_answer, :string, virtual: true
+    field :attempts, :integer, default: 0, virtual: true
+    field :max_attempts, :integer, default: 3, virtual: true
 
     belongs_to :user, ForgeNexus.Accounts.User
 
@@ -24,15 +26,16 @@ defmodule ForgeNexus.Verification.Challenge do
     |> cast(attrs, [
       :challenge_type,
       :challenge_data,
-      :expected_answer,
       :status,
-      :attempts,
-      :max_attempts,
+      :completed_at,
       :expires_at,
       :user_id
     ])
-    |> validate_required([:challenge_type, :expected_answer, :user_id])
-    |> validate_inclusion(:challenge_type, ~w(math_captcha text_captcha email_verify question))
+    |> validate_required([:challenge_type, :user_id])
+    |> validate_inclusion(
+      :challenge_type,
+      ~w(math_captcha text_captcha email_verify question math text)
+    )
     |> validate_inclusion(:status, ~w(pending completed failed expired))
   end
 end

@@ -8,14 +8,12 @@ defmodule ForgeNexus.Plugins.Nodes.Moderation.UnbanUser do
     Sandbox.check_db_limit!(ctx)
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
 
-    case ForgeNexus.Moderation.unban_user_by_id(user_id) do
-      {:ok, _} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{success: true}, ctx}
-
-      {:error, err} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to unban: #{inspect(err)}", ctx}
+    if is_nil(user_id) do
+      {:error, "user_id is required", ctx}
+    else
+      {:ok, _} = ForgeNexus.Moderation.unban_user_by_id(user_id)
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{success: true}, ctx}
     end
   end
 

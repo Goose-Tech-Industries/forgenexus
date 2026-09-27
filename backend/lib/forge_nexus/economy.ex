@@ -80,6 +80,8 @@ defmodule ForgeNexus.Economy do
     end)
   end
 
+  def award_points(_user_id, _currency_id, _amount), do: {:error, :invalid_amount}
+
   def deduct_points(user_id, amount, reason, opts) when is_binary(reason) do
     deduct_legacy_points(user_id, amount, reason, opts)
   end
@@ -232,6 +234,8 @@ defmodule ForgeNexus.Economy do
     end)
   end
 
+  def deduct_points(_user_id, _currency_id, _amount), do: {:error, :invalid_amount}
+
   def transfer_points(from_id, to_id, currency_id, amount)
       when is_integer(amount) and amount > 0 do
     Repo.transaction(fn ->
@@ -276,6 +280,8 @@ defmodule ForgeNexus.Economy do
       end
     end)
   end
+
+  def transfer_points(_from_id, _to_id, _currency_id, _amount), do: {:error, :invalid_amount}
 
   def get_leaderboard(currency_id, limit \\ 10) do
     UserBalance

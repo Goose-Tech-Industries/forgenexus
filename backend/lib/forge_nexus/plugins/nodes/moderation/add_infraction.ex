@@ -11,7 +11,14 @@ defmodule ForgeNexus.Plugins.Nodes.Moderation.AddInfraction do
     points = if is_integer(points_in), do: points_in, else: trunc(points_in)
     reason = Map.get(inputs, :reason) || Map.get(inputs, "reason", "")
 
-    case ForgeNexus.Moderation.add_infraction_points(user_id, points, reason) do
+    res =
+      try do
+        ForgeNexus.Moderation.add_infraction_points(user_id, points, reason)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _w} ->
         total = ForgeNexus.Moderation.get_infraction_points(user_id)
         ctx = Sandbox.increment_db_ops(ctx)

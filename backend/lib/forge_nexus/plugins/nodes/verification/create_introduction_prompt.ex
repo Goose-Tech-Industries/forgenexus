@@ -27,18 +27,12 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CreateIntroductionPrompt do
           user_id: user_id,
           title: title,
           slug: slug,
+          body: template,
           last_post_at: DateTime.utc_now() |> DateTime.truncate(:second)
         }
 
         case ForgeNexus.Forums.create_thread(thread_attrs) do
           {:ok, thread} ->
-            ForgeNexus.Forums.create_post(%{
-              thread_id: thread.id,
-              forum_id: forum.id,
-              user_id: user_id,
-              body: template
-            })
-
             ctx = Sandbox.increment_db_ops(ctx)
             {:ok, %{thread_id: thread.id, success: true}, ctx}
 

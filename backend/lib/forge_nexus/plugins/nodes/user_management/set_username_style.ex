@@ -21,12 +21,8 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.SetUsernameStyle do
         {:error, "User not found: #{user_id}", ctx}
 
       user ->
-        style = %{"color" => color, "effect" => effect}
-        metadata = Map.get(user, :metadata) || %{}
-        updated_metadata = Map.put(metadata, "username_style", style)
-
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{username_color: color, username_effect: effect})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

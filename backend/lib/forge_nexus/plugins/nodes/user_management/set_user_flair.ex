@@ -19,12 +19,8 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.SetUserFlair do
         {:error, "User not found: #{user_id}", ctx}
 
       user ->
-        flair = %{"text" => flair_text, "color" => flair_color}
-        metadata = Map.get(user, :metadata) || %{}
-        updated_metadata = Map.put(metadata, "flair", flair)
-
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{custom_title: flair_text, nameplate_color: flair_color})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

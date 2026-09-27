@@ -14,10 +14,6 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.VerifyCaptcha do
         ctx = Sandbox.increment_db_ops(ctx)
         {:branch, "passed", %{attempts: challenge.attempts}, ctx}
 
-      {:error, %{attempts: a}} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:branch, "failed", %{attempts: a}, ctx}
-
       {:error, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:branch, "failed", %{attempts: 1}, ctx}

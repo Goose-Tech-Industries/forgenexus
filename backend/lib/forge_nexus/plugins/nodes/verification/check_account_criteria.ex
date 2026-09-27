@@ -15,21 +15,22 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CheckAccountCriteria do
       require_bio: Map.get(config, "require_bio", false)
     }
 
-    {:ok, results} = ForgeNexus.Verification.check_account_criteria(user_id, criteria)
-    ctx = Sandbox.increment_db_ops(ctx)
+    case ForgeNexus.Verification.check_account_criteria(user_id, criteria) do
+      {:ok, results} ->
+        ctx = Sandbox.increment_db_ops(ctx)
 
-    all_passed =
-      results
-      |> Map.values()
-      |> Enum.all?(fn
-        %{passed: p} -> p
-        _ -> true
-      end)
+        all_passed =
+          Enum.all?(Map.values(results), fn r -> Map.get(r, :passed, false) end)
 
-    if all_passed do
-      {:branch, "passed", %{criteria_results: results}, ctx}
-    else
-      {:branch, "failed", %{criteria_results: results}, ctx}
+        if all_passed do
+          {:branch, "passed", %{criteria_results: results}, ctx}
+        else
+          {:branch, "failed", %{criteria_results: results}, ctx}
+        end
+
+      {:error, reason} ->
+        ctx = Sandbox.increment_db_ops(ctx)
+        {:error, "Failed to check account criteria: #{inspect(reason)}", ctx}
     end
   end
 

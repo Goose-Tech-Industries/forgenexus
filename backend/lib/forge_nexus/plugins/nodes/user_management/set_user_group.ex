@@ -18,10 +18,10 @@ defmodule ForgeNexus.Plugins.Nodes.UserManagement.SetUserGroup do
         {:error, "User not found: #{user_id}", ctx}
 
       user ->
-        previous_group = Map.get(user, :group_id) |> to_string()
+        previous_group = Map.get(user, :primary_group_id) |> to_string()
 
         user
-        |> Ecto.Changeset.change(%{group_id: group_id})
+        |> Ecto.Changeset.change(%{primary_group_id: group_id})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

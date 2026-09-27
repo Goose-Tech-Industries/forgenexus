@@ -20,7 +20,12 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.CheckOnboardingComplete do
           {0, 0}
 
         checklist ->
-          tasks = checklist.tasks || []
+          tasks =
+            case Map.get(checklist.checklist_data || %{}, "tasks") do
+              t when is_list(t) -> t
+              _ -> []
+            end
+
           total = length(tasks)
 
           done =

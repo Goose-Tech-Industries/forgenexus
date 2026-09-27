@@ -6,8 +6,15 @@ defmodule ForgeNexus.Plugins.Nodes.Verification.SendCaptcha do
   @impl true
   def execute(config, inputs, ctx) do
     Sandbox.check_db_limit!(ctx)
+
+    captcha_type =
+      case Map.get(config, "captcha_type", "math") do
+        "math" -> "math_captcha"
+        "text" -> "text_captcha"
+        other -> other
+      end
+
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
-    captcha_type = Map.get(config, "captcha_type", "math")
 
     case ForgeNexus.Verification.create_challenge(user_id, captcha_type) do
       {:ok, challenge} ->
