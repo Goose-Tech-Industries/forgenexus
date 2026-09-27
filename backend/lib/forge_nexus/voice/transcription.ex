@@ -67,19 +67,16 @@ defmodule ForgeNexus.Voice.Transcription do
   defp do_openai_request(api_key, file_path) do
     url = "https://api.openai.com/v1/audio/transcriptions"
 
-    body = {
-      :multipart,
-      [
-        {"model", "whisper-1"},
-        {"response_format", "verbose_json"},
-        {:file, file_path, {"form-data", [name: "file", filename: Path.basename(file_path)]}, []}
-      ]
-    }
+    fields = [
+      model: "whisper-1",
+      response_format: "verbose_json",
+      file: {File.read!(file_path), filename: Path.basename(file_path)}
+    ]
 
     try do
       case Req.post(url,
              headers: [{"authorization", "Bearer #{api_key}"}],
-             body: body,
+             form_multipart: fields,
              receive_timeout: 120_000
            ) do
         {:ok, %{status: 200, body: resp}} when is_map(resp) ->
@@ -153,8 +150,10 @@ defmodule ForgeNexus.Voice.Transcription do
 
   defp convert_to_pcm16_mono_wav(source_path, dest_path) do
     # whisper.cpp needs 16 kHz mono 16-bit PCM
+    ffmpeg_cmd = Application.get_env(:forge_nexus, :transcription_ffmpeg_cmd, "ffmpeg")
+
     case System.cmd(
-           "ffmpeg",
+           ffmpeg_cmd,
            ["-y", "-i", source_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", dest_path],
            stderr_to_stdout: true
          ) do
@@ -166,6 +165,8 @@ defmodule ForgeNexus.Voice.Transcription do
   end
 
   defp call_whisper_cpp(bin, model, wav_path, output_base) do
+    cmd = Application.get_env(:forge_nexus, :transcription_whisper_cmd, bin)
+
     args = [
       "-m",
       model,
@@ -177,7 +178,7 @@ defmodule ForgeNexus.Voice.Transcription do
       output_base
     ]
 
-    case System.cmd(bin, args, stderr_to_stdout: true) do
+    case System.cmd(cmd, args, stderr_to_stdout: true) do
       {_output, 0} -> :ok
       {output, status} -> {:error, {:whisper_cpp_failed, status, String.slice(output, 0, 500)}}
     end
@@ -206,9 +207,10 @@ defmodule ForgeNexus.Voice.Transcription do
   end
 
   defp ffmpeg_available? do
-    case System.find_executable("ffmpeg") do
-      nil -> false
-      _ -> true
+    case Application.get_env(:forge_nexus, :transcription_ffmpeg_available) do
+      false -> false
+      true -> true
+      nil -> is_binary(System.find_executable("ffmpeg"))
     end
   end
 end

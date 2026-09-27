@@ -140,7 +140,6 @@ defmodule ForgeNexus.Plugins.SlashCommands do
     case Executor.execute_flow(flow_id, trigger_data, user.id) do
       {:completed, result} -> {:ok, %{type: "flow", result: result}}
       {:failed, reason} -> {:error, {:flow_failed, reason}}
-      other -> other
     end
   end
 
@@ -385,13 +384,7 @@ defmodule ForgeNexus.Plugins.SlashCommands do
   end
 
   defp safe_int("", default), do: default
-
-  defp safe_int(str, default) do
-    case Integer.parse(str) do
-      {n, _} -> n
-      :error -> default
-    end
-  end
+  defp safe_int(str, _default), do: String.to_integer(str)
 
   # -- Seed built-in commands ------------------------------------------------
 

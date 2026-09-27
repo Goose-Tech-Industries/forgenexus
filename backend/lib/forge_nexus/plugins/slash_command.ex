@@ -36,7 +36,7 @@ defmodule ForgeNexus.Plugins.SlashCommand do
       :response_type
     ])
     |> validate_required([:name])
-    |> validate_format(:name, ~r/^[a-z][a-z0-9_-]{0,31}$/,
+    |> validate_format(:name, ~r/^[a-z0-9][a-z0-9_-]{0,31}$/,
       message: "must be lowercase alphanumeric, 1-32 chars"
     )
     |> validate_inclusion(:permission_level, ~w(everyone member moderator admin))

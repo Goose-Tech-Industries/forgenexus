@@ -69,7 +69,7 @@ defmodule ForgeNexus.Voice.LiveKit do
           {:ok, String.t()} | {:error, :not_configured}
   def access_token(room_id, identity, role, opts \\ [])
       when is_binary(room_id) and is_binary(identity) and role in [:speaker, :audience, :egress] do
-    with true <- configured?() || {:error, :not_configured},
+    with true <- configured?(),
          key when is_binary(key) <- Settings.get("livekit_api_key"),
          secret when is_binary(secret) <- Settings.get("livekit_api_secret") do
       now = System.system_time(:second)
@@ -89,7 +89,6 @@ defmodule ForgeNexus.Voice.LiveKit do
 
       {:ok, sign(claims, secret)}
     else
-      {:error, _} = err -> err
       _ -> {:error, :not_configured}
     end
   end
