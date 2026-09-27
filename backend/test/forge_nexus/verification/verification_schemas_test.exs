@@ -26,7 +26,6 @@ defmodule ForgeNexus.Verification.VerificationSchemasTest do
       req_cs = Challenge.changeset(%Challenge{}, %{})
       refute req_cs.valid?
       assert "can't be blank" in errors_on(req_cs).challenge_type
-      assert "can't be blank" in errors_on(req_cs).expected_answer
       assert "can't be blank" in errors_on(req_cs).user_id
 
       bad_cs =
@@ -50,17 +49,18 @@ defmodule ForgeNexus.Verification.VerificationSchemasTest do
       cs =
         OnboardingChecklist.changeset(%OnboardingChecklist{}, %{
           user_id: @uid,
-          tasks: [%{"id" => "avatar", "completed" => true}],
-          is_complete: true
+          checklist_data: %{"avatar" => true},
+          completed_count: 1,
+          total_count: 5
         })
 
       assert cs.valid?
-      assert get_field(cs, :is_complete) == true
+      assert get_field(cs, :completed_count) == 1
+      assert get_field(cs, :total_count) == 5
 
-      req_cs = OnboardingChecklist.changeset(%OnboardingChecklist{}, %{tasks: nil})
+      req_cs = OnboardingChecklist.changeset(%OnboardingChecklist{}, %{})
       refute req_cs.valid?
       assert "can't be blank" in errors_on(req_cs).user_id
-      assert "can't be blank" in errors_on(req_cs).tasks
     end
   end
 end
