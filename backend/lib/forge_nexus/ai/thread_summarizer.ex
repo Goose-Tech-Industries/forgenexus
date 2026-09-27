@@ -110,35 +110,43 @@ defmodule ForgeNexus.AI.ThreadSummarizer do
   end
 
   defp upsert_cache(thread, summary, model) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now_naive = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    now_utc = DateTime.utc_now() |> DateTime.truncate(:second)
 
     case get_cached(thread.id) do
       nil ->
         Repo.insert_all("thread_summaries_ai", [
           %{
-            id: Ecto.UUID.generate(),
-            thread_id: thread.id,
-            community_id: thread.community_id,
+            id: to_binary_id(Ecto.UUID.generate()),
+            thread_id: to_binary_id(thread.id),
+            community_id: to_binary_id(thread.community_id),
             summary: summary,
             post_count_at_generation: thread.reply_count,
             model: model,
-            generated_at: now,
-            inserted_at: now,
-            updated_at: now
+            generated_at: now_utc,
+            inserted_at: now_naive,
+            updated_at: now_naive
           }
         ])
 
       _existing ->
-        from(s in "thread_summaries_ai", where: s.thread_id == ^thread.id)
+        from(s in "thread_summaries_ai", where: s.thread_id == type(^thread.id, :binary_id))
         |> Repo.update_all(
           set: [
             summary: summary,
             post_count_at_generation: thread.reply_count,
             model: model,
-            generated_at: now,
-            updated_at: now
+            generated_at: now_utc,
+            updated_at: now_naive
           ]
         )
+    end
+  end
+
+  defp to_binary_id(id) do
+    case Ecto.UUID.dump(id) do
+      {:ok, bin} -> bin
+      _ -> nil
     end
   end
 end

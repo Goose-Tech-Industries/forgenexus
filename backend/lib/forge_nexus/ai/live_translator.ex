@@ -18,12 +18,13 @@ defmodule ForgeNexus.AI.LiveTranslator do
       case do_translate(source_text, target_language) do
         {:ok, translated} ->
           now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          {:ok, id_bin} = Ecto.UUID.dump(Ecto.UUID.generate())
 
           Repo.insert_all("voice_translations", [
             %{
-              id: Ecto.UUID.generate(),
-              room_id: room_id,
-              user_id: user_id,
+              id: id_bin,
+              room_id: to_binary_id(room_id),
+              user_id: to_binary_id(user_id),
               source_text: source_text,
               target_language: target_language,
               translated_text: translated,
@@ -108,4 +109,11 @@ defmodule ForgeNexus.AI.LiveTranslator do
   defp language_name("sv"), do: "Swedish"
   defp language_name("tr"), do: "Turkish"
   defp language_name(code), do: code
+
+  defp to_binary_id(id) do
+    case Ecto.UUID.dump(id) do
+      {:ok, bin} -> bin
+      _ -> nil
+    end
+  end
 end
