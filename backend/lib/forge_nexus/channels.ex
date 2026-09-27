@@ -539,26 +539,29 @@ defmodule ForgeNexus.Channels do
 
   def create_thread(channel_id, parent_message_id, user_id, name) do
     Repo.transaction(fn ->
-      thread =
-        %ChatThread{}
-        |> ChatThread.changeset(%{
-          name: name,
-          channel_id: channel_id,
-          parent_message_id: parent_message_id,
-          created_by_id: user_id
-        })
-        |> Repo.insert!()
+      case %ChatThread{}
+           |> ChatThread.changeset(%{
+             name: name,
+             channel_id: channel_id,
+             parent_message_id: parent_message_id,
+             created_by_id: user_id
+           })
+           |> Repo.insert() do
+        {:ok, thread} ->
+          # Link parent message to thread
+          from(m in ChannelMessage, where: m.id == ^parent_message_id)
+          |> Repo.update_all(set: [thread_id: thread.id])
 
-      # Link parent message to thread
-      from(m in ChannelMessage, where: m.id == ^parent_message_id)
-      |> Repo.update_all(set: [thread_id: thread.id])
+          # Auto-join the creator
+          %ThreadMember{}
+          |> ThreadMember.changeset(%{thread_id: thread.id, user_id: user_id})
+          |> Repo.insert!()
 
-      # Auto-join the creator
-      %ThreadMember{}
-      |> ThreadMember.changeset(%{thread_id: thread.id, user_id: user_id})
-      |> Repo.insert!()
+          thread |> Repo.preload([:created_by, :parent_message, :channel])
 
-      thread |> Repo.preload([:created_by, :parent_message, :channel])
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
     end)
   end
 
@@ -605,28 +608,31 @@ defmodule ForgeNexus.Channels do
 
   def create_thread_message(thread_id, user_id, body) do
     Repo.transaction(fn ->
-      msg =
-        %ThreadMessage{}
-        |> ThreadMessage.changeset(%{body: body, thread_id: thread_id, user_id: user_id})
-        |> Repo.insert!()
+      case %ThreadMessage{}
+           |> ThreadMessage.changeset(%{body: body, thread_id: thread_id, user_id: user_id})
+           |> Repo.insert() do
+        {:ok, msg} ->
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-      now = DateTime.utc_now() |> DateTime.truncate(:second)
+          from(t in ChatThread, where: t.id == ^thread_id)
+          |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
 
-      from(t in ChatThread, where: t.id == ^thread_id)
-      |> Repo.update_all(inc: [message_count: 1], set: [last_message_at: now])
+          # Auto-join thread if not already member
+          case Repo.get_by(ThreadMember, thread_id: thread_id, user_id: user_id) do
+            nil ->
+              %ThreadMember{}
+              |> ThreadMember.changeset(%{thread_id: thread_id, user_id: user_id})
+              |> Repo.insert()
 
-      # Auto-join thread if not already member
-      case Repo.get_by(ThreadMember, thread_id: thread_id, user_id: user_id) do
-        nil ->
-          %ThreadMember{}
-          |> ThreadMember.changeset(%{thread_id: thread_id, user_id: user_id})
-          |> Repo.insert()
+            _ ->
+              :ok
+          end
 
-        _ ->
-          :ok
+          msg |> Repo.preload(user: :primary_group)
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
       end
-
-      msg |> Repo.preload(user: :primary_group)
     end)
   end
 

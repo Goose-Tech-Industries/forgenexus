@@ -39,14 +39,19 @@ defmodule ForgeNexusWeb.ThreadTypeController do
   end
 
   def debate_positions(conn, %{"thread_id" => thread_id}) do
-    positions = ThreadTypes.get_positions(thread_id)
+    positions =
+      thread_id
+      |> ThreadTypes.get_positions()
+      |> Map.values()
+      |> List.flatten()
+
     counts = ThreadTypes.get_position_counts(thread_id)
 
     conn
     |> json(%{
       positions:
         Enum.map(positions, fn p ->
-          %{id: p.id, user_id: p.user_id, position: p.position, inserted_at: p.inserted_at}
+          %{id: p.id, user_id: p.user_id, position: p.side, inserted_at: p.inserted_at}
         end),
       counts: counts
     })
@@ -73,13 +78,16 @@ defmodule ForgeNexusWeb.ThreadTypeController do
 
       listing ->
         conn
-        |> json(%{listing: Map.from_struct(listing) |> Map.drop([:__meta__, :thread, :seller])})
+        |> json(%{
+          listing: Map.from_struct(listing) |> Map.drop([:__meta__, :thread, :seller, :user])
+        })
     end
   end
 
   def wiki_edits(conn, %{"thread_id" => thread_id}) do
     edits = ThreadTypes.get_wiki_edits(thread_id)
     latest = ThreadTypes.get_latest_wiki_content(thread_id)
+    latest_content = if latest, do: latest.body, else: nil
 
     conn
     |> json(%{
@@ -87,13 +95,13 @@ defmodule ForgeNexusWeb.ThreadTypeController do
         Enum.map(edits, fn e ->
           %{
             id: e.id,
-            editor_id: e.editor_id,
+            editor_id: e.user_id,
             edit_summary: e.edit_summary,
             revision_number: e.revision_number,
             inserted_at: e.inserted_at
           }
         end),
-      latest_content: latest
+      latest_content: latest_content
     })
   end
 
