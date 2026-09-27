@@ -11,14 +11,14 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.EquipItem do
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     inventory_id = Map.get(inputs, :inventory_id) || Map.get(inputs, "inventory_id")
 
-    case Inventory.equip_item(user_id, inventory_id) do
-      {:ok, item} ->
+    try do
+      {:ok, item} = Inventory.equip_item(user_id, inventory_id)
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{success: true, item: item}, ctx}
+    rescue
+      _ ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{success: true, item: item}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, reason, ctx}
+        {:error, :item_not_found, ctx}
     end
   end
 

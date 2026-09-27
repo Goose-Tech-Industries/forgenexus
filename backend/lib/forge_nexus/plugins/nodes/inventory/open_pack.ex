@@ -10,29 +10,23 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.OpenPack do
     pack_template_id = Map.get(inputs, :pack_template_id) || Map.get(inputs, "pack_template_id")
     items_count = Map.get(config, "items_count", 5) |> to_int()
 
-    case ForgeNexus.Inventory.consume_item(user_id, pack_template_id) do
-      {:ok, _} ->
-        templates = ForgeNexus.Inventory.list_item_templates()
+    try do
+      {:ok, _} = ForgeNexus.Inventory.consume_item(user_id, pack_template_id)
+      templates = ForgeNexus.Inventory.list_item_templates()
 
-        chosen =
-          if templates == [] do
-            []
-          else
-            for _ <- 1..items_count, do: Enum.random(templates)
-          end
+      items =
+        Enum.map(1..items_count, fn _ ->
+          t = Enum.random(templates)
+          ForgeNexus.Inventory.give_item(user_id, t.id, 1)
+          %{template_id: t.id, name: t.name}
+        end)
 
-        items =
-          Enum.map(chosen, fn t ->
-            ForgeNexus.Inventory.give_item(user_id, t.id, 1)
-            %{template_id: t.id, name: t.name}
-          end)
-
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{items: items, success: true}, ctx}
+    rescue
+      _ ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{items: items, success: true}, ctx}
-
-      {:error, err} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to open pack: #{inspect(err)}", ctx}
+        {:error, "Failed to open pack: item not found", ctx}
     end
   end
 

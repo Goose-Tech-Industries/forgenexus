@@ -9,6 +9,7 @@ defmodule ForgeNexus.Plugins.Engine.Context do
   defstruct [
     :execution_id,
     :flow_id,
+    :community_id,
     :trigger_data,
     :triggered_by_id,
     variables: %{},

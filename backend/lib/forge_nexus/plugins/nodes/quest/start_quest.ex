@@ -18,7 +18,7 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.StartQuest do
          %{
            user_quest_id: user_quest.id,
            success: true,
-           first_step: user_quest.first_step
+           first_step: Map.get(user_quest, :first_step, %{})
          }, ctx}
 
       {:error, reason} ->

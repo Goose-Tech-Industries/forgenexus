@@ -4,6 +4,7 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.AiContentClassify do
   @impl true
   def execute(config, inputs, ctx) do
     content = Map.get(inputs, :content) || Map.get(inputs, "content", "")
+    forum_id = Map.get(inputs, :forum_id) || Map.get(inputs, "forum_id")
     categories_raw = Map.get(config, "categories", "spam,toxic,nsfw,off_topic")
 
     categories =
@@ -12,7 +13,10 @@ defmodule ForgeNexus.Plugins.Nodes.Automod.AiContentClassify do
       |> Enum.map(&String.trim/1)
       |> Enum.reject(&(&1 == ""))
 
-    case ForgeNexus.Moderation.ai_flag_content(content, categories: categories) do
+    case ForgeNexus.Moderation.ai_flag_content(content,
+           categories: categories,
+           forum_id: forum_id
+         ) do
       {:ok, %{flagged: true, reason: reason}} ->
         scores = Enum.into(categories, %{}, fn c -> {c, if(c == reason, do: 1.0, else: 0.0)} end)
         {:ok, %{classification: reason, confidence: 1.0, scores: scores}, ctx}

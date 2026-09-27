@@ -19,14 +19,15 @@ defmodule ForgeNexus.Plugins.Nodes.Text.RegexMatch do
 
     case :re.compile(pattern, opts) do
       {:ok, compiled} ->
-        case :re.run(text, compiled, [{:capture, :all, :binary}, {:match_limit, 10_000}]) do
+        case :re.run(text, compiled, [
+               {:capture, :all, :binary},
+               {:match_limit, 10_000},
+               :report_errors
+             ]) do
           {:match, captures} ->
             {:ok, %{matched: true, captures: captures}, ctx}
 
-          :nomatch ->
-            {:ok, %{matched: false, captures: []}, ctx}
-
-          {:error, _reason} ->
+          _ ->
             {:ok, %{matched: false, captures: []}, ctx}
         end
 

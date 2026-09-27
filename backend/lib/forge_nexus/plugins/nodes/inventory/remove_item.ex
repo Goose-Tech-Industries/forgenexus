@@ -10,17 +10,13 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.RemoveItem do
 
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     item_template_id = Map.get(inputs, :item_template_id) || Map.get(inputs, "item_template_id")
-    quantity = Map.get(inputs, :quantity) || Map.get(inputs, "quantity") || 1
+    quantity = Map.get(inputs, :quantity) || Map.get(inputs, "quantity")
     quantity = to_integer(quantity)
 
     case Inventory.remove_item(user_id, item_template_id, quantity) do
       {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true, quantity_removed: quantity}, ctx}
-
-      {:error, :item_not_found} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, :item_not_found, ctx}
 
       {:error, reason} ->
         ctx = Sandbox.increment_db_ops(ctx)

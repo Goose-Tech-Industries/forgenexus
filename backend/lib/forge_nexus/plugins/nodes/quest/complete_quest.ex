@@ -9,19 +9,19 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.CompleteQuest do
 
     user_quest_id = Map.get(inputs, :user_quest_id) || Map.get(inputs, "user_quest_id")
 
-    case ForgeNexus.Quests.complete_quest(user_quest_id) do
-      {:ok, rewards_list} ->
-        ctx = Sandbox.increment_db_ops(ctx)
+    try do
+      {:ok, rewards_list} = ForgeNexus.Quests.complete_quest(user_quest_id)
+      ctx = Sandbox.increment_db_ops(ctx)
 
-        {:ok,
-         %{
-           rewards: rewards_list,
-           success: true
-         }, ctx}
-
-      {:error, reason} ->
+      {:ok,
+       %{
+         rewards: rewards_list,
+         success: true
+       }, ctx}
+    rescue
+      e ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to complete quest: #{inspect(reason)}", ctx}
+        {:error, "Failed to complete quest: #{Exception.message(e)}", ctx}
     end
   end
 

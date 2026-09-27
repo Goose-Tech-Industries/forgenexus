@@ -24,7 +24,7 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.GetPetStats do
            stats: %{
              hunger: pet.hunger,
              happiness: pet.happiness,
-             health: pet.health,
+             health: Map.get(pet, :health, 100),
              energy: pet.energy
            },
            level: pet.level,

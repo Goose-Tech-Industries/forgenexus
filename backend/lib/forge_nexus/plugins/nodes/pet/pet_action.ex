@@ -23,7 +23,7 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetAction do
              nickname: pet.nickname,
              hunger: pet.hunger,
              happiness: pet.happiness,
-             health: pet.health,
+             health: Map.get(pet, :health, 100),
              energy: pet.energy
            }
          }, ctx}

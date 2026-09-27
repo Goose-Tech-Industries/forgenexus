@@ -28,23 +28,17 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.GachaPull do
 
     pull_count =
       case pity_record do
-        nil ->
-          1
+        %FlowGlobalStore{value: %{"count" => n}} when is_integer(n) ->
+          n + 1
 
-        %FlowGlobalStore{value: val} ->
-          case val do
-            n when is_integer(n) ->
-              n + 1
-
-            n when is_binary(n) ->
-              case Integer.parse(n) do
-                {v, _} -> v + 1
-                :error -> 1
-              end
-
-            _ ->
-              1
+        %FlowGlobalStore{value: %{"count" => n}} when is_binary(n) ->
+          case Integer.parse(n) do
+            {v, _} -> v + 1
+            :error -> 1
           end
+
+        _ ->
+          1
       end
 
     is_pity = pull_count >= pity_threshold
@@ -68,10 +62,14 @@ defmodule ForgeNexus.Plugins.Nodes.Gambling.GachaPull do
       from(s in FlowGlobalStore,
         where: s.flow_id == ^ctx.flow_id and s.key == ^pity_key
       )
-      |> Repo.update_all(set: [value: new_count])
+      |> Repo.update_all(set: [value: %{"count" => new_count}])
     else
       %FlowGlobalStore{}
-      |> FlowGlobalStore.changeset(%{flow_id: ctx.flow_id, key: pity_key, value: new_count})
+      |> FlowGlobalStore.changeset(%{
+        flow_id: ctx.flow_id,
+        key: pity_key,
+        value: %{"count" => new_count}
+      })
       |> Repo.insert()
     end
 

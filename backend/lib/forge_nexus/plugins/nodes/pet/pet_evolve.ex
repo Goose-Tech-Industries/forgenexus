@@ -9,42 +9,44 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetEvolve do
 
     pet_id = Map.get(inputs, :pet_id) || Map.get(inputs, "pet_id")
 
-    case ForgeNexus.Pets.check_evolution(pet_id) do
-      {:ok, :no_evolution} ->
+    try do
+      case ForgeNexus.Pets.check_evolution(pet_id) do
+        {:ok, :no_evolution} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+
+          {:branch, "not_ready",
+           %{
+             evolved: false,
+             reason: :no_evolution
+           }, ctx}
+
+        {:ok, :not_ready} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+
+          {:branch, "not_ready",
+           %{
+             evolved: false,
+             reason: :not_ready
+           }, ctx}
+
+        {:ok, pet} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+
+          {:branch, "evolved",
+           %{
+             evolved: true,
+             pet: %{
+               id: pet.id,
+               nickname: pet.nickname,
+               level: pet.level,
+               template_id: Map.get(pet, :pet_template_id) || Map.get(pet, :template_id)
+             }
+           }, ctx}
+      end
+    rescue
+      e ->
         ctx = Sandbox.increment_db_ops(ctx)
-
-        {:branch, "not_ready",
-         %{
-           evolved: false,
-           reason: :no_evolution
-         }, ctx}
-
-      {:ok, :not_ready} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-
-        {:branch, "not_ready",
-         %{
-           evolved: false,
-           reason: :not_ready
-         }, ctx}
-
-      {:ok, pet} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-
-        {:branch, "evolved",
-         %{
-           evolved: true,
-           pet: %{
-             id: pet.id,
-             nickname: pet.nickname,
-             level: pet.level,
-             template_id: pet.template_id
-           }
-         }, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to check evolution: #{inspect(reason)}", ctx}
+        {:error, "Failed to check evolution: #{Exception.message(e)}", ctx}
     end
   end
 

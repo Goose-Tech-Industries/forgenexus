@@ -10,14 +10,14 @@ defmodule ForgeNexus.Plugins.Nodes.Achievement.AwardBadge do
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     badge_id = Map.get(inputs, :badge_id) || Map.get(inputs, "badge_id")
 
-    case ForgeNexus.Achievements.award_badge(user_id, badge_id) do
-      {:ok, %{was_new: was_new}} ->
+    try do
+      {:ok, %{was_new: was_new}} = ForgeNexus.Achievements.award_badge(user_id, badge_id)
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{success: true, was_new: was_new}, ctx}
+    rescue
+      e ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{success: true, was_new: was_new}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to award badge: #{inspect(reason)}", ctx}
+        {:error, "Failed to award badge: #{Exception.message(e)}", ctx}
     end
   end
 

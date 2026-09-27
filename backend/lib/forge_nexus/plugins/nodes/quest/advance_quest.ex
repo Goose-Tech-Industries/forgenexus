@@ -9,21 +9,34 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.AdvanceQuest do
 
     user_quest_id = Map.get(inputs, :user_quest_id) || Map.get(inputs, "user_quest_id")
 
-    case ForgeNexus.Quests.advance_quest(user_quest_id) do
-      {:ok, updated_user_quest} ->
-        ctx = Sandbox.increment_db_ops(ctx)
+    try do
+      case ForgeNexus.Quests.advance_quest(user_quest_id) do
+        {:ok, %ForgeNexus.Quests.UserQuest{} = updated_user_quest} ->
+          ctx = Sandbox.increment_db_ops(ctx)
 
-        {:ok,
-         %{
-           success: true,
-           user_quest_id: updated_user_quest.id,
-           status: updated_user_quest.status,
-           current_step: updated_user_quest.current_step
-         }, ctx}
+          {:ok,
+           %{
+             success: true,
+             user_quest_id: updated_user_quest.id,
+             status: updated_user_quest.status,
+             current_step: updated_user_quest.current_step
+           }, ctx}
 
-      {:error, reason} ->
+        {:ok, _rewards} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+
+          {:ok,
+           %{
+             success: true,
+             user_quest_id: user_quest_id,
+             status: "completed",
+             current_step: nil
+           }, ctx}
+      end
+    rescue
+      e ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to advance quest: #{inspect(reason)}", ctx}
+        {:error, "Failed to advance quest: #{Exception.message(e)}", ctx}
     end
   end
 

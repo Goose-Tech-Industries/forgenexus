@@ -115,14 +115,25 @@ defmodule ForgeNexus.Inventory do
       )
 
     Repo.transaction(fn ->
-      from(ii in InventoryItem,
-        join: t in ItemTemplate,
-        on: ii.item_template_id == t.id,
-        where:
-          ii.user_id == ^user_id and ii.is_equipped == true and
-            t.category == ^item.item_template.category and ii.id != ^inventory_item_id
-      )
-      |> Repo.update_all(set: [is_equipped: false])
+      cat = item.item_template.category
+
+      base_query =
+        from(ii in InventoryItem,
+          join: t in ItemTemplate,
+          on: ii.item_template_id == t.id,
+          where:
+            ii.user_id == ^user_id and ii.is_equipped == true and
+              ii.id != ^inventory_item_id
+        )
+
+      query =
+        if is_nil(cat) do
+          from([ii, t] in base_query, where: is_nil(t.category))
+        else
+          from([ii, t] in base_query, where: t.category == ^cat)
+        end
+
+      Repo.update_all(query, set: [is_equipped: false])
 
       item |> InventoryItem.changeset(%{is_equipped: true}) |> Repo.update!()
     end)

@@ -11,26 +11,32 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.CreatePet do
     template_id = Map.get(inputs, :template_id) || Map.get(inputs, "template_id")
     nickname = Map.get(config, "nickname", "")
 
-    case ForgeNexus.Pets.create_pet(user_id, template_id, nickname) do
-      {:ok, pet} ->
-        ctx = Sandbox.increment_db_ops(ctx)
+    try do
+      case ForgeNexus.Pets.create_pet(user_id, template_id, nickname) do
+        {:ok, pet} ->
+          ctx = Sandbox.increment_db_ops(ctx)
 
-        {:ok,
-         %{
-           pet_id: pet.id,
-           pet: %{
-             id: pet.id,
-             nickname: pet.nickname,
-             template_id: pet.pet_template_id,
-             level: pet.level,
-             experience: pet.experience
-           },
-           success: true
-         }, ctx}
+          {:ok,
+           %{
+             pet_id: pet.id,
+             pet: %{
+               id: pet.id,
+               nickname: pet.nickname,
+               template_id: pet.pet_template_id,
+               level: pet.level,
+               experience: pet.experience
+             },
+             success: true
+           }, ctx}
 
-      {:error, reason} ->
+        {:error, reason} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:error, "Failed to create pet: #{inspect(reason)}", ctx}
+      end
+    rescue
+      e ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to create pet: #{inspect(reason)}", ctx}
+        {:error, "Failed to create pet: #{Exception.message(e)}", ctx}
     end
   end
 

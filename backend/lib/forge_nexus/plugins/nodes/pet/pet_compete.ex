@@ -19,11 +19,12 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetCompete do
 
       pet ->
         ctx = Sandbox.increment_db_ops(ctx)
+        pet_health = Map.get(pet, :health, 100)
 
         score =
           case competition_type do
             "beauty" ->
-              (pet.happiness || 0) + (pet.health || 0)
+              (pet.happiness || 0) + pet_health
 
             "strength" ->
               (pet.level || 0) * 10 + (pet.experience || 0)
@@ -33,7 +34,7 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.PetCompete do
 
             _ ->
               (pet.level || 0) * 10 + (pet.experience || 0) + (pet.happiness || 0) +
-                (pet.health || 0)
+                pet_health
           end
 
         {:ok,

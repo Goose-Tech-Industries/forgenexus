@@ -10,17 +10,17 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.GiveItem do
 
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     item_template_id = Map.get(inputs, :item_template_id) || Map.get(inputs, "item_template_id")
-    quantity = Map.get(inputs, :quantity) || Map.get(inputs, "quantity") || 1
+    quantity = Map.get(inputs, :quantity) || Map.get(inputs, "quantity")
     quantity = to_integer(quantity)
 
-    case Inventory.give_item(user_id, item_template_id, quantity) do
-      {:ok, item_or_items} ->
+    try do
+      {:ok, item_or_items} = Inventory.give_item(user_id, item_template_id, quantity)
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{success: true, item: item_or_items, quantity: quantity}, ctx}
+    rescue
+      _ ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{success: true, item: item_or_items, quantity: quantity}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, reason, ctx}
+        {:error, :item_not_found, ctx}
     end
   end
 

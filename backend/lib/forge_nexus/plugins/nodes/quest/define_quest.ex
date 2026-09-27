@@ -8,11 +8,23 @@ defmodule ForgeNexus.Plugins.Nodes.Quest.DefineQuest do
     Sandbox.check_db_limit!(ctx)
     name = Map.get(inputs, :name) || Map.get(inputs, "name")
     description = Map.get(inputs, :description) || Map.get(inputs, "description")
+    raw_type = Map.get(config, "quest_type", "standard")
+
+    quest_type =
+      case raw_type do
+        t when t in ~w(daily weekly chain) -> t
+        _ -> "standard"
+      end
+
+    steps =
+      Map.get(inputs, :steps) || Map.get(inputs, "steps") ||
+        [%{"description" => "Default step", "target" => 1}]
 
     attrs = %{
       name: name,
       description: description,
-      quest_type: Map.get(config, "quest_type", "side"),
+      quest_type: quest_type,
+      steps: steps,
       is_repeatable: Map.get(config, "is_repeatable", false),
       cooldown_hours: Map.get(config, "cooldown_hours", 0),
       reward_points: Map.get(config, "reward_points", 0),

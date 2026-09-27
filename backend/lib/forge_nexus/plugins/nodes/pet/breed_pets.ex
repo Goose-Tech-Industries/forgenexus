@@ -20,7 +20,8 @@ defmodule ForgeNexus.Plugins.Nodes.Pet.BreedPets do
            offspring: %{
              id: offspring.id,
              nickname: offspring.nickname,
-             template_id: offspring.template_id,
+             template_id:
+               Map.get(offspring, :pet_template_id) || Map.get(offspring, :template_id),
              level: offspring.level
            },
            success: true

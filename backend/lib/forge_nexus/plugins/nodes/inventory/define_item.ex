@@ -8,8 +8,18 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.DefineItem do
   def execute(config, inputs, ctx) do
     Sandbox.check_db_limit!(ctx)
 
+    name = Map.get(inputs, :name) || Map.get(inputs, "name")
+
+    slug =
+      Map.get(inputs, :slug) || Map.get(inputs, "slug") ||
+        if is_binary(name),
+          do:
+            "#{String.downcase(String.replace(name, ~r/[^a-zA-Z0-9]+/, "-"))}-#{System.unique_integer([:positive])}",
+          else: nil
+
     attrs = %{
-      name: Map.get(inputs, :name) || Map.get(inputs, "name"),
+      name: name,
+      slug: slug,
       description: Map.get(inputs, :description) || Map.get(inputs, "description") || "",
       rarity: Map.get(inputs, :rarity) || Map.get(inputs, "rarity") || "common",
       category: Map.get(inputs, :category) || Map.get(inputs, "category") || "general",

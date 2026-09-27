@@ -184,9 +184,47 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
                  ctx
                )
 
+      # Edge cases: non-binary field, nonexistent atom, matches with non-binary, to_number with invalid string/other
+      assert {:branch, "true", _, _} =
+               IfElse.execute(
+                 %{"field" => 12345, "operator" => "eq", "value" => "hello"},
+                 "hello",
+                 ctx
+               )
+
+      unique_atom_name = "atom_#{System.unique_integer([:positive])}_never_interned"
+
+      assert {:branch, "false", _, _} =
+               IfElse.execute(
+                 %{"field" => unique_atom_name, "operator" => "eq", "value" => "admin"},
+                 %{"existing" => 1},
+                 ctx
+               )
+
+      assert {:branch, "false", _, _} =
+               IfElse.execute(
+                 %{"field" => "num", "operator" => "matches", "value" => "\\d+"},
+                 %{"num" => 12345},
+                 ctx
+               )
+
+      assert {:branch, "false", _, _} =
+               IfElse.execute(
+                 %{"field" => "val", "operator" => "gt", "value" => "10"},
+                 %{"val" => "invalid_float"},
+                 ctx
+               )
+
+      assert {:branch, "false", _, _} =
+               IfElse.execute(
+                 %{"field" => "val", "operator" => "gt", "value" => "10"},
+                 %{"val" => []},
+                 ctx
+               )
+
       # schema & config validation
-      assert :ok = IfElse.validate_config(%{"field" => "score", "operator" => "eq"})
-      assert {:error, _} = IfElse.validate_config(%{})
+      assert :ok = IfElse.validate_config(%{"field" => "score", "operator" => "matches"})
+      assert {:error, _} = IfElse.validate_config(%{"operator" => "invalid"})
       assert is_map(IfElse.schema())
     end
   end
@@ -213,6 +251,31 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
       assert {:branch, "port_other", _, _} =
                SwitchCase.execute(config, %{"status" => "archived"}, ctx)
 
+      # Edge paths: case without port, non-binary field, non-map acc, nonexistent atom
+      assert {:branch, "default", _, _} =
+               SwitchCase.execute(
+                 %{"field" => "status", "cases" => [%{"value" => "matched"}]},
+                 %{"status" => "matched"},
+                 ctx
+               )
+
+      assert {:branch, "default", _, _} =
+               SwitchCase.execute(%{"field" => 12345, "cases" => []}, %{}, ctx)
+
+      assert {:branch, "default", _, _} =
+               SwitchCase.execute(
+                 %{"field" => "user.name", "cases" => [%{"value" => "alice"}]},
+                 %{"user" => "not_a_map"},
+                 ctx
+               )
+
+      assert {:branch, "default", _, _} =
+               SwitchCase.execute(
+                 %{"field" => "unknown_nonexistent_atom_field_xyz_123", "cases" => []},
+                 %{},
+                 ctx
+               )
+
       # validate_config
       assert :ok = SwitchCase.validate_config(%{"field" => "status", "cases" => []})
       assert {:error, _} = SwitchCase.validate_config(%{})
@@ -231,8 +294,22 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
       assert result.count == 2
       assert result._loop == true
 
+      # with atom keys
+      assert {:ok, result2, _} =
+               Loop.execute(%{"source_field" => "tags"}, %{tags: ["elixir"]}, ctx)
+
+      assert result2.count == 1
+
       assert {:error, _, _} =
                Loop.execute(%{"source_field" => "tags"}, %{"tags" => "not_a_list"}, ctx)
+
+      # ArgumentError handling when source field atom is unknown
+      assert {:error, _, _} =
+               Loop.execute(
+                 %{"source_field" => "unregistered_random_atom_field_987123"},
+                 %{},
+                 ctx
+               )
 
       assert :ok = Loop.validate_config(%{"source_field" => "items"})
       assert {:error, _} = Loop.validate_config(%{})
@@ -251,18 +328,31 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
 
       assert {:branch, "path_a", _, _} = Random.execute(config, %{}, ctx)
 
+      # Invalid or mismatched weights defaults to equal weighting
+      assert {:branch, _, _, _} =
+               Random.execute(%{"branches" => ["a", "b"], "weights" => "invalid"}, %{}, ctx)
+
+      assert {:branch, _, _, _} =
+               Random.execute(%{"branches" => ["a", "b"], "weights" => [1]}, %{}, ctx)
+
       # Empty branches error
       assert {:error, "No branches configured", _} = Random.execute(%{"branches" => []}, %{}, ctx)
 
       # validate_config
       assert :ok = Random.validate_config(%{"branches" => ["a", "b"]})
       assert {:error, _} = Random.validate_config(%{"branches" => []})
+      assert {:error, _} = Random.validate_config(%{"branches" => "not_list"})
       assert is_map(Random.schema())
     end
   end
 
   describe "Nodes.Logic.Delay" do
-    test "validates configuration and returns schema" do
+    test "validates configuration, executes with zero delay, and returns schema" do
+      ctx = make_ctx()
+
+      assert {:ok, %{"state" => "ok"}, _} =
+               Delay.execute(%{"seconds" => 0}, %{"state" => "ok"}, ctx)
+
       assert :ok = Delay.validate_config(%{"seconds" => 5})
       assert :ok = Delay.validate_config(%{"seconds" => 0})
       assert {:error, _} = Delay.validate_config(%{"seconds" => "five"})
@@ -297,8 +387,20 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
       assert {:ok, %{result: false}, _} =
                Compare.execute(%{"operator" => "unknown"}, %{"a" => 5, "b" => 10}, ctx)
 
+      # to_number fallbacks with invalid binary and non-number types
+      assert {:ok, %{result: false}, _} =
+               Compare.execute(%{"operator" => "gt"}, %{"a" => "invalid_float", "b" => 10}, ctx)
+
+      assert {:ok, %{result: true}, _} =
+               Compare.execute(%{"operator" => "gt"}, %{"a" => "12.5", "b" => "2.5"}, ctx)
+
+      assert {:ok, %{result: false}, _} =
+               Compare.execute(%{"operator" => "gt"}, %{"a" => nil, "b" => 10}, ctx)
+
       assert :ok = Compare.validate_config(%{"operator" => "eq"})
+      assert :ok = Compare.validate_config(%{"operator" => "lte"})
       assert {:error, _} = Compare.validate_config(%{"operator" => "invalid"})
+      assert {:error, _} = Compare.validate_config(%{})
       assert is_map(Compare.schema())
     end
   end
@@ -309,6 +411,9 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
 
       assert {:ok, %{result: 15}, _} =
                Arithmetic.execute(%{"operation" => "add"}, %{"a" => 10, "b" => 5}, ctx)
+
+      assert {:ok, %{result: 15.0}, _} =
+               Arithmetic.execute(%{"operation" => "add"}, %{"a" => "12.5", "b" => "2.5"}, ctx)
 
       assert {:ok, %{result: 5}, _} =
                Arithmetic.execute(%{"operation" => "subtract"}, %{"a" => 10, "b" => 5}, ctx)
@@ -325,6 +430,10 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
       assert {:error, "Unknown operation: modulo", _} =
                Arithmetic.execute(%{"operation" => "modulo"}, %{"a" => 10, "b" => 2}, ctx)
 
+      # to_number fallbacks with invalid binary and non-number types
+      assert {:ok, %{result: 0}, _} =
+               Arithmetic.execute(%{"operation" => "add"}, %{"a" => "not_a_num", "b" => []}, ctx)
+
       assert :ok = Arithmetic.validate_config(%{"operation" => "add"})
       assert {:error, _} = Arithmetic.validate_config(%{"operation" => "pow"})
       assert is_map(Arithmetic.schema())
@@ -337,6 +446,12 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
 
       assert {:ok, %{result: 5.0}, _} =
                Functions.execute(%{"function" => "min"}, %{"a" => 5, "b" => 10}, ctx)
+
+      assert {:ok, %{result: 2.5}, _} =
+               Functions.execute(%{"function" => "min"}, %{"a" => "12.5", "b" => "2.5"}, ctx)
+
+      assert {:ok, %{result: +0.0}, _} =
+               Functions.execute(%{"function" => "min"}, %{"a" => nil, "b" => nil}, ctx)
 
       assert {:ok, %{result: 10.0}, _} =
                Functions.execute(%{"function" => "max"}, %{"a" => 5, "b" => 10}, ctx)
@@ -364,9 +479,27 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
 
       assert num >= 1.0 and num <= 10.0
 
+      # random_number when max <= min
+      assert {:ok, %{result: 15.0}, _} =
+               Functions.execute(
+                 %{"function" => "random_number"},
+                 %{"min" => 15, "max" => 10},
+                 ctx
+               )
+
+      # to_number fallbacks: invalid binary, nil, other
+      assert {:ok, %{result: +0.0}, _} =
+               Functions.execute(
+                 %{"function" => "min"},
+                 %{"a" => "bad_float", "b" => %{}},
+                 ctx
+               )
+
       assert {:error, "Unknown function: invalid", _} =
                Functions.execute(%{"function" => "invalid"}, %{}, ctx)
 
+      assert :ok = Functions.validate_config(%{"function" => "min"})
+      assert {:error, _} = Functions.validate_config(%{"function" => "invalid"})
       assert is_map(Functions.schema())
     end
   end
@@ -391,7 +524,7 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
     test "matches regex pattern with options and returns captures" do
       ctx = make_ctx()
 
-      config = %{"pattern" => "user_(\\d+)", "flags" => "i"}
+      config = %{"pattern" => "user_(\\d+)", "flags" => "imsx"}
       inputs = %{"text" => "Welcome user_42"}
 
       assert {:ok, %{matched: true, captures: ["user_42", "42"]}, _} =
@@ -399,6 +532,14 @@ defmodule ForgeNexus.Plugins.NodesRegistryAndPureNodesTest do
 
       assert {:ok, %{matched: false, captures: []}, _} =
                RegexMatch.execute(config, %{"text" => "guest_account"}, ctx)
+
+      # Backtracking match limit error branch in :re.run
+      assert {:ok, %{matched: false, captures: []}, _} =
+               RegexMatch.execute(
+                 %{"pattern" => "(*LIMIT_MATCH=1)a*b"},
+                 %{"text" => "aaaa"},
+                 ctx
+               )
 
       assert {:error, "Invalid regex pattern: " <> _, _} =
                RegexMatch.execute(%{"pattern" => "[invalid"}, %{"text" => "abc"}, ctx)

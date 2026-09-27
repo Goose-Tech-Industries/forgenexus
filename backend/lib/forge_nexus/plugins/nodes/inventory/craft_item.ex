@@ -11,18 +11,24 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.CraftItem do
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
     recipe_id = Map.get(inputs, :recipe_id) || Map.get(inputs, "recipe_id")
 
-    case Inventory.craft_item(user_id, recipe_id) do
-      {:ok, {:success, item}} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{success: true, crafted: true, result_item: item}, ctx}
+    try do
+      case Inventory.craft_item(user_id, recipe_id) do
+        {:ok, {:success, item}} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:ok, %{success: true, crafted: true, result_item: item}, ctx}
 
-      {:ok, :failed} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{success: true, crafted: false, result_item: nil}, ctx}
+        {:ok, :failed} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:ok, %{success: true, crafted: false, result_item: nil}, ctx}
 
-      {:error, reason} ->
+        {:error, reason} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:error, reason, ctx}
+      end
+    rescue
+      _ ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:error, reason, ctx}
+        {:error, :recipe_not_found, ctx}
     end
   end
 

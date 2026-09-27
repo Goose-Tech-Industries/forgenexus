@@ -11,7 +11,7 @@ defmodule ForgeNexus.Plugins.Nodes.Inventory.TransferItem do
     from_user_id = Map.get(inputs, :from_user_id) || Map.get(inputs, "from_user_id")
     to_user_id = Map.get(inputs, :to_user_id) || Map.get(inputs, "to_user_id")
     item_template_id = Map.get(inputs, :item_template_id) || Map.get(inputs, "item_template_id")
-    quantity = Map.get(inputs, :quantity) || Map.get(inputs, "quantity") || 1
+    quantity = Map.get(inputs, :quantity) || Map.get(inputs, "quantity")
     quantity = to_integer(quantity)
 
     case Inventory.transfer_item(from_user_id, to_user_id, item_template_id, quantity) do
