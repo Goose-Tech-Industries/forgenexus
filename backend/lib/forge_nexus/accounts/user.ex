@@ -123,6 +123,7 @@ defmodule ForgeNexus.Accounts.User do
     field :activity_visibility, :string, default: "public"
     field :active_forge_code, :string
     field :force_readable_mode_for_screen_readers, :boolean, default: true
+    field :metadata, :map, default: %{}, virtual: true
 
     belongs_to :primary_group, ForgeNexus.Accounts.UserGroup
     belongs_to :selected_theme, ForgeNexus.Accounts.Theme, foreign_key: :theme_id

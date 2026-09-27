@@ -22,7 +22,7 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetSignature do
         updated_metadata = Map.put(metadata, "signature", signature)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{signature: signature, metadata: updated_metadata})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

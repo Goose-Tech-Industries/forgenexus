@@ -32,6 +32,7 @@ defmodule ForgeNexus.Plugins.Nodes.Content.CreateThreadNode do
       user_id: user_id,
       title: title,
       slug: slug,
+      body: body,
       prefix: if(prefix == "", do: nil, else: prefix),
       tags: tags,
       last_post_at: DateTime.utc_now() |> DateTime.truncate(:second)
@@ -39,15 +40,6 @@ defmodule ForgeNexus.Plugins.Nodes.Content.CreateThreadNode do
 
     case ForgeNexus.Forums.create_thread(attrs) do
       {:ok, thread} ->
-        if body && body != "" do
-          ForgeNexus.Forums.create_post(%{
-            thread_id: thread.id,
-            forum_id: forum_id,
-            user_id: user_id,
-            body: body
-          })
-        end
-
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{thread_id: thread.id, slug: thread.slug, success: true}, ctx}
 

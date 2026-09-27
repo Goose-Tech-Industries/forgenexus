@@ -23,8 +23,11 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.ShowProfileWidget do
         {:error, "User not found: #{user_id}", ctx}
 
       user ->
-        metadata = Map.get(user, :metadata) || %{}
-        widgets = Map.get(metadata, "profile_widgets", [])
+        social_links = Map.get(user, :social_links) || %{}
+
+        widgets =
+          Map.get(social_links, "profile_widgets") ||
+            Map.get(user.metadata || %{}, "profile_widgets", [])
 
         widget = %{
           "type" => widget_type,
@@ -41,10 +44,14 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.ShowProfileWidget do
             idx -> List.replace_at(widgets, idx, widget)
           end
 
-        updated_metadata = Map.put(metadata, "profile_widgets", updated_widgets)
+        updated_social_links = Map.put(social_links, "profile_widgets", updated_widgets)
+        updated_metadata = Map.put(user.metadata || %{}, "profile_widgets", updated_widgets)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{
+          social_links: updated_social_links,
+          metadata: updated_metadata
+        })
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

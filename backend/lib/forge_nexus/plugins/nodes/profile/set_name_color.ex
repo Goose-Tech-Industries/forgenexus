@@ -22,7 +22,7 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetNameColor do
         updated_metadata = Map.put(metadata, "name_color", color)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{username_color: color, metadata: updated_metadata})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

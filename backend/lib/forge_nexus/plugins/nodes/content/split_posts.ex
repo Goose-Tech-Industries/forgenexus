@@ -25,14 +25,23 @@ defmodule ForgeNexus.Plugins.Nodes.Content.SplitPosts do
           []
       end
 
-    case ForgeNexus.Forums.split_posts_into_new_thread(post_ids, new_thread_title, forum_id) do
-      {:ok, %{thread: thread, moved: moved}} ->
+    cond do
+      post_ids == [] ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{new_thread_id: thread.id, posts_moved: moved, success: true}, ctx}
+        {:error, "Failed to split posts: post_ids cannot be empty", ctx}
 
-      {:error, err} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to split posts: #{inspect(err)}", ctx}
+      true ->
+        try do
+          {:ok, %{thread: thread, moved: moved}} =
+            ForgeNexus.Forums.split_posts_into_new_thread(post_ids, new_thread_title, forum_id)
+
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:ok, %{new_thread_id: thread.id, posts_moved: moved, success: true}, ctx}
+        rescue
+          e in [Ecto.InvalidChangesetError, Ecto.NoResultsError, Ecto.Query.CastError, MatchError] ->
+            ctx = Sandbox.increment_db_ops(ctx)
+            {:error, "Failed to split posts: #{Exception.message(e)}", ctx}
+        end
     end
   end
 

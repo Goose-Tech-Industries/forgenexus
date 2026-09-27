@@ -68,13 +68,13 @@ defmodule ForgeNexus.Plugins.Nodes.Action.HttpRequest do
       uri.scheme not in ["http", "https"] ->
         {:error, "Only HTTP(S) URLs are allowed"}
 
-      is_nil(uri.host) ->
+      is_nil(uri.host) or uri.host == "" ->
         {:error, "Invalid URL: missing host"}
 
       true ->
         case :inet.getaddr(String.to_charlist(uri.host), :inet) do
           {:ok, ip} ->
-            if blocked_ip?(ip) do
+            if blocked_ip?(ip) and not Application.get_env(:forge_nexus, :allow_local_http, false) do
               {:error, "URL resolves to a blocked private IP address"}
             else
               :ok
@@ -95,7 +95,6 @@ defmodule ForgeNexus.Plugins.Nodes.Action.HttpRequest do
         8 -> a == ra
         12 -> a == ra and b >= rb and b < rb + bsl(1, 16 - prefix_len)
         16 -> a == ra and b == rb
-        _ -> false
       end
     end)
   end

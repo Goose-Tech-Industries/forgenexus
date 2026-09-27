@@ -9,18 +9,14 @@ defmodule ForgeNexus.Plugins.Nodes.Content.MergeThreads do
     source_thread_id = Map.get(inputs, :source_thread_id) || Map.get(inputs, "source_thread_id")
     target_thread_id = Map.get(inputs, :target_thread_id) || Map.get(inputs, "target_thread_id")
 
-    case ForgeNexus.Forums.merge_threads(source_thread_id, target_thread_id) do
-      {:ok, %{moved_count: n}} ->
+    try do
+      {:ok, target} = ForgeNexus.Forums.merge_threads(source_thread_id, target_thread_id)
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{merged_post_count: target.reply_count || 0, success: true}, ctx}
+    rescue
+      e in [Ecto.NoResultsError, Ecto.Query.CastError, MatchError] ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{merged_post_count: n, success: true}, ctx}
-
-      {:ok, _} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{merged_post_count: 0, success: true}, ctx}
-
-      {:error, err} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to merge threads: #{inspect(err)}", ctx}
+        {:error, "Failed to merge threads: #{Exception.message(e)}", ctx}
     end
   end
 

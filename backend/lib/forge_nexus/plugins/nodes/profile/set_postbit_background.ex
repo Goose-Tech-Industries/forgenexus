@@ -24,7 +24,11 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetPostbitBackground do
         updated_metadata = Map.put(metadata, "postbit_background", postbit_bg)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{
+          postbit_background_url: image_url,
+          postbit_background_opacity: opacity,
+          metadata: updated_metadata
+        })
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

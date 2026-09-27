@@ -24,7 +24,7 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetNameEffect do
         updated_metadata = Map.put(metadata, "name_effect", effect)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{username_effect: effect, metadata: updated_metadata})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

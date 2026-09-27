@@ -8,15 +8,15 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.RestrictProfilePerk do
   @valid_perks ~w(avatar_frame name_color name_effect postbit_background profile_background custom_title)
 
   @perk_resets %{
-    "avatar_frame" => %{metadata_key: "avatar_frame"},
-    "name_color" => %{metadata_key: "name_color"},
-    "name_effect" => %{metadata_key: "name_effect"},
+    "avatar_frame" => %{fields: %{avatar_frame: nil}, metadata_key: "avatar_frame"},
+    "name_color" => %{fields: %{username_color: nil}, metadata_key: "name_color"},
+    "name_effect" => %{fields: %{username_effect: "none"}, metadata_key: "name_effect"},
     "postbit_background" => %{
       fields: %{postbit_background_url: nil, postbit_background_opacity: nil},
       metadata_key: "postbit_background"
     },
     "profile_background" => %{
-      fields: %{post_background_url: nil, post_background_opacity: nil},
+      fields: %{profile_background_url: nil, post_background_url: nil},
       metadata_key: "profile_background"
     },
     "custom_title" => %{fields: %{custom_title: nil}}

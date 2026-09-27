@@ -22,7 +22,7 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetAvatarFrame do
         updated_metadata = Map.put(metadata, "avatar_frame", frame_id)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{avatar_frame: frame_id, metadata: updated_metadata})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

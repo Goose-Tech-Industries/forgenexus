@@ -11,18 +11,20 @@ defmodule ForgeNexus.Plugins.Nodes.Action.CreatePost do
     body = Map.get(inputs, :body) || Map.get(inputs, "body")
     user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id")
 
-    case ForgeNexus.Forums.create_post(%{
-           thread_id: thread_id,
-           body: body,
-           user_id: user_id
-         }) do
-      {:ok, post} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{post_id: post.id, created: true}, ctx}
+    try do
+      {:ok, post} =
+        ForgeNexus.Forums.create_post(%{
+          thread_id: thread_id,
+          body: body,
+          user_id: user_id
+        })
 
-      {:error, reason} ->
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:ok, %{post_id: post.id, created: true}, ctx}
+    rescue
+      e in [Ecto.InvalidChangesetError, Ecto.NoResultsError, Ecto.Query.CastError, MatchError] ->
         ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to create post: #{inspect(reason)}", ctx}
+        {:error, "Failed to create post: #{Exception.message(e)}", ctx}
     end
   end
 

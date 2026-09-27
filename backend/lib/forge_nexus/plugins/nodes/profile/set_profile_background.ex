@@ -22,7 +22,7 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetProfileBackground do
         updated_metadata = Map.put(metadata, "profile_background", image_url)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{profile_background_url: image_url, metadata: updated_metadata})
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

@@ -24,7 +24,11 @@ defmodule ForgeNexus.Plugins.Nodes.Profile.SetMood do
         updated_metadata = Map.put(metadata, "mood", mood)
 
         user
-        |> Ecto.Changeset.change(%{metadata: updated_metadata})
+        |> Ecto.Changeset.change(%{
+          profile_mood: text,
+          profile_mood_emoji: emoji,
+          metadata: updated_metadata
+        })
         |> Repo.update!()
 
         ctx = Sandbox.increment_db_ops(ctx)

@@ -16,6 +16,11 @@ defmodule ForgeNexus.TestMockHttpServer do
         |> put_resp_content_type("application/json")
         |> send_resp(500, Jason.encode!(%{error: "internal server error"}))
 
+      {"GET", "/large"} ->
+        conn
+        |> put_resp_content_type("text/plain")
+        |> send_resp(200, String.duplicate("x", 1_050_000))
+
       {"POST", "/api/chat"} ->
         {:ok, body, conn} = read_body(conn)
         parsed = Jason.decode!(body)
