@@ -54,7 +54,7 @@ defmodule ForgeNexus.Plugins.Nodes.Data.QueryTable do
 
       case op do
         "eq" ->
-          where(q, [r], fragment("?->? = ?", r.data, ^field_name, ^Jason.encode!(value)))
+          where(q, [r], fragment("?->>? = ?", r.data, ^field_name, ^to_string(value)))
 
         _ ->
           q

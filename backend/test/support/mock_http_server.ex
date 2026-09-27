@@ -21,6 +21,32 @@ defmodule ForgeNexus.TestMockHttpServer do
         |> put_resp_content_type("text/plain")
         |> send_resp(200, String.duplicate("x", 1_050_000))
 
+      {"GET", "/youtube/feed"} ->
+        xml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <title>My Brand New Video</title>
+            <link rel="alternate" href="https://www.youtube.com/watch?v=abcdef"/>
+            <published>2026-09-26T20:00:00Z</published>
+          </entry>
+        </feed>
+        """
+
+        conn
+        |> put_resp_content_type("application/atom+xml")
+        |> send_resp(200, xml)
+
+      {"GET", "/youtube/empty"} ->
+        conn
+        |> put_resp_content_type("application/atom+xml")
+        |> send_resp(200, "<feed></feed>")
+
+      {"GET", "/youtube/error"} ->
+        conn
+        |> put_resp_content_type("text/plain")
+        |> send_resp(500, "Internal Server Error")
+
       {"POST", "/api/chat"} ->
         {:ok, body, conn} = read_body(conn)
         parsed = Jason.decode!(body)

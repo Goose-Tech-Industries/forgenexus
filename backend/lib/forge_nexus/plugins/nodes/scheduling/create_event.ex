@@ -15,12 +15,20 @@ defmodule ForgeNexus.Plugins.Nodes.Scheduling.CreateEvent do
     starts_dt = parse_dt(starts_at)
     ends_dt = parse_dt(ends_at)
 
+    created_by_id =
+      Map.get(inputs, :created_by_id) ||
+        Map.get(inputs, "created_by_id") ||
+        Map.get(inputs, :user_id) ||
+        Map.get(inputs, "user_id") ||
+        ctx.triggered_by_id
+
     attrs = %{
       title: name,
       description: description,
       starts_at: starts_dt,
       ends_at: ends_dt,
-      location: location
+      location: location,
+      created_by_id: created_by_id
     }
 
     case ForgeNexus.Events.create_event(attrs) do

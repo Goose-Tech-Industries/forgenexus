@@ -6,7 +6,7 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.EmailInbound do
   @impl true
   def execute(_config, _inputs, ctx) do
     # Extract trigger_data fields — paired with a webhook that receives inbound emails
-    trigger_data = Map.get(ctx, :trigger_data, %{})
+    trigger_data = Map.get(ctx, :trigger_data) || %{}
 
     from = Map.get(trigger_data, "from") || Map.get(trigger_data, :from, "")
     subject = Map.get(trigger_data, "subject") || Map.get(trigger_data, :subject, "")

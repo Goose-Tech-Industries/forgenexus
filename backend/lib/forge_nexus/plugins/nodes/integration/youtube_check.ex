@@ -47,6 +47,9 @@ defmodule ForgeNexus.Plugins.Nodes.Integration.YoutubeCheck do
 
   defp to_rss_url(url) do
     cond do
+      String.starts_with?(url, "http://127.0.0.1") or String.starts_with?(url, "http://localhost") ->
+        url
+
       String.contains?(url, "/channel/") ->
         channel_id =
           url |> String.split("/channel/") |> List.last() |> String.split("/") |> List.first()
