@@ -10,29 +10,40 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.AddVote do
     poll_id = Map.get(inputs, :poll_id) || Map.get(inputs, "poll_id")
     option_index = Map.get(inputs, :option_index) || Map.get(inputs, "option_index", 0)
 
-    poll = ForgeNexus.Forums.Polls.get_results(poll_id, user_id)
-    sorted_options = poll.options
+    poll =
+      try do
+        ForgeNexus.Forums.Polls.get_results(poll_id, user_id)
+      rescue
+        _ -> nil
+      end
 
-    case Enum.at(sorted_options, option_index) do
-      nil ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Invalid option_index #{option_index}", ctx}
+    if is_nil(poll) do
+      ctx = Sandbox.increment_db_ops(ctx)
+      {:error, "Poll not found", ctx}
+    else
+      sorted_options = poll.options
 
-      opt ->
-        case ForgeNexus.Forums.Polls.vote(poll_id, user_id, [opt.id]) do
-          {:ok, _} ->
-            updated = ForgeNexus.Forums.Polls.get_results(poll_id, user_id)
+      case Enum.at(sorted_options, option_index) do
+        nil ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:error, "Invalid option_index #{option_index}", ctx}
 
-            count =
-              (Enum.find(updated.options, &(&1.id == opt.id)) || %{vote_count: 0}).vote_count
+        opt ->
+          case ForgeNexus.Forums.Polls.vote(poll_id, user_id, [opt.id]) do
+            {:ok, _} ->
+              updated = ForgeNexus.Forums.Polls.get_results(poll_id, user_id)
 
-            ctx = Sandbox.increment_db_ops(ctx)
-            {:ok, %{success: true, current_count: count}, ctx}
+              count =
+                (Enum.find(updated.options, &(&1.id == opt.id)) || %{vote_count: 0}).vote_count
 
-          {:error, reason} ->
-            ctx = Sandbox.increment_db_ops(ctx)
-            {:error, "Failed to vote: #{inspect(reason)}", ctx}
-        end
+              ctx = Sandbox.increment_db_ops(ctx)
+              {:ok, %{success: true, current_count: count}, ctx}
+
+            {:error, reason} ->
+              ctx = Sandbox.increment_db_ops(ctx)
+              {:error, "Failed to vote: #{inspect(reason)}", ctx}
+          end
+      end
     end
   end
 

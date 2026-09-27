@@ -9,7 +9,14 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.ClaimTicket do
     ticket_id = Map.get(inputs, :ticket_id) || Map.get(inputs, "ticket_id")
     staff_user_id = Map.get(inputs, :staff_user_id) || Map.get(inputs, "staff_user_id")
 
-    case ForgeNexus.Tickets.claim_ticket(ticket_id, staff_user_id) do
+    res =
+      try do
+        ForgeNexus.Tickets.claim_ticket(ticket_id, staff_user_id)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true}, ctx}

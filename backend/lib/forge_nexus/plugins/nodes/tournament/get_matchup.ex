@@ -18,11 +18,14 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.GetMatchup do
         {:ok, %{match: nil, has_match: false}, ctx}
 
       match ->
+        opponent_id =
+          if match.player1_id == user_id, do: match.player2_id, else: match.player1_id
+
         {:ok,
          %{
            match: %{
              match_id: match.id,
-             opponent: match.opponent_id,
+             opponent: opponent_id,
              round: match.round,
              status: match.status
            },

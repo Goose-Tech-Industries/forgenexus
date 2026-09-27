@@ -9,7 +9,14 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.EscalateTicket do
     ticket_id = Map.get(inputs, :ticket_id) || Map.get(inputs, "ticket_id")
     reason = Map.get(config, "reason", "")
 
-    case ForgeNexus.Tickets.escalate_ticket(ticket_id, reason) do
+    res =
+      try do
+        ForgeNexus.Tickets.escalate_ticket(ticket_id, reason)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true}, ctx}

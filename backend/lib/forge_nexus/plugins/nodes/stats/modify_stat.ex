@@ -11,31 +11,42 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.ModifyStat do
     stat_key = Map.get(inputs, :stat_key) || Map.get(inputs, "stat_key")
     delta = Map.get(inputs, :delta) || Map.get(inputs, "delta") || 0
 
-    delta =
-      cond do
-        is_number(delta) ->
-          delta
+    if is_nil(user_id) or is_nil(stat_key) do
+      {:error, "user_id and stat_key are required", ctx}
+    else
+      delta =
+        cond do
+          is_number(delta) ->
+            delta
 
-        is_binary(delta) ->
-          case Float.parse(delta) do
-            {n, _} -> n
-            :error -> 0
-          end
+          is_binary(delta) ->
+            case Float.parse(delta) do
+              {n, _} -> n
+              :error -> 0
+            end
 
-        true ->
-          0
+          true ->
+            0
+        end
+
+      old_value = ForgeNexus.UserStats.get_stat(user_id, stat_key)
+
+      res =
+        try do
+          ForgeNexus.UserStats.modify_stat(user_id, stat_key, delta)
+        rescue
+          err -> {:error, Exception.message(err)}
+        end
+
+      case res do
+        {:ok, stat} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:ok, %{old_value: old_value, new_value: stat.value}, ctx}
+
+        {:error, reason} ->
+          ctx = Sandbox.increment_db_ops(ctx)
+          {:error, "Failed to modify stat: #{inspect(reason)}", ctx}
       end
-
-    old_value = ForgeNexus.UserStats.get_stat(user_id, stat_key)
-
-    case ForgeNexus.UserStats.modify_stat(user_id, stat_key, delta) do
-      {:ok, stat} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{old_value: old_value, new_value: stat.value}, ctx}
-
-      {:error, reason} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:error, "Failed to modify stat: #{inspect(reason)}", ctx}
     end
   end
 

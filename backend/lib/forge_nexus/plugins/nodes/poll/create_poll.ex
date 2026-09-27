@@ -10,7 +10,7 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
     thread_id = Map.get(inputs, :thread_id) || Map.get(inputs, "thread_id")
     forum_id = Map.get(inputs, :forum_id) || Map.get(inputs, "forum_id")
     title = Map.get(inputs, :title) || Map.get(inputs, "title") || question
-    user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id") || ctx[:user_id]
+    user_id = Map.get(inputs, :user_id) || Map.get(inputs, "user_id") || ctx.triggered_by_id
     options_raw = Map.get(config, "options", "")
     duration_hours = Map.get(config, "duration_hours", 24) |> to_number()
     allow_multiple = Map.get(config, "allow_multiple", false)
@@ -45,7 +45,14 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
             closes_at: closes_at
           }
 
-          case ForgeNexus.Forums.Polls.create_poll(attrs, options) do
+          res =
+            try do
+              ForgeNexus.Forums.Polls.create_poll(attrs, options)
+            rescue
+              err -> {:error, Exception.message(err)}
+            end
+
+          case res do
             {:ok, poll} ->
               ctx = Sandbox.increment_db_ops(ctx)
               {:ok, %{poll_id: poll.id, thread_id: resolved_thread_id, success: true}, ctx}
@@ -93,11 +100,11 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePoll do
   defp to_number(v) when is_binary(v) do
     case Float.parse(v) do
       {n, _} -> n
-      _ -> 0
+      _ -> 24.0
     end
   end
 
-  defp to_number(_), do: 0
+  defp to_number(_), do: 24.0
 
   @impl true
   def validate_config(config) do

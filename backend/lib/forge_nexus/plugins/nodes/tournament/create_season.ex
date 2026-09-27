@@ -13,13 +13,19 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.CreateSeason do
     starts = DateTime.utc_now() |> DateTime.truncate(:second)
     ends = DateTime.add(starts, duration_days * 86_400, :second)
 
+    user_id =
+      Map.get(inputs, :user_id) || Map.get(inputs, "user_id") || Map.get(inputs, :created_by_id) ||
+        ctx.triggered_by_id
+
     attrs = %{
       name: name,
       description: description,
+      format: Map.get(config, "format", "round_robin"),
       starts_at: starts,
       ends_at: ends,
       status: "active",
-      tournament_type: "season"
+      tournament_type: "season",
+      created_by_id: user_id
     }
 
     case ForgeNexus.Tournaments.create_tournament(attrs) do

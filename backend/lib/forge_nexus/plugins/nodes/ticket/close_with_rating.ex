@@ -12,7 +12,14 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.CloseWithRating do
     if rating_int < 1 or rating_int > 5 do
       {:error, "Rating must be between 1 and 5", ctx}
     else
-      case ForgeNexus.Tickets.close_with_rating(ticket_id, rating_int) do
+      res =
+        try do
+          ForgeNexus.Tickets.close_with_rating(ticket_id, rating_int)
+        rescue
+          err -> {:error, Exception.message(err)}
+        end
+
+      case res do
         {:ok, _} ->
           ctx = Sandbox.increment_db_ops(ctx)
           {:ok, %{success: true}, ctx}

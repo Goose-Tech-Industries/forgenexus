@@ -12,12 +12,19 @@ defmodule ForgeNexus.Plugins.Nodes.Reputation.GiveReputation do
     amount = Map.get(config, "amount", 1)
     type = Map.get(config, "type", "positive")
 
-    case ForgeNexus.Reputation.give_reputation(%{
-           from_user_id: from_user_id,
-           to_user_id: to_user_id,
-           amount: amount,
-           type: type
-         }) do
+    res =
+      try do
+        ForgeNexus.Reputation.give_reputation(%{
+          from_user_id: from_user_id,
+          to_user_id: to_user_id,
+          amount: amount,
+          type: type
+        })
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, new_reputation} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{new_reputation: new_reputation, success: true}, ctx}

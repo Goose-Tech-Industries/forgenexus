@@ -9,7 +9,24 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.UpdateSuggestionStatus do
     suggestion_id = Map.get(inputs, :suggestion_id) || Map.get(inputs, "suggestion_id")
     status = Map.get(config, "status", "open")
 
-    case ForgeNexus.Predictions.update_suggestion_status(suggestion_id, status) do
+    mapped_status =
+      case status do
+        "open" -> "pending"
+        "planned" -> "under_review"
+        "in_progress" -> "under_review"
+        "done" -> "completed"
+        "declined" -> "rejected"
+        s -> s
+      end
+
+    res =
+      try do
+        ForgeNexus.Predictions.update_suggestion_status(suggestion_id, mapped_status)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true}, ctx}
@@ -20,11 +37,13 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.UpdateSuggestionStatus do
     end
   end
 
+  @valid_statuses ~w(open planned in_progress done declined pending under_review accepted approved rejected completed)
+
   @impl true
   def validate_config(config) do
-    if Map.get(config, "status", "open") in ~w(open planned in_progress done declined),
+    if Map.get(config, "status", "open") in @valid_statuses,
       do: :ok,
-      else: {:error, ["status must be open, planned, in_progress, done, or declined"]}
+      else: {:error, ["status must be one of: #{Enum.join(@valid_statuses, ", ")}"]}
   end
 
   @impl true

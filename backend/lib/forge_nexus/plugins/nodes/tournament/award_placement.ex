@@ -23,12 +23,7 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.AwardPlacement do
           %{}
       end
 
-    standings =
-      try do
-        ForgeNexus.Tournaments.get_standings(tournament_id)
-      rescue
-        _ -> []
-      end
+    standings = ForgeNexus.Tournaments.get_standings(tournament_id)
 
     awards_given =
       Enum.reduce(prizes, 0, fn {place_str, points}, acc ->
@@ -41,18 +36,14 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.AwardPlacement do
           standing ->
             user_id = Map.get(standing, :user_id) || Map.get(standing, "user_id")
 
-            if user_id do
-              ForgeNexus.Reputation.give_reputation(%{
-                from_user_id: nil,
-                to_user_id: user_id,
-                amount: points,
-                type: "positive"
-              })
+            ForgeNexus.Reputation.give_reputation(%{
+              from_user_id: nil,
+              to_user_id: user_id,
+              amount: points,
+              type: "positive"
+            })
 
-              acc + 1
-            else
-              acc
-            end
+            acc + 1
         end
       end)
 

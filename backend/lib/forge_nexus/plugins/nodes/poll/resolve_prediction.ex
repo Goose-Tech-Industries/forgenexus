@@ -9,12 +9,15 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.ResolvePrediction do
     prediction_id = Map.get(inputs, :prediction_id) || Map.get(inputs, "prediction_id")
     winning_option = Map.get(inputs, :winning_option) || Map.get(inputs, "winning_option")
 
-    case ForgeNexus.Predictions.resolve_prediction(prediction_id, winning_option) do
-      {:ok, %{total_payout: tp, winners_count: wc}} ->
-        ctx = Sandbox.increment_db_ops(ctx)
-        {:ok, %{total_payout: tp, winners_count: wc, success: true}, ctx}
+    res =
+      try do
+        ForgeNexus.Predictions.resolve_prediction(prediction_id, winning_option)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
 
-      {:ok, _other} ->
+    case res do
+      {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{total_payout: 0, winners_count: 0, success: true}, ctx}
 

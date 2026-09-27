@@ -20,12 +20,21 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePrediction do
     if length(options) < 2 do
       {:error, "Prediction must have at least 2 options", ctx}
     else
+      user_id =
+        Map.get(inputs, :user_id) || Map.get(inputs, "user_id") || Map.get(inputs, :created_by_id) ||
+          ctx.triggered_by_id
+
       closes_at =
         DateTime.utc_now()
         |> DateTime.add(trunc(closes_in_hours * 3600), :second)
         |> DateTime.truncate(:second)
 
-      attrs = %{title: question, status: "open", closes_at: closes_at}
+      attrs = %{
+        title: question,
+        status: "open",
+        closes_at: closes_at,
+        created_by_id: user_id
+      }
 
       case ForgeNexus.Predictions.create_prediction(attrs) do
         {:ok, prediction} ->
@@ -53,11 +62,11 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.CreatePrediction do
   defp to_number(v) when is_binary(v) do
     case Float.parse(v) do
       {n, _} -> n
-      _ -> 0
+      _ -> 24.0
     end
   end
 
-  defp to_number(_), do: 0
+  defp to_number(_), do: 24.0
 
   @impl true
   def validate_config(config) do

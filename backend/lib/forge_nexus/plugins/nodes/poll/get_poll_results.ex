@@ -8,7 +8,13 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.GetPollResults do
     Sandbox.check_db_limit!(ctx)
     poll_id = Map.get(inputs, :poll_id) || Map.get(inputs, "poll_id")
 
-    poll = ForgeNexus.Forums.Polls.get_results(poll_id, nil)
+    poll =
+      try do
+        ForgeNexus.Forums.Polls.get_results(poll_id, nil)
+      rescue
+        _ -> %{options: [], total_votes: 0, is_closed: false}
+      end
+
     ctx = Sandbox.increment_db_ops(ctx)
 
     {:ok,

@@ -26,7 +26,14 @@ defmodule ForgeNexus.Plugins.Nodes.Stats.SetStat do
           0
       end
 
-    case ForgeNexus.UserStats.set_stat(user_id, stat_key, value) do
+    res =
+      try do
+        ForgeNexus.UserStats.set_stat(user_id, stat_key, value)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, stat} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{value: stat.value}, ctx}

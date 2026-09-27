@@ -12,12 +12,17 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.CreateTournament do
     format = Map.get(config, "format", "single_elimination")
     max_participants = Map.get(config, "max_participants", 16)
 
+    user_id =
+      Map.get(inputs, :user_id) || Map.get(inputs, "user_id") || Map.get(inputs, :created_by_id) ||
+        ctx.triggered_by_id
+
     case ForgeNexus.Tournaments.create_tournament(%{
            name: name,
            description: description,
            format: format,
            max_participants: max_participants,
-           community_id: ctx.community_id
+           community_id: ctx.community_id,
+           created_by_id: user_id
          }) do
       {:ok, tournament} ->
         ctx = Sandbox.increment_db_ops(ctx)

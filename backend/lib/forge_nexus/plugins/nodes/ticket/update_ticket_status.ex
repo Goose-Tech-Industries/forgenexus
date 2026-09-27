@@ -15,7 +15,14 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.UpdateTicketStatus do
         _ -> nil
       end
 
-    case ForgeNexus.Tickets.update_status(ticket_id, status) do
+    res =
+      try do
+        ForgeNexus.Tickets.update_status(ticket_id, status)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true, previous_status: previous_status}, ctx}

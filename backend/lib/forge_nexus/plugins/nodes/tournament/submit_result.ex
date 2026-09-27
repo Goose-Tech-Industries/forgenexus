@@ -14,8 +14,15 @@ defmodule ForgeNexus.Plugins.Nodes.Tournament.SubmitResult do
 
     scores = %{player1_score: player1_score, player2_score: player2_score}
 
-    case ForgeNexus.Tournaments.submit_result(match_id, winner_id, scores) do
-      {:ok, :ok} ->
+    res =
+      try do
+        ForgeNexus.Tournaments.submit_result(match_id, winner_id, scores)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
+      {:ok, _} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true}, ctx}
 

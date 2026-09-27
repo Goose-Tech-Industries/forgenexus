@@ -10,7 +10,14 @@ defmodule ForgeNexus.Plugins.Nodes.Ticket.AssignTicket do
     ticket_id = Map.get(inputs, :ticket_id) || Map.get(inputs, "ticket_id")
     staff_user_id = Map.get(inputs, :staff_user_id) || Map.get(inputs, "staff_user_id")
 
-    case ForgeNexus.Tickets.assign_ticket(ticket_id, staff_user_id) do
+    res =
+      try do
+        ForgeNexus.Tickets.assign_ticket(ticket_id, staff_user_id)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _ticket} ->
         ctx = Sandbox.increment_db_ops(ctx)
         {:ok, %{success: true}, ctx}

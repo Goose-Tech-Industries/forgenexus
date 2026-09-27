@@ -8,7 +8,14 @@ defmodule ForgeNexus.Plugins.Nodes.Poll.ClosePoll do
     Sandbox.check_db_limit!(ctx)
     poll_id = Map.get(inputs, :poll_id) || Map.get(inputs, "poll_id")
 
-    case ForgeNexus.Forums.Polls.close_poll(poll_id) do
+    res =
+      try do
+        ForgeNexus.Forums.Polls.close_poll(poll_id)
+      rescue
+        err -> {:error, Exception.message(err)}
+      end
+
+    case res do
       {:ok, _poll} ->
         results = ForgeNexus.Forums.Polls.get_results(poll_id, nil)
 
