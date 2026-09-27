@@ -149,7 +149,7 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         }
 
         if url = config["webhook_url"] do
-          Task.start(fn -> send_webhook(url, payload) end)
+          start_async(fn -> send_webhook(url, payload) end)
         end
 
         if event = config["event_name"] do
@@ -181,7 +181,7 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
 
       "webhook" ->
         if url = config["webhook_url"] do
-          Task.start(fn ->
+          start_async(fn ->
             send_webhook(url, %{
               redeemable: redeemable.name,
               user_id: user_id,
@@ -206,9 +206,9 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         title = redemption.user_text || config["default_title"] || "VIP"
         duration_hours = config["duration_hours"] || 24
 
-        Task.start(fn ->
+        start_async(fn ->
           ForgeNexus.Accounts.update_user_fields(user_id, %{custom_title: title})
-          Process.sleep(duration_hours * 3_600_000)
+          sleep(duration_hours * 3_600_000)
           ForgeNexus.Accounts.update_user_fields(user_id, %{custom_title: nil})
         end)
 
@@ -218,9 +218,9 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         color = redemption.user_text || config["color"] || "#6366f1"
         duration_hours = config["duration_hours"] || 24
 
-        Task.start(fn ->
+        start_async(fn ->
           ForgeNexus.Accounts.update_user_fields(user_id, %{username_color: color})
-          Process.sleep(duration_hours * 3_600_000)
+          sleep(duration_hours * 3_600_000)
           ForgeNexus.Accounts.update_user_fields(user_id, %{username_color: nil})
         end)
 
@@ -314,8 +314,8 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
           by: user_id
         })
 
-        Task.start(fn ->
-          Process.sleep(duration_seconds * 1000)
+        start_async(fn ->
+          sleep(duration_seconds * 1000)
 
           ForgeNexusWeb.Endpoint.broadcast("voice:#{room_id}", "slow_mode_toggled", %{
             enabled: false,
@@ -447,9 +447,9 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
           "temp_title" ->
             title = winner["value"] || "Lucky"
 
-            Task.start(fn ->
+            start_async(fn ->
               ForgeNexus.Accounts.update_user_fields(user_id, %{custom_title: title})
-              Process.sleep(3_600_000)
+              sleep(3_600_000)
               ForgeNexus.Accounts.update_user_fields(user_id, %{custom_title: nil})
             end)
 
@@ -577,6 +577,20 @@ defmodule ForgeNexus.Voice.RedemptionEngine do
         receive_timeout: 10_000
       )
     rescue
+      _ -> :ok
+    end
+  end
+
+  defp start_async(fun) do
+    case Application.get_env(:forge_nexus, :redemption_async_runner) do
+      runner when is_function(runner, 1) -> runner.(fun)
+      _ -> Task.start(fun)
+    end
+  end
+
+  defp sleep(duration_ms) do
+    case Application.get_env(:forge_nexus, :redemption_sleep_fn) do
+      fun when is_function(fun, 1) -> fun.(duration_ms)
       _ -> :ok
     end
   end

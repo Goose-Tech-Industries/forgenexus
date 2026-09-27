@@ -14,6 +14,10 @@ defmodule ForgeNexus.Tournaments.Tournament do
     field :starts_at, :utc_datetime
     field :ends_at, :utc_datetime
     field :prize_pool, :map, default: %{}
+    field :prize_pool_points, :integer, default: 0
+    field :prize_pool_cents, :integer, default: 0
+    field :entry_fee_points, :integer, default: 0
+    field :entry_fee_cents, :integer, default: 0
     field :rules, :string
 
     belongs_to :created_by, ForgeNexus.Accounts.User
@@ -34,11 +38,18 @@ defmodule ForgeNexus.Tournaments.Tournament do
       :starts_at,
       :ends_at,
       :prize_pool,
+      :prize_pool_points,
+      :prize_pool_cents,
+      :entry_fee_points,
+      :entry_fee_cents,
       :rules,
       :created_by_id
     ])
     |> validate_required([:name, :format])
     |> validate_inclusion(:format, ~w(single_elimination double_elimination round_robin swiss))
-    |> validate_inclusion(:status, ~w(registration active in_progress completed cancelled))
+    |> validate_inclusion(
+      :status,
+      ~w(upcoming registration active in_progress completed cancelled)
+    )
   end
 end

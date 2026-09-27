@@ -193,19 +193,25 @@ defmodule ForgeNexus.ThreadTypes do
   # ── Debate ──
 
   def set_position(attrs \\ %{}) do
-    case Repo.get_by(DebatePosition,
-           thread_id: attrs[:thread_id] || attrs["thread_id"],
-           user_id: attrs[:user_id] || attrs["user_id"]
-         ) do
-      nil ->
-        %DebatePosition{}
-        |> DebatePosition.changeset(attrs)
-        |> Repo.insert()
+    thread_id = attrs[:thread_id] || attrs["thread_id"]
+    user_id = attrs[:user_id] || attrs["user_id"]
 
-      existing ->
-        existing
-        |> DebatePosition.changeset(attrs)
-        |> Repo.update()
+    if is_nil(thread_id) or is_nil(user_id) do
+      %DebatePosition{}
+      |> DebatePosition.changeset(attrs)
+      |> Repo.insert()
+    else
+      case Repo.get_by(DebatePosition, thread_id: thread_id, user_id: user_id) do
+        nil ->
+          %DebatePosition{}
+          |> DebatePosition.changeset(attrs)
+          |> Repo.insert()
+
+        existing ->
+          existing
+          |> DebatePosition.changeset(attrs)
+          |> Repo.update()
+      end
     end
   end
 

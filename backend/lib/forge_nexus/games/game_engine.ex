@@ -37,7 +37,10 @@ defmodule ForgeNexus.Games.GameEngine do
       {:error, :game_in_progress}
     else
       player_count =
-        from(p in "party_game_players", where: p.game_id == ^game_id, select: count())
+        from(p in "party_game_players",
+          where: p.game_id == type(^game_id, :binary_id),
+          select: count()
+        )
         |> Repo.one()
 
       if player_count >= game.max_players do
@@ -47,9 +50,9 @@ defmodule ForgeNexus.Games.GameEngine do
           "party_game_players",
           [
             %{
-              id: Ecto.UUID.generate(),
-              game_id: game_id,
-              user_id: user_id,
+              id: to_binary_id(Ecto.UUID.generate()),
+              game_id: to_binary_id(game_id),
+              user_id: to_binary_id(user_id),
               score: 0,
               is_active: true,
               inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
@@ -153,9 +156,9 @@ defmodule ForgeNexus.Games.GameEngine do
 
   def get_scores(game_id) do
     from(p in "party_game_players",
-      where: p.game_id == ^game_id,
+      where: p.game_id == type(^game_id, :binary_id),
       order_by: [desc: :score],
-      select: %{user_id: p.user_id, score: p.score}
+      select: %{user_id: type(p.user_id, :binary_id), score: p.score}
     )
     |> Repo.all()
   end
@@ -163,10 +166,17 @@ defmodule ForgeNexus.Games.GameEngine do
   defp update_scores(game_id, changes) when is_map(changes) do
     Enum.each(changes, fn {user_id, delta} ->
       from(p in "party_game_players",
-        where: p.game_id == ^game_id and p.user_id == ^user_id
+        where:
+          p.game_id == type(^game_id, :binary_id) and
+            p.user_id == type(^user_id, :binary_id)
       )
       |> Repo.update_all(inc: [score: delta])
     end)
+  end
+
+  defp to_binary_id(id) do
+    {:ok, bin} = Ecto.UUID.dump(id)
+    bin
   end
 
   defp distribute_prizes(game, scores) do
@@ -255,7 +265,9 @@ defmodule ForgeNexus.Games.GameEngine do
   end
 
   defp process_answer(_, state, user_id, answer) do
-    put_in(state, ["answers", user_id], answer)
+    state
+    |> Map.put_new("answers", %{})
+    |> put_in(["answers", user_id], answer)
   end
 
   defp all_answered?("cards_against_humanity", state), do: map_size(state["answers"] || %{}) > 0
@@ -294,7 +306,7 @@ defmodule ForgeNexus.Games.GameEngine do
 
   defp next_round_state(_, state, _), do: Map.put(state, "answers", %{})
 
-  defp pick_random_prompt("cah") do
+  def pick_random_prompt("cah") do
     Enum.random([
       "The worst thing to say at a funeral is ____.",
       "Instead of a trophy, the winner gets ____.",
@@ -304,7 +316,7 @@ defmodule ForgeNexus.Games.GameEngine do
     ])
   end
 
-  defp pick_random_prompt("wyr") do
+  def pick_random_prompt("wyr") do
     Enum.random([
       "Would you rather have unlimited money or unlimited free time?",
       "Would you rather be able to teleport or read minds?",
@@ -314,7 +326,7 @@ defmodule ForgeNexus.Games.GameEngine do
     ])
   end
 
-  defp pick_random_prompt("hot_take") do
+  def pick_random_prompt("hot_take") do
     Enum.random([
       "Pineapple belongs on pizza.",
       "The last season was actually good.",
@@ -324,7 +336,7 @@ defmodule ForgeNexus.Games.GameEngine do
     ])
   end
 
-  defp pick_random_prompt(_), do: "Default prompt"
+  def pick_random_prompt(_), do: "Default prompt"
 
   defp default_trivia do
     [

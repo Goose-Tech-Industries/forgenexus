@@ -7,13 +7,14 @@ defmodule ForgeNexus.Tournaments.Registration do
 
   import Ecto.Query
   alias ForgeNexus.{Repo, Economy}
+  alias ForgeNexus.Tournaments.{Tournament, Participant}
 
   def register(tournament_id, user_id) do
-    tournament = Repo.get!(ForgeNexus.Tournaments.Tournament, tournament_id)
+    tournament = Repo.get!(Tournament, tournament_id)
 
     already =
       Repo.exists?(
-        from p in "tournament_participants",
+        from p in Participant,
           where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
       )
 
@@ -46,13 +47,13 @@ defmodule ForgeNexus.Tournaments.Registration do
   end
 
   def unregister(tournament_id, user_id) do
-    tournament = Repo.get!(ForgeNexus.Tournaments.Tournament, tournament_id)
+    tournament = Repo.get!(Tournament, tournament_id)
 
     if tournament.status != "upcoming" do
       {:error, :cannot_unregister}
     else
       {count, _} =
-        from(p in "tournament_participants",
+        from(p in Participant,
           where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
         )
         |> Repo.delete_all()
@@ -69,7 +70,7 @@ defmodule ForgeNexus.Tournaments.Registration do
   end
 
   def distribute_prizes(tournament_id, placements) do
-    tournament = Repo.get!(ForgeNexus.Tournaments.Tournament, tournament_id)
+    tournament = Repo.get!(Tournament, tournament_id)
     total_pool = tournament.prize_pool_points || 0
 
     if total_pool > 0 do
@@ -83,7 +84,7 @@ defmodule ForgeNexus.Tournaments.Registration do
             description: "Tournament prize — #{tournament.name}"
           )
 
-          from(p in "tournament_participants",
+          from(p in Participant,
             where: p.tournament_id == ^tournament_id and p.user_id == ^user_id
           )
           |> Repo.update_all(set: [prize_points: amount])
@@ -108,7 +109,7 @@ defmodule ForgeNexus.Tournaments.Registration do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     Repo.insert_all(
-      "tournament_participants",
+      Participant,
       [
         %{
           id: Ecto.UUID.generate(),
@@ -124,7 +125,7 @@ defmodule ForgeNexus.Tournaments.Registration do
   end
 
   defp update_prize_pool(tournament_id, points) do
-    from(t in "tournaments", where: t.id == ^tournament_id)
+    from(t in Tournament, where: t.id == ^tournament_id)
     |> Repo.update_all(inc: [prize_pool_points: points])
   end
 end

@@ -62,7 +62,7 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
              user_id: triggered_by_id
            }) do
         {:ok, post} -> %{type: "create_post", status: "ok", id: post.id}
-        {:error, _} -> %{type: "create_post", status: "error", error: "Failed to create post"}
+        _error -> %{type: "create_post", status: "error", error: "Failed to create post"}
       end
     rescue
       e -> %{type: "create_post", status: "error", error: Exception.message(e)}
@@ -71,13 +71,17 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
 
   defp execute_command("create_thread", args, triggered_by_id) do
     try do
+      title = Map.get(args, "title", "")
+      body = Map.get(args, "body", title)
+
       case Forums.create_thread(%{
-             title: Map.get(args, "title", ""),
+             title: title,
+             body: body,
              forum_id: Map.get(args, "forum_id"),
              user_id: triggered_by_id
            }) do
         {:ok, thread} -> %{type: "create_thread", status: "ok", id: thread.id}
-        {:error, _} -> %{type: "create_thread", status: "error", error: "Failed to create thread"}
+        _error -> %{type: "create_thread", status: "error", error: "Failed to create thread"}
       end
     rescue
       e -> %{type: "create_thread", status: "error", error: Exception.message(e)}
@@ -86,11 +90,34 @@ defmodule ForgeNexus.Plugins.JsRuntime.CommandProcessor do
 
   defp execute_command("send_dm", args, triggered_by_id) do
     try do
-      case Chat.send_message(%{
-             recipient_id: Map.get(args, "user_id"),
-             sender_id: triggered_by_id,
-             body: Map.get(args, "body", "")
-           }) do
+      recipient_id = Map.get(args, "user_id") || Map.get(args, "recipient_id")
+      body = Map.get(args, "body", "")
+      conversation_id = Map.get(args, "conversation_id")
+
+      result =
+        cond do
+          conversation_id ->
+            Chat.send_message(%{
+              conversation_id: conversation_id,
+              user_id: triggered_by_id,
+              body: body
+            })
+
+          recipient_id && triggered_by_id ->
+            {:ok, conversation} =
+              Chat.get_or_create_direct_conversation(triggered_by_id, recipient_id)
+
+            Chat.send_message(%{
+              conversation_id: conversation.id,
+              user_id: triggered_by_id,
+              body: body
+            })
+
+          true ->
+            {:error, :missing_recipient}
+        end
+
+      case result do
         {:ok, _msg} -> %{type: "send_dm", status: "ok"}
         {:error, _} -> %{type: "send_dm", status: "error", error: "Failed to send DM"}
       end

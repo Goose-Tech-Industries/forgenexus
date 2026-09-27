@@ -11,6 +11,9 @@ defmodule ForgeNexus.Tournaments.Participant do
     field :losses, :integer, default: 0
     field :points, :integer, default: 0
     field :is_eliminated, :boolean, default: false
+    field :checked_in, :boolean, default: false
+    field :checked_in_at, :utc_datetime
+    field :prize_points, :integer
 
     belongs_to :tournament, ForgeNexus.Tournaments.Tournament
     belongs_to :user, ForgeNexus.Accounts.User
@@ -20,7 +23,18 @@ defmodule ForgeNexus.Tournaments.Participant do
 
   def changeset(participant, attrs) do
     participant
-    |> cast(attrs, [:tournament_id, :user_id, :seed, :wins, :losses, :points, :is_eliminated])
+    |> cast(attrs, [
+      :tournament_id,
+      :user_id,
+      :seed,
+      :wins,
+      :losses,
+      :points,
+      :is_eliminated,
+      :checked_in,
+      :checked_in_at,
+      :prize_points
+    ])
     |> validate_required([:tournament_id, :user_id])
     |> unique_constraint([:tournament_id, :user_id])
   end

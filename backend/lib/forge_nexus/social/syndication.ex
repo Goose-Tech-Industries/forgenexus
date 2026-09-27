@@ -29,12 +29,12 @@ defmodule ForgeNexus.Social.Syndication do
 
         Repo.insert_all("syndicated_posts", [
           %{
-            id: Ecto.UUID.generate(),
-            source_thread_id: source.id,
-            source_community_id: source.community_id,
-            target_community_id: target_community_id,
-            target_thread_id: target_thread.id,
-            syndicated_by_id: syndicated_by_id,
+            id: to_binary_id(Ecto.UUID.generate()),
+            source_thread_id: to_binary_id(source.id),
+            source_community_id: to_binary_id(source.community_id),
+            target_community_id: to_binary_id(target_community_id),
+            target_thread_id: to_binary_id(target_thread.id),
+            syndicated_by_id: to_binary_id(syndicated_by_id),
             status: "active",
             inserted_at: now,
             updated_at: now
@@ -49,12 +49,25 @@ defmodule ForgeNexus.Social.Syndication do
   end
 
   defp get_default_forum(community_id) do
-    from(f in "forums",
-      where: f.community_id == ^community_id,
-      order_by: [asc: :position],
-      limit: 1,
-      select: f.id
-    )
-    |> Repo.one()
+    raw_id =
+      from(f in "forums",
+        where: f.community_id == type(^community_id, :binary_id),
+        order_by: [asc: :position],
+        limit: 1,
+        select: f.id
+      )
+      |> Repo.one()
+
+    case Ecto.UUID.load(raw_id) do
+      {:ok, uuid} -> uuid
+      _ -> nil
+    end
+  end
+
+  defp to_binary_id(id) do
+    case Ecto.UUID.dump(id) do
+      {:ok, bin} -> bin
+      _ -> nil
+    end
   end
 end

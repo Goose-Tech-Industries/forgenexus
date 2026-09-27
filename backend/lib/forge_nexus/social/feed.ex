@@ -264,7 +264,7 @@ defmodule ForgeNexus.Social.Feed do
     end)
   end
 
-  defp to_unix(%DateTime{} = dt), do: DateTime.to_unix(dt)
-  defp to_unix(%NaiveDateTime{} = ndt), do: NaiveDateTime.diff(ndt, ~N[1970-01-01 00:00:00])
-  defp to_unix(_), do: 0
+  def to_unix(%DateTime{} = dt), do: DateTime.to_unix(dt)
+  def to_unix(%NaiveDateTime{} = ndt), do: NaiveDateTime.diff(ndt, ~N[1970-01-01 00:00:00])
+  def to_unix(_), do: 0
 end
